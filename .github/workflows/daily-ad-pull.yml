@@ -1,0 +1,69 @@
+name: Daily ad pull
+
+# Sweeps the Meta Ad Library, folds the results into data/ads.json, rewrites the
+# live-feed section of index.html and pushes. GitHub Pages rebuilds on push.
+#
+# Known risk, accepted deliberately: Meta frequently challenges datacenter IPs,
+# and a headless runner cannot clear a challenge. tools/pull.mjs therefore exits
+# non-zero on an unhealthy harvest, which fails the job before anything is
+# committed. A failed run leaves the previous good data and page untouched.
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 11:00 UTC / 06:00 ET daily
+  workflow_dispatch:        # lets you trigger a run by hand
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-ad-pull
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Harvest the Ad Library
+        id: harvest
+        run: node tools/pull.mjs
+
+      - name: Merge into the corpus
+        run: node tools/merge.mjs
+
+      - name: Render the live feed
+        run: node tools/render.mjs
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data index.html
+          if git diff --staged --quiet; then
+            echo "Nothing changed today."
+            exit 0
+          fi
+          git commit -m "Daily ad pull: $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Explain a failed harvest
+        if: failure() && steps.harvest.outcome == 'failure'
+        run: |
+          echo "::warning::Harvest failed the health gate. Nothing was committed."
+          echo "Most likely Meta challenged this runner's IP. If this repeats for"
+          echo "several days, move the job onto a machine with a residential IP"
+          echo "and run tools/recency-pull.js by hand in the meantime."
