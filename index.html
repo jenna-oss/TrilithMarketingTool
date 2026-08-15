@@ -338,8 +338,16 @@
     white-space: nowrap;
   }
   .bench-row .who i { font-style: normal; color: var(--ink-quiet); }
-  .bench-track { background: var(--card-sunk); border-radius: 2px; height: 14px; overflow: hidden; }
-  .bench-fill { height: 100%; border-radius: 2px; }
+  /* Both are spans, so they must be blockified explicitly — percentage
+     width and height:100% do not apply to inline boxes. */
+  .bench-track {
+    display: block;
+    background: var(--card-sunk);
+    border-radius: 2px;
+    height: 14px;
+    overflow: hidden;
+  }
+  .bench-fill { display: block; height: 100%; border-radius: 2px; min-width: 3px; }
   .bench-row[data-kind="creator"] .bench-fill { background: var(--emerald-bar); }
   .bench-row[data-kind="lender"]  .bench-fill { background: var(--clay); }
   .bench-row .v {
