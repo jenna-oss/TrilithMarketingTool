@@ -26,9 +26,14 @@ if (!ads.length) { console.error('Corpus is empty. Not rendering.'); process.exi
 const html = await readFile(PAGE, 'utf8');
 const a = html.indexOf(START);
 const b = html.indexOf(END);
+
+/* The live-feed section was removed from the page. Absent markers are a design
+ * decision, not a failure — exit cleanly so the daily job still harvests and
+ * commits data instead of going red every morning. Re-add the markers to the
+ * page and this stage starts writing again with no change here. */
 if (a === -1 || b === -1 || b < a) {
-  console.error('AUTO:FEED markers missing from index.html. Not rendering.');
-  process.exit(1);
+  console.log('No AUTO:FEED region in index.html — skipping the feed render.');
+  process.exit(0);
 }
 
 const byFirstSeen = [...ads].sort((x, y) =>

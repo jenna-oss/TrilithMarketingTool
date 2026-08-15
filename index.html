@@ -525,40 +525,19 @@
      ============================================================ */
 
   .pains { display: grid; gap: var(--s2); }
-  /* Severity reads as a full-height edge stripe. Done with border-left
-     rather than a child element so it always spans the whole card —
-     a stretched child would inset itself by the card's own padding. */
   .pain {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--s3);
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
     background: var(--card);
     border: 1px solid var(--rule);
-    border-left: 4px solid var(--rule-strong);
+    border-left: 3px solid var(--rule-strong);
     border-radius: 3px;
     padding: var(--s3);
   }
-  .pain[data-pressure="heavy"] { border-left-color: var(--clay); }
-  .pain[data-pressure="light"] { border-left-color: var(--ochre); }
-  .pain[data-pressure="open"]  { border-left-color: var(--emerald-bar); border-left-style: dashed; }
 
   .pain .what { color: var(--ink); font-weight: 600; font-size: .9375rem; }
   .pain .who  { color: var(--ink-quiet); font-size: .8125rem; margin-top: .125rem; }
 
-  .tag {
-    font-family: var(--mono);
-    font-size: .625rem;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    padding: .1875rem .5rem;
-    border-radius: 2px;
-    white-space: nowrap;
-    font-weight: 600;
-  }
-  .pain[data-pressure="heavy"] .tag { color: var(--clay);  box-shadow: inset 0 0 0 1px var(--clay); }
-  .pain[data-pressure="light"] .tag { color: var(--ochre); box-shadow: inset 0 0 0 1px var(--ochre); }
-  .pain[data-pressure="open"]  .tag { color: var(--accent-on-ground); background: transparent; box-shadow: inset 0 0 0 1px var(--emerald-bar); }
 
   .legend {
     display: flex; flex-wrap: wrap; gap: var(--s4);
@@ -731,12 +710,6 @@
     <div class="sec-head">
       <p class="eyebrow">The board</p>
       <h2>Who is actually in market</h2>
-      <p>
-        Nine competitors, ranked by how much they are spending to be seen. The
-        first five come from the Spyglass corpus; the four marked
-        <span class="src" style="display:inline">via Ad Library</span> were found
-        in Meta’s Ad Library, which indexes advertisers Spyglass does not.
-      </p>
     </div>
 
     <div class="board">
@@ -827,11 +800,6 @@
         following. LendingOne is the mirror image: a comparable ad count on top of
         8,100 followers.
       </p>
-      <p>
-        Follower counts for the five Spyglass lenders come from the corpus. The four
-        found via the Ad Library were read directly from their public profiles on
-        <strong>15 August 2026</strong>, so those move independently of the corpus refresh.
-      </p>
     </div>
 
     <div class="method" style="margin-top:var(--s4)">
@@ -850,146 +818,6 @@
         But that is not the whole market, and the next section is the correction.
       </p>
     </div>
-  </div>
-</section>
-
-<!-- ================= LIVE FEED (machine-written) ================= -->
-<section id="live-feed">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Live feed</p>
-      <h2>New creative in the category</h2>
-      <p>
-        Meta exposes an ad’s start date but offers no recency sort, so this is
-        built by watching: a scheduled job sweeps the Ad Library every morning and
-        records what it has not seen before. The <em>first seen</em> date is ours,
-        not Meta’s — which is what makes it possible to say when a competitor
-        actually entered the market.
-      </p>
-    </div>
-
-    <!-- AUTO:FEED:START -->
-    <div class="method">
-      <h3>Feed status</h3>
-      <p><strong>0 ads newly observed in the
-       last seven days</strong>, against a tracked corpus of 774 ads across
-       249 advertisers. The baseline sweep of
-       2026-08-15 is excluded — those were first seen by us
-       that day but were already running.</p>
-      
-      <p class="dark-list">Run 4 · last updated 2026-08-15 20:13 UTC · tracking 774 ads</p>
-    </div>
-
-    <div class="wall" style="margin-top:var(--s4)">
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Rich Investor Capital</span>
-          <span class="line">Need a $5M bridge loan fast? We fund up to 75% LTV with no tax returns. Get your deal moving! Low impression count 0:00 / 1:10 FB.ME Investors Cashing Out - and Expanding Private Lending At </span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Rich Investor Capital</span>
-          <span class="line">Need a $5M bridge loan fast? We fund up to 75% LTV with no tax returns. Get your deal moving! Low impression count 0:00 / 1:13 FB.ME Investor Scaling Loan Programs Private Lending At Competi</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-
-      <div class="creative">
-        <span class="thumb-none">AUG 15</span>
-        <span class="body">
-          <span class="who">Love Romance</span>
-          <span class="line">Tabitha’s POV A soccer ball rockets toward me just as I’m halfway through a passage, lounging cross-legged in the middle of the open field with my book resting comfortably on my thighs. I gl</span>
-          <span class="meta"><span class="chip">FIRST SEEN 2026-08-15</span></span>
-        </span>
-      </div>
-    </div>
-    <!-- AUTO:FEED:END -->
   </div>
 </section>
 
@@ -1118,85 +946,6 @@
       </div>
     </div>
 
-    <div class="sec-head" style="margin-top:var(--s6)">
-      <h2 style="font-size:1.125rem">What the newest creative actually says</h2>
-      <p>Sorted by start date, newest first — the live edge of the category.</p>
-    </div>
-
-    <div class="wall">
-      <div class="creative">
-        <span class="thumb-none">AUG 10</span>
-        <span class="body">
-          <span class="who">Bayport Funding</span>
-          <span class="line">“Found the flip? Let’s fund it.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">AUG 4</span>
-        <span class="body">
-          <span class="who">Investment Property Brothers</span>
-          <span class="line">“You took the hard money loan to win the deal. That part worked. Now the rate is still running and the property has already stabilized.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span> the refi-trap angle</span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUL 24</span>
-        <span class="body">
-          <span class="who">The DSCR Shop</span>
-          <span class="line">“If you’re a landlord carrying a rate above 6%, this math is going to bother you. Take your current rate. Subtract 5.375%. Multiply by your loan balance.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span> arithmetic as the hook</span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUL 20</span>
-        <span class="body">
-          <span class="who">Springboard To Wealth</span>
-          <span class="line">“Self-employed? Getting denied because your write-offs make your income look low?”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUL 15</span>
-        <span class="body">
-          <span class="who">The Eric Vavere Team</span>
-          <span class="line">“You found a rental that cash flows. Your lender just asked for 2 years of tax returns and a letter from your accountant. That is not how investors work.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUL 15</span>
-        <span class="body">
-          <span class="who">Brandon Turner <i>· creator</i></span>
-          <span class="line">“Banks won’t finance a property that needs real work. Too risky, too slow, too many reasons to say no. That’s exactly what hard money is for.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUL 13</span>
-        <span class="body">
-          <span class="who">Brandon Turner <i>· creator</i></span>
-          <span class="line">“Denied because your income’s ‘too low’ or your DTI’s ‘too high’? That’s the bank talking. Not the deal.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUL 12</span>
-        <span class="body">
-          <span class="who">Launch Financial Group</span>
-          <span class="line">“Property investors — have you lost a good deal because traditional financing took too long?”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-      <div class="creative">
-        <span class="thumb-none">JUN 17</span>
-        <span class="body">
-          <span class="who">Strong Home Mortgage</span>
-          <span class="line">“Got denied because of your tax returns? Traditional lenders aren’t built for investors — they’re built for W2 employees.”</span>
-          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
-        </span>
-      </div>
-    </div>
 
     <div class="method" style="margin-top:var(--s5)">
       <h3>What this changes</h3>
@@ -1697,56 +1446,40 @@
       </p>
     </div>
 
-    <div class="legend">
-      <span><i style="background:var(--clay)"></i> Heavily contested</span>
-      <span><i style="background:var(--ochre)"></i> Lightly held</span>
-      <span><i style="background:var(--emerald-bar);opacity:.55"></i> Open</span>
-    </div>
 
     <div class="pains">
-      <div class="pain" data-pressure="heavy">
+      <div class="pain">
         <span><span class="what">Losing the deal to a cash buyer</span><br><span class="who">Kiavi and Lima One both buying it hard</span></span>
-        <span class="tag">Contested</span>
       </div>
-      <div class="pain" data-pressure="heavy">
+      <div class="pain">
         <span><span class="what">Financing is the scary part, not the rehab</span><br><span class="who">Kiavi’s entire testimonial engine</span></span>
-        <span class="tag">Contested</span>
       </div>
-      <div class="pain" data-pressure="heavy">
+      <div class="pain">
         <span><span class="what">Capital tied up caps deal count</span><br><span class="who">Lima One — 95% leverage push</span></span>
-        <span class="tag">Contested</span>
       </div>
-      <div class="pain" data-pressure="heavy">
+      <div class="pain">
         <span><span class="what">Income docs as a wall — no W-2, no returns</span><br><span class="who">Visio and Kiavi</span></span>
-        <span class="tag">Contested</span>
       </div>
-      <div class="pain" data-pressure="heavy">
+      <div class="pain">
         <span><span class="what">The broker’s own commission is at risk</span><br><span class="who">RCN Capital — sustained paid spend since June, aimed at brokers not borrowers</span></span>
-        <span class="tag">Contested</span>
       </div>
-      <div class="pain" data-pressure="light">
+      <div class="pain">
         <span><span class="what">Rate bait-and-switch and hidden terms</span><br><span class="who">Visio only, organic</span></span>
-        <span class="tag">Light</span>
       </div>
-      <div class="pain" data-pressure="light">
+      <div class="pain">
         <span><span class="what">The BRRRR handoff — short-term to refi friction</span><br><span class="who">Kiavi and Lima One, product-led</span></span>
-        <span class="tag">Light</span>
       </div>
-      <div class="pain" data-pressure="light">
+      <div class="pain">
         <span><span class="what">Process opacity — what does a lender actually check?</span><br><span class="who">Organic only, never funded</span></span>
-        <span class="tag">Light</span>
       </div>
-      <div class="pain" data-pressure="open">
+      <div class="pain">
         <span><span class="what">Lender gets cold feet mid-project</span><br><span class="who">Anchor told it once, organically — 89 views. Nobody has funded it.</span></span>
-        <span class="tag">Open</span>
       </div>
-      <div class="pain" data-pressure="open">
+      <div class="pain">
         <span><span class="what">Being ticket #40,000 in a portal</span><br><span class="who">New Silver gestures at it; no paid spend anywhere</span></span>
-        <span class="tag">Open</span>
       </div>
-      <div class="pain" data-pressure="open">
+      <div class="pain">
         <span><span class="what">Prepayment penalties locking you in</span><br><span class="who">Visio is the only lender who has ever mentioned it</span></span>
-        <span class="tag">Open</span>
       </div>
     </div>
   </div>
@@ -1758,12 +1491,6 @@
     <div class="sec-head">
       <p class="eyebrow">Conversion</p>
       <h2>What they ask for, and where they send it</h2>
-      <p>
-        Button text below is literal — pulled from Kiavi’s own campaign tracking
-        parameters. Note what is absent across the whole category: nobody runs
-        “Apply.” The verbs stay low-commitment because the real conversion is a
-        call with a loan officer.
-      </p>
     </div>
 
     <div class="cta-wrap">
@@ -1787,211 +1514,6 @@
       </table>
     </div>
 
-    <p style="margin-top:var(--s4);max-width:66ch">
-      Kiavi also runs a live page at <code style="font-family:var(--mono);font-size:.8125rem">kiavi.com/lp/switch-to-kiavi</code>
-      under a campaign named <em>Q2’26 Competitor Takeover</em>. They are actively
-      poaching other lenders’ borrowers.
-    </p>
-  </div>
-</section>
-
-<!-- ================= OPPORTUNITIES ================= -->
-<section class="room">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow on-panel">Where the room is</p>
-      <h2>Eight positions, ranked by how much room is left</h2>
-      <p>
-        Order carries the argument. The first two are genuinely uncontested. The
-        broker position has moved — it was the cheapest win on this list until
-        RCN Capital turned up buying it.
-      </p>
-    </div>
-
-    <div class="ops">
-      <div class="op">
-        <span class="n">01</span>
-        <div>
-          <h3>Spanish-language investor lending</h3>
-          <p>
-            No US investor lender in the corpus runs a single Spanish creative —
-            not Kiavi, Lima One, Visio, New Silver or Anchor. Trilith has already
-            built and paid for a complete Spanish mirror of all 60 pages and is
-            getting nothing back from it.
-          </p>
-          <p class="proof">
-            Demand signal — one Spanish-language real estate educator, 243K followers:
-            63K / 19.8K / 14.9K views. Kiavi’s best organic post in 90 days: 5.7K.
-            Caveat: that audience’s US share is unverified and should be tested before committing.
-          </p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">02</span>
-        <div>
-          <h3>Publish the arithmetic they already own</h3>
-          <p>
-            The best-performing format in this entire audience is line-item deal
-            math, and not one lender uses it. Trilith has four funded deals with
-            real numbers sitting as static pages. A creator gets 16,300 views
-            narrating a BRRRR financed with private money; Trilith actually funds
-            those deals and publishes them as a spec sheet.
-          </p>
-          <p class="proof">
-            Sean Pan’s 4plex P&amp;L: 59.8K views. Trilith’s Baltimore portfolio —
-            $370,900, 7.875%, 70% LTV, four properties — currently has no narration,
-            no breakdown and no capture.
-          </p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">03</span>
-        <div>
-          <h3>Macro-to-micro market commentary</h3>
-          <p>
-            Trilith’s blog already covers the SpaceX IPO’s liquidity effects, the
-            Iran conflict, the housing act, the Figure/Kiavi deal. Not one lender
-            in the corpus posts macro commentary on social — the whole category
-            posts product features. This is Trilith’s most distinctive existing
-            asset, locked in 4–10 minute reads.
-          </p>
-          <p class="proof">
-            Nearest attempts — Anchor’s single housing-orders post (119 views), and
-            Temple View, which runs one market-outlook ad asking how serious investors
-            can capitalise. Thin, but no longer zero: treat this as a two-ad head start
-            to beat, not empty ground.
-          </p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">04</span>
-        <div>
-          <h3>The founder as the channel</h3>
-          <p>
-            Anchor Loans’ brand Facebook has 4.7K followers. Their CEO’s personal
-            Instagram has 41.6K — nine times the brand, same company. New Silver
-            runs zero paid and is entirely their founder to camera. Kiavi, owned
-            by a $717M acquirer, structurally cannot answer this.
-          </p>
-          <p class="proof">Trilith’s asset — an existing Levine Capital webinar library, unclipped.</p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">05</span>
-        <div>
-          <h3>“Your lender just got acquired”</h3>
-          <p>
-            Figure bought Kiavi for $717M. Kiavi is running a competitor-takeover
-            landing page right now. Trilith already published the sharpest take on
-            that acquisition — a borrower with a tight close and a phased rehab
-            needs more than a portal. Nobody is running the reverse argument.
-          </p>
-          <p class="proof">Most time-sensitive item here. The window closes as the story ages.</p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">06</span>
-        <div>
-          <h3>A real broker-facing brand — now contested</h3>
-          <p>
-            Visio points two of its four landing pages at brokers and Anchor runs
-            broker testimonials, but RCN Capital changes the picture: every one of
-            its ~15 active ads targets brokers, and it has been buying that position
-            since June. It works a pain nobody else touches — not the borrower’s
-            deal, the <em>broker’s commission and pipeline</em>.
-          </p>
-          <p class="proof">
-            Trilith still has a live broker portal with no brand, no landing page and
-            no content behind it. The infrastructure is built; the position is no
-            longer free. Also note the collision — RCN’s landing page reads “Skip the
-            Bank’s Red Tape” against Trilith’s “No red tape.” That phrase now has
-            budget behind it and should be replaced.
-          </p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">07</span>
-        <div>
-          <h3>First-time flippers</h3>
-          <p>
-            All four of Kiavi’s testimonial hooks are beginner fear. The category
-            leader spends its heaviest budget on people doing their first deal.
-            Trilith’s homepage says “not first-time homebuyers”; the FAQ says
-            first-time flippers can get funded. That contradiction has to be
-            resolved before anything else scales.
-          </p>
-          <p class="proof">A positioning decision, not a content play. It blocks 01 — the audiences overlap.</p>
-        </div>
-      </div>
-
-      <div class="op">
-        <span class="n">08</span>
-        <div>
-          <h3>Any capture mechanic at all</h3>
-          <p>
-            Kiavi’s best-performing asset of the last 90 days was a comment-to-DM
-            keyword offer. Trilith’s CTAs are “Talk to a Loan Officer” and “Get a
-            Quote” — no keyword, no lead magnet, no offer, no deadline. Trilith
-            could win every argument above and still capture nobody.
-          </p>
-          <p class="proof">Not positioning — but it is why positioning will not pay without it.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= METHOD ================= -->
-<section>
-  <div class="wrap narrow">
-    <div class="method">
-      <h3>How this was built, and what it does not prove</h3>
-      <p>
-        Two sources. The Spyglass advertising corpus (Meta, Instagram, TikTok) for
-        the five indexed lenders and the creator set, cross-read against each
-        lender’s live site and landing pages. Meta’s public Ad Library for
-        advertisers Spyglass does not index.
-      </p>
-      <p>
-        <strong>The lender category is only five deep in Spyglass.</strong> Thirty
-        named private lenders were searched by name and a substring sweep run across
-        the whole corpus; the US investor lenders in it are Kiavi, Lima One, Visio,
-        New Silver and Anchor. That is a limit of the corpus, not of the market —
-        RCN Capital is on this page precisely because it is advertising heavily and
-        is entirely absent from it.
-      </p>
-      <p>
-        <strong>Days-in-market is a proxy, not a metric.</strong> Platforms do not
-        publish spend or performance. A long-running ad is probably working; it is
-        not proof.
-      </p>
-      <p>
-        <strong>The Ad Library sweep is resolved.</strong> Ten lenders were checked
-        by numeric Facebook page ID rather than by name — name search fuzzy-matches
-        badly, returning sauna vests for “CoreVest” and cash-advance apps for
-        “LendingOne”. Page IDs were read from each company’s own Facebook page,
-        reached via the social link on its website. Four advertise: RCN Capital,
-        LendingOne, Renovo Financial and Temple View Capital. Six have never run an
-        ad. Dominion Financial could not be resolved — its linked Facebook page does
-        not load — so it remains unchecked rather than clear.
-      </p>
-      <p>
-        <strong>Absence is still not proof of absence.</strong> This covers Meta only.
-        A lender running Google, LinkedIn, direct mail, conference or broker-channel
-        marketing would show as silent here.
-      </p>
-      <p>
-        <strong>One figure needs validating before it is acted on.</strong> The
-        Spanish-language demand signal comes from creator accounts whose audience
-        geography is not verified in this data. Test cheaply before committing.
-      </p>
-    </div>
   </div>
 </section>
 
