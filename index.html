@@ -279,14 +279,6 @@
     font-style: italic;
     color: var(--ink-body);
   }
-  /* Trilith row — hollow treatment encodes "not in market" */
-  tr.subject td {
-    background: var(--card-sunk);
-    border-bottom: 1px solid var(--rule-strong);
-  }
-  tr.subject .brand { color: var(--accent-on-ground); }
-  tr.subject td:first-child { box-shadow: inset 3px 0 0 var(--emerald-bar); padding-left: var(--s3); }
-
   .absent {
     font-family: var(--mono);
     font-size: .75rem;
@@ -738,8 +730,9 @@
       <h2>Who is actually in market</h2>
       <p>
         Nine competitors, ranked by how much they are spending to be seen. The
-        five above Trilith come from the Spyglass corpus; the four below it were
-        found in Meta’s Ad Library, which indexes advertisers Spyglass does not.
+        first five come from the Spyglass corpus; the four marked
+        <span class="src" style="display:inline">via Ad Library</span> were found
+        in Meta’s Ad Library, which indexes advertisers Spyglass does not.
       </p>
     </div>
 
@@ -817,13 +810,6 @@
             <td class="num">direct</td>
             <td class="num">not indexed</td>
             <td class="claim">“Pain points we’ve experienced ourselves”</td>
-          </tr>
-          <tr class="subject">
-            <td class="brand">Trilith Funding</td>
-            <td><span class="absent">NOT IN CORPUS</span></td>
-            <td><span class="absent">—</span></td>
-            <td class="num">~33 FB</td>
-            <td class="claim">“Not just a lender. Your lending partner.”</td>
           </tr>
         </tbody>
       </table>
