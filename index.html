@@ -279,7 +279,10 @@
     font-style: italic;
     color: var(--ink-body);
   }
-  .absent {
+  /* Scoped to beat `.board-t .num`, which is more specific than a bare
+     `.absent` and was silently winning the color. */
+  .absent,
+  .board-t .absent {
     font-family: var(--mono);
     font-size: .75rem;
     color: var(--clay);
