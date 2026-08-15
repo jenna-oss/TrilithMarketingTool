@@ -44,7 +44,9 @@ const TARGETS = [
   { label: 'page:capitalfund1', url: page('137947142913181') },  // 15 live ads
   { label: 'page:lendingone',   url: page('1488778371407976') }, // 10
   { label: 'page:griffin',      url: page('487741591332537') },  //  6
-  { label: 'page:civic',        url: page('1574651432844748') }, //  3
+  /* Resolved from a live ad's library id, not from the vanity URL:
+   * facebook.com/CivicFS points at a dormant page that has never advertised. */
+  { label: 'page:civic',        url: page('636579392871947') },  //  3
   { label: 'page:renovo',       url: page('232025073545293') },  //  2
   { label: 'page:templeview',   url: page('1790851891232875') }, //  2
 
