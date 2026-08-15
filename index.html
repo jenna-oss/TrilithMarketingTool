@@ -652,6 +652,73 @@
   }
   .dark-list i { font-style: normal; opacity: .75; }
 
+  /* ============================================================
+     Strategy — the closing argument. Dark ground so it reads as a
+     conclusion rather than another evidence section.
+     ============================================================ */
+
+  .strategy {
+    background: var(--panel);
+    color: var(--ink-on-panel);
+    position: relative;
+    overflow: hidden;
+    border-top: none;
+  }
+  .strategy::before {
+    content: ""; position: absolute; border-radius: 50%;
+    width: 520px; height: 520px; left: -220px; bottom: -260px;
+    background: #ffffff07; pointer-events: none;
+  }
+  .strategy .wrap { position: relative; z-index: 1; }
+  .strategy h2 { color: var(--cream-text); }
+  .strategy .sec-head p { color: var(--sage); }
+
+  .concl { display: grid; gap: 0; margin-top: var(--s5); }
+  .concl-item {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: var(--s3);
+    padding: var(--s4) 0;
+    border-top: 1px solid var(--rule-on-panel);
+  }
+  .concl-item:last-child { border-bottom: 1px solid var(--rule-on-panel); }
+  .concl-item .n {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    color: var(--emerald-bar);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .concl-item h3 { color: var(--cream-text); font-size: 1.125rem; margin-bottom: var(--s2); }
+  .concl-item p { margin: 0 0 var(--s2); color: var(--sage); max-width: 68ch; font-size: .9375rem; }
+  .concl-item p:last-child { margin-bottom: 0; }
+  .concl-item .proof {
+    font-family: var(--mono);
+    font-size: .75rem;
+    color: var(--ink-on-panel-quiet);
+    border-left: 2px solid var(--emerald-bar);
+    padding-left: var(--s2);
+    font-variant-numeric: tabular-nums;
+  }
+  .concl-item strong { color: var(--cream-text); }
+
+  .verdict {
+    margin-top: var(--s6);
+    border: 1px solid var(--rule-on-panel);
+    border-left: 3px solid var(--emerald-bar);
+    border-radius: 4px;
+    padding: var(--s4);
+    background: #ffffff05;
+  }
+  .verdict h3 { color: var(--cream-text); font-size: 1rem; margin-bottom: var(--s2); }
+  .verdict p { margin: 0 0 var(--s3); color: var(--sage); max-width: 68ch; font-size: .9375rem; }
+  .verdict p:last-child { margin-bottom: 0; }
+  .verdict strong { color: var(--cream-text); }
+
+  @media (max-width: 760px) {
+    .concl-item { grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--s2); }
+  }
+
   footer {
     background: var(--panel-deep);
     color: var(--ink-on-panel-quiet);
@@ -678,7 +745,7 @@
 </head>
 <body>
 
-<p class="sr-only">Competitive intelligence briefing on private real estate lending, prepared by AIKO for Trilith Funding. Covers 130 advertising creatives across five competing lenders, the hooks and borrower pains the category runs on, and seven unclaimed positions.</p>
+<p class="sr-only">Competitive intelligence briefing on private real estate lending, prepared by AIKO for Trilith Funding. Covers nine named competitors and a long tail of roughly 249 advertisers, the creative each is running, the hooks and borrower pains the category works, how it converts, and five strategic conclusions.</p>
 
 <!-- ================= MASTHEAD ================= -->
 <header class="masthead">
@@ -1517,6 +1584,161 @@
       </table>
     </div>
 
+  </div>
+</section>
+
+<!-- ================= STRATEGY ================= -->
+<section class="strategy">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow on-panel">The conclusion</p>
+      <h2>What the evidence adds up to</h2>
+      <p>
+        Five conclusions, ordered by how much each one should change what Trilith
+        does. Every number below is on this page.
+      </p>
+    </div>
+
+    <div class="concl">
+
+      <div class="concl-item">
+        <span class="n">01</span>
+        <div>
+          <h3>Nobody owns attention in this category</h3>
+          <p>
+            Balance-sheet share and share of voice have come apart completely.
+            <strong>CoreVest has funded $7.8 billion across 35,000 projects and has
+            never run a single ad. Anchor Loans is a top-ten originator and has never
+            bought one either.</strong> Kiavi originates about $8B a year — the largest
+            private lender in the country — and runs 33 live ads. A regional shop in
+            Scottsdale runs 114.
+          </p>
+          <p>
+            There is no incumbent in attention to displace, because the firms with the
+            capital to dominate it have declined to show up. Trilith is not trying to
+            out-shout a giant; it is walking into a room the giants left.
+          </p>
+        </div>
+      </div>
+
+      <div class="concl-item">
+        <span class="n">02</span>
+        <div>
+          <h3>Almost everyone rents attention. Almost nobody builds it</h3>
+          <p>
+            RCN Capital runs roughly fifteen live ads to an Instagram audience of
+            <strong>166 people</strong>. That is not incompetence, it is a strategy —
+            buying reach monthly rather than accumulating it. The category default is
+            an audience that resets to zero the day the budget stops.
+          </p>
+          <p class="proof">
+            The counter-example: Anchor’s brand page has 4,700 followers. Their CEO’s
+            personal Instagram has 41,600. Nine to one, same company — the person
+            outperforms the institution.
+          </p>
+        </div>
+      </div>
+
+      <div class="concl-item">
+        <span class="n">03</span>
+        <div>
+          <h3>The format that wins is not the format lenders use</h3>
+          <p>
+            Creators out-reach lenders by ten to a hundred times, and the winning
+            content is not clever. Sean Pan’s top video is a profit-and-loss statement
+            read aloud: rent, minus management, minus landscaping, minus mortgage,
+            minus escrow, equals $1,890.
+            <strong>Lenders publish claims. Creators publish arithmetic.</strong>
+          </p>
+          <p>
+            Trilith’s four funded deals carry exactly that arithmetic — $370,900,
+            7.875%, 70% LTV — published as static spec sheets. Creators have to borrow
+            or reconstruct deals like these. Trilith funded them. It owns the format
+            that wins, with authority nobody in the comparison has, in the one shape
+            guaranteed not to travel.
+          </p>
+        </div>
+      </div>
+
+      <div class="concl-item">
+        <span class="n">04</span>
+        <div>
+          <h3>Four pains are saturated. Two are open, and they are Trilith’s</h3>
+          <p>
+            Tax returns, DTI, speed, income documentation — every lender says the same
+            four things, often in the same words. Two pains nobody is funding:
+            <strong>the refi trap</strong> (“you took the hard money loan to win the
+            deal; now the rate is still running and the property has stabilized”), which
+            maps onto bridge-to-DSCR, and <strong>mid-project abandonment</strong> — the
+            lender who gets cold feet at the draw, not at the close.
+          </p>
+          <p class="proof">
+            Anchor told the mid-project story once, organically. It reached 89 people.
+          </p>
+        </div>
+      </div>
+
+      <div class="concl-item">
+        <span class="n">05</span>
+        <div>
+          <h3>Every call to action is an ask for a conversation</h3>
+          <p>
+            Nobody runs “Apply.” The literal button text is Learn More, Get Offer, Get
+            Estimate, See My Rate. The category has concluded the ad’s job is to earn a
+            phone call — which means <strong>“the team that answers the phone” is not a
+            differentiator, it is the category’s business model.</strong> Everyone is
+            competing for the same call.
+          </p>
+          <p>
+            The gap is that Trilith asks for the call without earning it. Every
+            competitor has a capture mechanic; Kiavi’s best asset in ninety days was a
+            comment-to-DM offer. Trilith has 23 blog posts, four case studies, and no
+            way to turn a reader into a contact.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="verdict">
+      <h3>The position</h3>
+      <p>
+        <strong>Trilith is not competing with Kiavi. It is competing with Capital Fund 1
+        and a few hundred regional shops</strong> — and it can win, because it has two
+        things they do not: founders worth putting on camera, and real funded deals with
+        real numbers.
+      </p>
+      <p>
+        The sequence the evidence supports is narrow. Publish the deal math already
+        owned. Put a named human behind it. Aim it at the two unclaimed pains rather
+        than the four saturated ones. Give people a way to raise their hand.
+      </p>
+      <p>
+        None of that requires outspending anyone. It requires publishing what already
+        exists, in the format the data says works.
+      </p>
+    </div>
+
+    <div class="verdict" style="border-left-color:var(--clay)">
+      <h3>What this evidence cannot tell you</h3>
+      <p>
+        <strong>This is Meta only.</strong> A lender running Google Search, LinkedIn,
+        direct mail, conference sponsorship or pure broker relationships shows as silent
+        here. The six lenders that have never advertised may be spending heavily where
+        this cannot see — CoreVest’s $7.8 billion did not come from nowhere.
+      </p>
+      <p>
+        <strong>Ad count is not spend, and days-in-market is not performance.</strong>
+        Capital Fund 1 running 114 ads to Kiavi’s 33 does not mean it outspends Kiavi;
+        Meta publishes neither budget nor results. A long-running ad is probably working
+        — it is not proof. And 166 followers may be exactly the 166 brokers RCN wants.
+      </p>
+      <p>
+        The two conclusions that hold regardless of what happens off-platform are the
+        first and the third: the attention vacuum and the format gap. Both are about
+        what <em>is</em> being published, not about what is missing.
+      </p>
+    </div>
   </div>
 </section>
 
