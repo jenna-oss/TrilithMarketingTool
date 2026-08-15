@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-08-15T19:55:30.328Z",
-  "runs": 1,
+  "updatedAt": "2026-08-15T19:59:39.528Z",
+  "runs": 2,
   "ads": {
     "1082786652847473": {
       "libraryId": "1082786652847473",
@@ -10,7 +10,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 8
     },
     "470898415697135": {
       "libraryId": "470898415697135",
@@ -20,7 +20,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "990034926883285": {
       "libraryId": "990034926883285",
@@ -30,7 +30,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 4
     },
     "950290824649810": {
       "libraryId": "950290824649810",
@@ -40,7 +40,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1268781645254059": {
       "libraryId": "1268781645254059",
@@ -50,7 +50,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1533905728250940": {
       "libraryId": "1533905728250940",
@@ -60,7 +60,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 4
     },
     "1802155067411139": {
       "libraryId": "1802155067411139",
@@ -70,7 +70,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "2470714970038948": {
       "libraryId": "2470714970038948",
@@ -80,7 +80,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "895675372845571": {
       "libraryId": "895675372845571",
@@ -90,7 +90,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1694453658248989": {
       "libraryId": "1694453658248989",
@@ -100,7 +100,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "4328987300756684": {
       "libraryId": "4328987300756684",
@@ -110,7 +110,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 6
     },
     "1000616922787778": {
       "libraryId": "1000616922787778",
@@ -120,7 +120,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1412402660642122": {
       "libraryId": "1412402660642122",
@@ -130,7 +130,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "4763427050649919": {
       "libraryId": "4763427050649919",
@@ -140,7 +140,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "3638190009666728": {
       "libraryId": "3638190009666728",
@@ -150,7 +150,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1920713888472611": {
       "libraryId": "1920713888472611",
@@ -160,7 +160,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1502456878051783": {
       "libraryId": "1502456878051783",
@@ -170,7 +170,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 4
     },
     "2057502201867978": {
       "libraryId": "2057502201867978",
@@ -180,7 +180,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1899342840797584": {
       "libraryId": "1899342840797584",
@@ -190,7 +190,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 4
     },
     "2440427126395395": {
       "libraryId": "2440427126395395",
@@ -200,7 +200,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1039273685252261": {
       "libraryId": "1039273685252261",
@@ -210,7 +210,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "886026760786892": {
       "libraryId": "886026760786892",
@@ -220,7 +220,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1555586722974965": {
       "libraryId": "1555586722974965",
@@ -230,7 +230,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1664966711498750": {
       "libraryId": "1664966711498750",
@@ -240,7 +240,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1683935516068326": {
       "libraryId": "1683935516068326",
@@ -250,7 +250,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "3373898269458910": {
       "libraryId": "3373898269458910",
@@ -260,7 +260,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1492836525922866": {
       "libraryId": "1492836525922866",
@@ -270,17 +270,17 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 6
     },
     "917341323986181": {
       "libraryId": "917341323986181",
       "advertiser": "IEO Loan Group",
       "started": "Feb 27, 2026",
-      "copy": "In real estate, speed isn't just a luxury, it's your greatest competitive advantage. We’ve streamlined our Fix & Flip process so you can close in record time. 🤝✨ ✅ 100% Rehab: We fund your renovation. ✅ Closed in just 3 days. ✅ No credit check needed. Get the leverage your portfolio demands from experts who speak your language. WHATSAPP Chat with us Send WhatsApp message ​ Active",
+      "copy": "In real estate, speed isn't just a luxury, it's your greatest competitive advantage. We’ve streamlined our Fix & Flip process so you can close in record time. 🤝✨ ✅ 100% Rehab: We fund your renovation. ✅ Closed in just 3 days. ✅ No credit check needed. Get the leverage your portfolio demands from experts who speak your language. WHATSAPP Chat with us Send WhatsApp message See more System status Ad",
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1571401498333423": {
       "libraryId": "1571401498333423",
@@ -310,7 +310,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 5
     },
     "1437807857453538": {
       "libraryId": "1437807857453538",
@@ -370,7 +370,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1641367546948737": {
       "libraryId": "1641367546948737",
@@ -400,7 +400,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 7
     },
     "903410359445793": {
       "libraryId": "903410359445793",
@@ -410,7 +410,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1747851083012635": {
       "libraryId": "1747851083012635",
@@ -490,7 +490,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1438207294744016": {
       "libraryId": "1438207294744016",
@@ -500,7 +500,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 6
     },
     "2231428314317181": {
       "libraryId": "2231428314317181",
@@ -530,7 +530,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 6
     },
     "2039875606956187": {
       "libraryId": "2039875606956187",
@@ -540,7 +540,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 4
     },
     "961103736674476": {
       "libraryId": "961103736674476",
@@ -670,7 +670,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 4
     },
     "2189118201883738": {
       "libraryId": "2189118201883738",
@@ -730,7 +730,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 4
     },
     "1358364072440198": {
       "libraryId": "1358364072440198",
@@ -790,7 +790,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "2152493349032860": {
       "libraryId": "2152493349032860",
@@ -800,7 +800,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 4
     },
     "1019386370551058": {
       "libraryId": "1019386370551058",
@@ -890,7 +890,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 6
     },
     "2221146242037828": {
       "libraryId": "2221146242037828",
@@ -930,7 +930,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1415973622678145": {
       "libraryId": "1415973622678145",
@@ -980,7 +980,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 6
     },
     "1079645337955990": {
       "libraryId": "1079645337955990",
@@ -1000,7 +1000,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "908587948993531": {
       "libraryId": "908587948993531",
@@ -1140,7 +1140,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 4
     },
     "837274125903013": {
       "libraryId": "837274125903013",
@@ -1310,7 +1310,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 4
+      "seenCount": 6
     },
     "1454333536180410": {
       "libraryId": "1454333536180410",
@@ -1340,7 +1340,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1579159183912949": {
       "libraryId": "1579159183912949",
@@ -1370,7 +1370,7 @@
       "source": "kw:fix-and-flip",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1350477530627761": {
       "libraryId": "1350477530627761",
@@ -1460,7 +1460,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1487386233042943": {
       "libraryId": "1487386233042943",
@@ -1470,7 +1470,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "909160972198173": {
       "libraryId": "909160972198173",
@@ -1480,7 +1480,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1820453202670953": {
       "libraryId": "1820453202670953",
@@ -1490,7 +1490,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1812385719930188": {
       "libraryId": "1812385719930188",
@@ -1500,7 +1500,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1380333224117798": {
       "libraryId": "1380333224117798",
@@ -1510,7 +1510,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1620751432517138": {
       "libraryId": "1620751432517138",
@@ -1520,7 +1520,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1880181082679604": {
       "libraryId": "1880181082679604",
@@ -1530,7 +1530,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1670776504367066": {
       "libraryId": "1670776504367066",
@@ -1540,7 +1540,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1655515795535087": {
       "libraryId": "1655515795535087",
@@ -1550,7 +1550,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1596400655178574": {
       "libraryId": "1596400655178574",
@@ -1560,7 +1560,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1633171531309269": {
       "libraryId": "1633171531309269",
@@ -1570,7 +1570,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "828685683335719": {
       "libraryId": "828685683335719",
@@ -1580,7 +1580,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1994760698591455": {
       "libraryId": "1994760698591455",
@@ -1590,7 +1590,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1787737989254444": {
       "libraryId": "1787737989254444",
@@ -1600,7 +1600,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1790563995461188": {
       "libraryId": "1790563995461188",
@@ -1610,7 +1610,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1673001477351374": {
       "libraryId": "1673001477351374",
@@ -1620,7 +1620,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1365015272448026": {
       "libraryId": "1365015272448026",
@@ -1630,7 +1630,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1062492089686511": {
       "libraryId": "1062492089686511",
@@ -1640,7 +1640,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1347470570925022": {
       "libraryId": "1347470570925022",
@@ -2070,7 +2070,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1538166321371757": {
       "libraryId": "1538166321371757",
@@ -2110,7 +2110,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1352924473552474": {
       "libraryId": "1352924473552474",
@@ -2430,7 +2430,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "2434090350415286": {
       "libraryId": "2434090350415286",
@@ -2440,7 +2440,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 3
+      "seenCount": 5
     },
     "1608282230647023": {
       "libraryId": "1608282230647023",
@@ -2490,7 +2490,7 @@
       "source": "kw:dscr",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 3
     },
     "1027970886798345": {
       "libraryId": "1027970886798345",
@@ -3230,7 +3230,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 4
     },
     "2094834334597329": {
       "libraryId": "2094834334597329",
@@ -3240,7 +3240,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1549857606840720": {
       "libraryId": "1549857606840720",
@@ -3250,7 +3250,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 2
+      "seenCount": 4
     },
     "1806185200078858": {
       "libraryId": "1806185200078858",
@@ -3260,7 +3260,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1015133834624487": {
       "libraryId": "1015133834624487",
@@ -3270,7 +3270,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1022304650431682": {
       "libraryId": "1022304650431682",
@@ -3280,7 +3280,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1484954073388476": {
       "libraryId": "1484954073388476",
@@ -3290,7 +3290,7 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1788850892530850": {
       "libraryId": "1788850892530850",
@@ -3300,17 +3300,17 @@
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1089806463595308": {
       "libraryId": "1089806463595308",
       "advertiser": "Civic Financial Services",
       "started": "Jul 22, 2026",
-      "copy": "Traditional lenders underwrite with hoops and hurdles. CIVIC creates momentum—offering faster approvals, smoother draws, and investor-focused lending. CIVICFS.COM Real Estate Financing That Works For You, Not Against You Explore loan programs designed to maximize real estate investment returns, including Fix & Flip, Bridge, Rental, Portfolio, Construction, and Multifamily loans. Learn more ​ Activ",
+      "copy": "Traditional lenders underwrite with hoops and hurdles. CIVIC creates momentum—offering faster approvals, smoother draws, and investor-focused lending. CIVICFS.COM Real Estate Financing That Works For You, Not Against You Explore loan programs designed to maximize real estate investment returns, including Fix & Flip, Bridge, Rental, Portfolio, Construction, and Multifamily loans. Learn more See mor",
       "source": "kw:bridge",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1762974474703410": {
       "libraryId": "1762974474703410",
@@ -3780,7 +3780,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "3982038758756318": {
       "libraryId": "3982038758756318",
@@ -3790,7 +3790,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1165148972182536": {
       "libraryId": "1165148972182536",
@@ -3800,7 +3800,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1144647677768445": {
       "libraryId": "1144647677768445",
@@ -3810,7 +3810,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1333830695068308": {
       "libraryId": "1333830695068308",
@@ -3820,7 +3820,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "974435522104496": {
       "libraryId": "974435522104496",
@@ -3830,7 +3830,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1441764977805177": {
       "libraryId": "1441764977805177",
@@ -3840,7 +3840,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1014537327604619": {
       "libraryId": "1014537327604619",
@@ -3850,7 +3850,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1546315850493696": {
       "libraryId": "1546315850493696",
@@ -3860,7 +3860,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "922053517531082": {
       "libraryId": "922053517531082",
@@ -3870,7 +3870,7 @@
       "source": "kw:ground-up",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1068055602395554": {
       "libraryId": "1068055602395554",
@@ -4000,7 +4000,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1038404478599417": {
       "libraryId": "1038404478599417",
@@ -4010,7 +4010,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1029816479761297": {
       "libraryId": "1029816479761297",
@@ -4020,7 +4020,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1699294458037305": {
       "libraryId": "1699294458037305",
@@ -4030,7 +4030,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1588795026296001": {
       "libraryId": "1588795026296001",
@@ -4040,7 +4040,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1987952641853039": {
       "libraryId": "1987952641853039",
@@ -4050,7 +4050,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1586471963004482": {
       "libraryId": "1586471963004482",
@@ -4060,7 +4060,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1449624717192383": {
       "libraryId": "1449624717192383",
@@ -4070,7 +4070,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "2876272846105799": {
       "libraryId": "2876272846105799",
@@ -4080,7 +4080,7 @@
       "source": "page:lendingone",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "27630156729985503": {
       "libraryId": "27630156729985503",
@@ -4090,7 +4090,7 @@
       "source": "page:renovo",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1047967134255807": {
       "libraryId": "1047967134255807",
@@ -4100,7 +4100,7 @@
       "source": "page:renovo",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "2087565515303534": {
       "libraryId": "2087565515303534",
@@ -4110,7 +4110,7 @@
       "source": "page:templeview",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     },
     "1327480112926362": {
       "libraryId": "1327480112926362",
@@ -4120,8 +4120,8 @@
       "source": "page:templeview",
       "firstSeen": "2026-08-15",
       "lastSeen": "2026-08-15",
-      "seenCount": 1
+      "seenCount": 2
     }
   },
-  "baselineRun": true
+  "baselineRun": false
 }
