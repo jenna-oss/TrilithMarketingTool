@@ -633,6 +633,15 @@
   .method p { margin: 0 0 var(--s2); font-size: .875rem; color: var(--ink-body); }
   .method p:last-child { margin-bottom: 0; }
   .method strong { color: var(--ink); }
+  .method .dark-list {
+    font-family: var(--mono);
+    font-size: .8125rem;
+    color: var(--ink-quiet);
+    border-left: 2px solid var(--rule-strong);
+    padding-left: var(--s3);
+    line-height: 1.8;
+  }
+  .method .dark-list i { font-style: normal; opacity: .75; }
 
   footer {
     background: var(--panel-deep);
@@ -697,7 +706,11 @@
       </div>
       <div>
         <dt>Creatives reviewed</dt>
-        <dd class="fig">≈250 across 12 accounts</dd>
+        <dd class="fig">≈280 across 16 accounts</dd>
+      </div>
+      <div>
+        <dt>Lenders checked by page ID</dt>
+        <dd class="fig">10 — 4 advertising, 6 dark</dd>
       </div>
       <div>
         <dt>Window</dt>
@@ -714,9 +727,9 @@
       <p class="eyebrow">The board</p>
       <h2>Who is actually in market</h2>
       <p>
-        Five competitors, ranked by how much they are spending to be seen.
-        The last row is the finding that matters most: Trilith does not
-        appear in the ad corpus at all.
+        Nine competitors, ranked by how much they are spending to be seen. The
+        five above Trilith come from the Spyglass corpus; the four below it were
+        found in Meta’s Ad Library, which indexes advertisers Spyglass does not.
       </p>
     </div>
 
@@ -774,6 +787,27 @@
             <td class="num">not indexed</td>
             <td class="claim">“Skip the Bank’s Red Tape”</td>
           </tr>
+          <tr class="offbook">
+            <td class="brand">LendingOne <span class="src">via Ad Library</span></td>
+            <td class="num">~10 active ads<br><span style="color:var(--ink-quiet)">launched Aug 3</span></td>
+            <td class="num">direct</td>
+            <td class="num">not indexed</td>
+            <td class="claim">“Your next deal should not stall waiting on your lender”</td>
+          </tr>
+          <tr class="offbook">
+            <td class="brand">Renovo Financial <span class="src">via Ad Library</span></td>
+            <td class="num">2 ads</td>
+            <td class="num">direct</td>
+            <td class="num">not indexed</td>
+            <td class="claim">“National lending power. Local lending love.”</td>
+          </tr>
+          <tr class="offbook">
+            <td class="brand">Temple View Capital <span class="src">via Ad Library</span></td>
+            <td class="num">2 ads</td>
+            <td class="num">direct</td>
+            <td class="num">not indexed</td>
+            <td class="claim">“Pain points we’ve experienced ourselves”</td>
+          </tr>
           <tr class="subject">
             <td class="brand">Trilith Funding</td>
             <td><span class="absent">NOT IN CORPUS</span></td>
@@ -783,6 +817,24 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="method" style="margin-top:var(--s5)">
+      <h3>And six that spend nothing at all</h3>
+      <p>
+        Every lender below was checked against Meta’s Ad Library by numeric page ID,
+        across all ad statuses and all time. Each returned <strong>zero ads, ever</strong>:
+      </p>
+      <p class="dark-list">
+        CoreVest · Easy Street Capital · Roc360 · Upright <i>(formerly Fund That Flip)</i>
+        · Velocity Mortgage Capital · Longhorn Investments
+      </p>
+      <p>
+        That reframes Trilith’s own absence. Of eleven investor lenders checked,
+        <strong>only four run paid social at all</strong>. Silence is the category norm,
+        not a Trilith failing — but the four that do spend are the ones taking the
+        positions on this page.
+      </p>
     </div>
   </div>
 </section>
@@ -810,6 +862,9 @@
       <button type="button" data-f="anchor" aria-pressed="false">Anchor</button>
       <button type="button" data-f="silver" aria-pressed="false">New Silver</button>
       <button type="button" data-f="rcn"    aria-pressed="false">RCN</button>
+      <button type="button" data-f="l1"     aria-pressed="false">LendingOne</button>
+      <button type="button" data-f="renovo" aria-pressed="false">Renovo</button>
+      <button type="button" data-f="temple" aria-pressed="false">Temple View</button>
     </div>
 
     <div class="wall" id="wall">
@@ -962,6 +1017,48 @@
         <span class="who">RCN Capital · landing page</span>
         <span class="line">“Skip the Bank’s Red Tape” · “Dependable Underwriting. Certainty of Execution.”</span>
         <span class="meta"><span class="chip">LANDING</span> collides with Trilith’s “No red tape”</span>
+      </div>
+
+      <div class="creative" data-b="l1">
+        <span class="who">LendingOne · direct</span>
+        <span class="line">“Your next deal should not stall waiting on your lender.”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+      </div>
+
+      <div class="creative" data-b="l1">
+        <span class="who">LendingOne · direct</span>
+        <span class="line">“Every stage of your strategy runs through <b>one team</b>.” — fix &amp; flip, fix to rent, DSCR, portfolio</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Every Product. One Lender.”</span>
+      </div>
+
+      <div class="creative" data-b="l1">
+        <span class="who">LendingOne · direct</span>
+        <span class="line">“Max Leverage, Low Rates, Fast Closing” — quick approvals, closings in weeks</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+      </div>
+
+      <div class="creative" data-b="renovo">
+        <span class="who">Renovo Financial · direct</span>
+        <span class="line">“National lending power. <b>Local lending love.</b>” — hyperlocal experts in your market</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> the only local angle in the category</span>
+      </div>
+
+      <div class="creative" data-b="renovo">
+        <span class="who">Renovo Financial · direct</span>
+        <span class="line">“Scaling a rental portfolio takes more than funding — it takes the right financing strategy.”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> Jul 22</span>
+      </div>
+
+      <div class="creative" data-b="temple">
+        <span class="who">Temple View · direct</span>
+        <span class="line">“We’ve designed our investment programs to address the investor pain points <b>we’ve experienced ourselves</b>.”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Founded by Investors”</span>
+      </div>
+
+      <div class="creative" data-b="temple">
+        <span class="who">Temple View · market outlook</span>
+        <span class="line">“What’s the potential outlook for the residential market? How can serious investors capitalize?”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> the only macro-commentary ad found</span>
       </div>
 
     </div>
@@ -1283,7 +1380,12 @@
             posts product features. This is Trilith’s most distinctive existing
             asset, locked in 4–10 minute reads.
           </p>
-          <p class="proof">Closest competitor attempt — Anchor, one housing-orders post, 119 views.</p>
+          <p class="proof">
+            Nearest attempts — Anchor’s single housing-orders post (119 views), and
+            Temple View, which runs one market-outlook ad asking how serious investors
+            can capitalise. Thin, but no longer zero: treat this as a two-ad head start
+            to beat, not empty ground.
+          </p>
         </div>
       </div>
 
@@ -1393,11 +1495,19 @@
         not proof.
       </p>
       <p>
-        <strong>Absence is not proof of absence.</strong> Trilith returning no
-        results means no indexed paid social — not that no marketing exists. Of the
-        other missing lenders, only CoreVest was confirmed to have no active ads.
-        Ad Library keyword search fuzzy-matches badly, so the rest are unresolved
-        rather than quiet, and would need per-advertiser page IDs to check properly.
+        <strong>The Ad Library sweep is resolved.</strong> Ten lenders were checked
+        by numeric Facebook page ID rather than by name — name search fuzzy-matches
+        badly, returning sauna vests for “CoreVest” and cash-advance apps for
+        “LendingOne”. Page IDs were read from each company’s own Facebook page,
+        reached via the social link on its website. Four advertise: RCN Capital,
+        LendingOne, Renovo Financial and Temple View Capital. Six have never run an
+        ad. Dominion Financial could not be resolved — its linked Facebook page does
+        not load — so it remains unchecked rather than clear.
+      </p>
+      <p>
+        <strong>Absence is still not proof of absence.</strong> This covers Meta only.
+        A lender running Google, LinkedIn, direct mail, conference or broker-channel
+        marketing would show as silent here.
       </p>
       <p>
         <strong>One figure needs validating before it is acted on.</strong> The
