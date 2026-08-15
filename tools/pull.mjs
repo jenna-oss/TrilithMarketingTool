@@ -19,16 +19,38 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 /* Category sweeps plus the lenders we already resolved to numeric page ids.
  * Page-id queries are exact; keyword queries are fuzzy but catch new entrants. */
 const TARGETS = [
+  /* Discovery. Catches new entrants, but note that Meta caps keyword depth for
+   * datacenter IPs — a runner sees roughly a quarter of what a residential
+   * connection does. Page-id targets below are unaffected. */
   { label: 'kw:fix-and-flip', url: kw('fix and flip loan') },
   { label: 'kw:dscr',         url: kw('DSCR loan investor') },
   { label: 'kw:bridge',       url: kw('bridge loan real estate investor') },
   { label: 'kw:ground-up',    url: kw('new construction loan investor') },
-  { label: 'page:lendingone', url: page('1488778371407976') },
-  { label: 'page:renovo',     url: page('232025073545293') },
-  { label: 'page:templeview', url: page('1790851891232875') },
+
+  /* Largest by origination volume — the national platforms Trilith is measured
+   * against. Kiavi ~$8B/yr and #1 in the US; CoreVest $7.8B lifetime;
+   * Lima One $2B+; RCN and Anchor are top-10 RTL originators. */
+  { label: 'page:kiavi',      url: page('199787047046840') },
+  { label: 'page:limaone',    url: page('248880558512632') },
+  { label: 'page:rcn',        url: page('265616356813717') },
+  { label: 'page:anchor',     url: page('180735095285808') },
   { label: 'page:corevest',   url: page('550429851723713') },
-  { label: 'page:easystreet', url: page('161927707529642') },
+  { label: 'page:visio',      url: page('1451703848411077') },
+  { label: 'page:newsilver',  url: page('355605498348601') },
   { label: 'page:roc360',     url: page('122866955776216') },
+
+  /* Heaviest advertisers found in the baseline sweep, by live ad count.
+   * These are the ones actually spending, regardless of balance-sheet size. */
+  { label: 'page:capitalfund1', url: page('137947142913181') },  // 15 live ads
+  { label: 'page:lendingone',   url: page('1488778371407976') }, // 10
+  { label: 'page:griffin',      url: page('487741591332537') },  //  6
+  { label: 'page:civic',        url: page('1574651432844748') }, //  3
+  { label: 'page:renovo',       url: page('232025073545293') },  //  2
+  { label: 'page:templeview',   url: page('1790851891232875') }, //  2
+
+  /* Tracked but silent — confirmed zero ads ever. Kept so we notice the day
+   * one of them starts spending. */
+  { label: 'page:easystreet', url: page('161927707529642') },
   { label: 'page:upright',    url: page('405332459610678') },
   { label: 'page:velocity',   url: page('796752613736461') },
   { label: 'page:longhorn',   url: page('126610117257') }
