@@ -419,8 +419,9 @@
     background: var(--card-sunk);
     border: 1px solid var(--rule);
   }
-  /* Ad Library entries expose copy but no hosted asset — say so rather
-     than leaving a gap where an image should be. */
+  /* Meta serves Ad Library creative on signed, expiring URLs, so these cards
+     link out to the ad itself rather than embedding a copy that would rot.
+     Styled as an affordance, not as a missing image. */
   .thumb-none {
     display: flex;
     align-items: center;
@@ -430,14 +431,17 @@
     aspect-ratio: 9 / 16;
     border-radius: 3px;
     background: var(--card-sunk);
-    border: 1px dashed var(--rule-strong);
+    border: 1px solid var(--emerald-bar);
     font-family: var(--mono);
     font-size: .5625rem;
     line-height: 1.4;
-    letter-spacing: .06em;
-    color: var(--ink-quiet);
+    letter-spacing: .08em;
+    color: var(--accent-on-ground);
     padding: .25rem;
+    transition: background .15s ease;
   }
+  .creative:hover .thumb-none { background: var(--card); }
+  @media (prefers-reduced-motion: reduce) { .thumb-none { transition: none; } }
   /* If the image host is blocked (the artifact sandbox does block it),
      collapse the column instead of showing a broken-image box. */
   .creative.no-thumb { grid-template-columns: minmax(0, 1fr); }
@@ -975,11 +979,10 @@
       <p class="eyebrow">The creative wall</p>
       <h2>What they are running right now</h2>
       <p>
-        Live and recently-live creative, verbatim, with the actual ad still on each
-        card. Click any Spyglass card to open the full asset — the video or image as
-        it ran. Ad Library entries expose the copy but no hosted file, so those cards
-        are marked and carry no still. Kiavi’s longest-running ads have been in market
-        67 days; in paid social, longevity is the closest thing to a public
+        Live and recently-live creative, verbatim. Every card opens the real thing:
+        Spyglass cards link straight to the asset as it ran, and Ad Library cards
+        link to the ad in Meta’s own library. Kiavi’s longest-running ads have been
+        in market 67 days; in paid social, longevity is the closest thing to a public
         performance signal.
       </p>
     </div>
@@ -1188,104 +1191,104 @@
         </span>
       </a>
 
-      <div class="creative" data-b="rcn">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1723504305459679" data-b="rcn">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">RCN Capital · broker</span>
           <span class="line">“Don’t let a slow lender cost your client the deal — <b>or your commission</b>.”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26 <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="rcn">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1578587776963397" data-b="rcn">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">RCN Capital · broker</span>
           <span class="line">“Stop losing deals to strict bank guidelines… learn more about our broker referral program.”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 22</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 22 <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="rcn">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=2162803667906658" data-b="rcn">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">RCN Capital · broker</span>
           <span class="line">“Your investor clients need a lender they can rely on, and <b>you need a partner who protects your pipeline</b>.”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26 <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="rcn">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&view_all_page_id=265616356813717&media_type=all" data-b="rcn">
+        <span class="thumb-none">ALL RCN ADS</span>
         <span class="body">
           <span class="who">RCN Capital · landing page</span>
           <span class="line">“Skip the Bank’s Red Tape” · “Dependable Underwriting. Certainty of Execution.”</span>
-          <span class="meta"><span class="chip">LANDING</span> collides with Trilith’s “No red tape”</span>
+          <span class="meta"><span class="chip">LANDING</span> collides with Trilith’s “No red tape” <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="l1">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1278112652047419" data-b="l1">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">LendingOne · direct</span>
           <span class="line">“Your next deal should not stall waiting on your lender.”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3 <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="l1">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1029816479761297" data-b="l1">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">LendingOne · direct</span>
           <span class="line">“Every stage of your strategy runs through <b>one team</b>.” — fix &amp; flip, fix to rent, DSCR, portfolio</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Every Product. One Lender.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Every Product. One Lender.” <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="l1">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1567728734693253" data-b="l1">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">LendingOne · direct</span>
           <span class="line">“Max Leverage, Low Rates, Fast Closing” — quick approvals, closings in weeks</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3 <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="renovo">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&view_all_page_id=232025073545293&media_type=all" data-b="renovo">
+        <span class="thumb-none">ALL RENOVO ADS</span>
         <span class="body">
           <span class="who">Renovo Financial · direct</span>
           <span class="line">“National lending power. <b>Local lending love.</b>” — hyperlocal experts in your market</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> the only local angle in the category</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> the only local angle in the category <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="renovo">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1047967134255807" data-b="renovo">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">Renovo Financial · direct</span>
           <span class="line">“Scaling a rental portfolio takes more than funding — it takes the right financing strategy.”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> Jul 22</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> Jul 22 <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="temple">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=2087565515303534" data-b="temple">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">Temple View · direct</span>
           <span class="line">“We’ve designed our investment programs to address the investor pain points <b>we’ve experienced ourselves</b>.”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Founded by Investors”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Founded by Investors” <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
-      <div class="creative" data-b="temple">
-        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+      <a class="creative" href="https://www.facebook.com/ads/library/?id=1327480112926362" data-b="temple">
+        <span class="thumb-none">VIEW AD</span>
         <span class="body">
           <span class="who">Temple View · market outlook</span>
           <span class="line">“What’s the potential outlook for the residential market? How can serious investors capitalize?”</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> the only macro-commentary ad found</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> the only macro-commentary ad found <span class="view">View →</span></span>
         </span>
-      </div>
+      </a>
 
     </div>
   </div>
