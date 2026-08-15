@@ -305,6 +305,54 @@
     color: var(--clay);
     letter-spacing: .04em;
   }
+  /* Row sourced from outside the primary corpus — marked so the
+     provenance difference is visible, not silently blended in. */
+  tr.offbook td:first-child { box-shadow: inset 3px 0 0 var(--ochre); padding-left: var(--s3); }
+  .src {
+    display: block;
+    font-family: var(--mono);
+    font-size: .625rem;
+    font-weight: 400;
+    letter-spacing: .06em;
+    color: var(--ochre);
+    text-transform: uppercase;
+  }
+
+  /* ============================================================
+     Creator benchmark — the reach gulf, shown as bars
+     ============================================================ */
+
+  .bench { display: grid; gap: .375rem; margin-top: var(--s4); }
+  .bench-row {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 4.5rem;
+    gap: var(--s3);
+    align-items: center;
+    padding: .3125rem 0;
+  }
+  .bench-row .who {
+    font-size: .8125rem;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bench-row .who i { font-style: normal; color: var(--ink-quiet); }
+  .bench-track { background: var(--card-sunk); border-radius: 2px; height: 14px; overflow: hidden; }
+  .bench-fill { height: 100%; border-radius: 2px; }
+  .bench-row[data-kind="creator"] .bench-fill { background: var(--emerald-bar); }
+  .bench-row[data-kind="lender"]  .bench-fill { background: var(--clay); }
+  .bench-row .v {
+    font-family: var(--mono);
+    font-size: .8125rem;
+    text-align: right;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 640px) {
+    .bench-row { grid-template-columns: minmax(0, 1fr) 4rem; }
+    .bench-track { grid-column: 1 / -1; }
+  }
 
   /* ============================================================
      Creative wall
@@ -636,12 +684,12 @@
         <dd>Trilith Funding</dd>
       </div>
       <div>
-        <dt>Source</dt>
-        <dd>Spyglass ad corpus — Meta, Instagram, TikTok</dd>
+        <dt>Sources</dt>
+        <dd>Spyglass ad corpus · Meta Ad Library</dd>
       </div>
       <div>
         <dt>Creatives reviewed</dt>
-        <dd class="fig">130 across 5 brands</dd>
+        <dd class="fig">≈250 across 12 accounts</dd>
       </div>
       <div>
         <dt>Window</dt>
@@ -711,6 +759,13 @@
             <td class="num">2.6K FB · 1.5K IG</td>
             <td class="claim">“Your lender should be your first call”</td>
           </tr>
+          <tr class="offbook">
+            <td class="brand">RCN Capital <span class="src">via Ad Library</span></td>
+            <td class="num">~15 active ads<br><span style="color:var(--ink-quiet)">100% broker-targeted</span></td>
+            <td class="num">broker referral</td>
+            <td class="num">not indexed</td>
+            <td class="claim">“Skip the Bank’s Red Tape”</td>
+          </tr>
           <tr class="subject">
             <td class="brand">Trilith Funding</td>
             <td><span class="absent">NOT IN CORPUS</span></td>
@@ -731,10 +786,11 @@
       <p class="eyebrow">The creative wall</p>
       <h2>What they are running right now</h2>
       <p>
-        Live and recently-live creative, verbatim. Every card links to the
-        actual asset that ran. Kiavi’s longest-running ads have been in market
-        67 days — in paid social, longevity is the closest thing to a public
-        performance signal.
+        Live and recently-live creative, verbatim. Cards from the Spyglass corpus
+        link to the actual asset that ran; the RCN cards come from Meta’s Ad Library,
+        which exposes the copy but not a hosted file. Kiavi’s longest-running ads
+        have been in market 67 days — in paid social, longevity is the closest thing
+        to a public performance signal.
       </p>
     </div>
 
@@ -745,6 +801,7 @@
       <button type="button" data-f="visio"  aria-pressed="false">Visio</button>
       <button type="button" data-f="anchor" aria-pressed="false">Anchor</button>
       <button type="button" data-f="silver" aria-pressed="false">New Silver</button>
+      <button type="button" data-f="rcn"    aria-pressed="false">RCN</button>
     </div>
 
     <div class="wall" id="wall">
@@ -875,6 +932,136 @@
         <span class="meta"><span class="chip">VIDEO</span> 20 views <span class="view">View →</span></span>
       </a>
 
+      <div class="creative" data-b="rcn">
+        <span class="who">RCN Capital · broker</span>
+        <span class="line">“Don’t let a slow lender cost your client the deal — <b>or your commission</b>.”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+      </div>
+
+      <div class="creative" data-b="rcn">
+        <span class="who">RCN Capital · broker</span>
+        <span class="line">“Stop losing deals to strict bank guidelines… learn more about our broker referral program.”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 22</span>
+      </div>
+
+      <div class="creative" data-b="rcn">
+        <span class="who">RCN Capital · broker</span>
+        <span class="line">“Your investor clients need a lender they can rely on, and <b>you need a partner who protects your pipeline</b>.”</span>
+        <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+      </div>
+
+      <div class="creative" data-b="rcn">
+        <span class="who">RCN Capital · landing page</span>
+        <span class="line">“Skip the Bank’s Red Tape” · “Dependable Underwriting. Certainty of Execution.”</span>
+        <span class="meta"><span class="chip">LANDING</span> collides with Trilith’s “No red tape”</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= CREATOR BENCHMARK ================= -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">The reach gulf</p>
+      <h2>Who this audience actually watches</h2>
+      <p>
+        Best-performing organic post, creators against lenders, same audience and
+        same platform. Every lender in the category combined does not reach what
+        one creator reaches with a single video about their own deal.
+      </p>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:var(--emerald-bar)"></i> Real estate creators</span>
+      <span><i style="background:var(--clay)"></i> Lenders</span>
+    </div>
+
+    <div class="bench">
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Erick Brice <i>· 111K</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:100%"></span></span>
+        <span class="v">98.1K</span>
+      </div>
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Sean Pan <i>· 4plex line-item P&amp;L</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:61%"></span></span>
+        <span class="v">59.8K</span>
+      </div>
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Logan Fullmer <i>· a lender’s $25M loss</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:41%"></span></span>
+        <span class="v">39.9K</span>
+      </div>
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Michael Llanas <i>· “subject-to isn’t illegal”</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:33%"></span></span>
+        <span class="v">32K</span>
+      </div>
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Jerry Norton <i>· raw seller phone call</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:27%"></span></span>
+        <span class="v">26K</span>
+      </div>
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Sean Pan <i>· selling 16 units</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:22%"></span></span>
+        <span class="v">22K</span>
+      </div>
+      <div class="bench-row" data-kind="creator">
+        <span class="who">Sean Pan <i>· BRRRR w/ private money</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:17%"></span></span>
+        <span class="v">16.3K</span>
+      </div>
+      <div class="bench-row" data-kind="lender">
+        <span class="who">Kiavi <i>· best post (BiggerPockets)</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:6%"></span></span>
+        <span class="v">5.7K</span>
+      </div>
+      <div class="bench-row" data-kind="lender">
+        <span class="who">Anchor Loans <i>· best post</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:2%"></span></span>
+        <span class="v">996</span>
+      </div>
+      <div class="bench-row" data-kind="lender">
+        <span class="who">Lima One <i>· best post</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
+        <span class="v">770</span>
+      </div>
+      <div class="bench-row" data-kind="lender">
+        <span class="who">Kiavi <i>· typical post</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
+        <span class="v">222</span>
+      </div>
+      <div class="bench-row" data-kind="lender">
+        <span class="who">New Silver <i>· best post</i></span>
+        <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
+        <span class="v">196</span>
+      </div>
+    </div>
+
+    <div class="method" style="margin-top:var(--s5)">
+      <h3>The format that separates them</h3>
+      <p>
+        Creators post <strong>arithmetic</strong>. Lenders post <strong>claims</strong>.
+        Sean Pan’s top video is a line-item P&amp;L: $4,750 rent, minus $475 management,
+        $410 landscaping, $1,021 mortgage, $953 escrow — $1,890 a month. That is the
+        whole video.
+      </p>
+      <p>
+        His BRRRR post is more pointed still. He narrates taking a private money loan
+        for the rehab, refinancing at 75% of a $330,000 appraisal, recovering every
+        dollar he put in plus $30,000 tax-free, and keeping a cash-flowing property.
+        <strong>That is Trilith’s product, told end to end, by someone who does not sell it.</strong>
+      </p>
+      <p>
+        And every top performer closes the same way — a comment keyword.
+        CALCULATOR, MARKETS, MASTERCLASS, WAITLIST, PODCAST, “free leads”, KIAVI.
+        Trilith’s four funded case studies contain exactly this kind of arithmetic —
+        $370,900, 7.875%, 70% LTV — published as static pages with no narration and
+        no way to capture the reader.
+      </p>
     </div>
   </div>
 </section>
@@ -884,8 +1071,8 @@
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow">Hook taxonomy</p>
-      <h2>The nine angles the category runs on</h2>
-      <p>Ordered by how heavily the category leans on each one.</p>
+      <h2>The eleven angles the category runs on</h2>
+      <p>Ordered by how heavily the category leans on each one. The last two came from outside the primary corpus.</p>
     </div>
 
     <div class="hooks">
@@ -907,6 +1094,10 @@
         <p class="ex">Flatter the operator’s craft, then indict their financing for not matching it. <b>VISIO</b></p></div>
       <div class="hook"><span class="rank">09</span><h3>Cost-of-error education</h3>
         <p class="ex">“Small comp mistakes cost big money — $40K swings.” <b>KIAVI, NEW SILVER — organic</b></p></div>
+      <div class="hook"><span class="rank">10</span><h3>The broker’s commission, not the borrower’s deal</h3>
+        <p class="ex">“Don’t let a slow lender cost your client the deal — or your commission.” <b>RCN — PAID, INVISIBLE TO SPYGLASS</b></p></div>
+      <div class="hook"><span class="rank">11</span><h3>Show the arithmetic</h3>
+        <p class="ex">Line-item deal math, no claim attached. The single best-performing format in this audience — and no lender uses it. <b>CREATORS ONLY</b></p></div>
     </div>
   </div>
 </section>
@@ -918,8 +1109,8 @@
       <p class="eyebrow">Pain map</p>
       <h2>What borrowers are being sold against</h2>
       <p>
-        Ten pains the category works, scored by how much competitive pressure
-        sits on each. The hollow ones are where Trilith can speak without
+        Eleven pains the category works, scored by how much competitive pressure
+        sits on each. The dashed ones are where Trilith can speak without
         shouting over someone with a larger budget.
       </p>
     </div>
@@ -945,6 +1136,10 @@
       </div>
       <div class="pain" data-pressure="heavy">
         <span><span class="what">Income docs as a wall — no W-2, no returns</span><br><span class="who">Visio and Kiavi</span></span>
+        <span class="tag">Contested</span>
+      </div>
+      <div class="pain" data-pressure="heavy">
+        <span><span class="what">The broker’s own commission is at risk</span><br><span class="who">RCN Capital — sustained paid spend since June, aimed at brokers not borrowers</span></span>
         <span class="tag">Contested</span>
       </div>
       <div class="pain" data-pressure="light">
@@ -1023,8 +1218,12 @@
   <div class="wrap">
     <div class="sec-head">
       <p class="eyebrow on-panel">Where the room is</p>
-      <h2>Seven positions nobody has taken</h2>
-      <p>Ranked. Order carries the argument — the first is the only one where Trilith would face no competitor at all.</p>
+      <h2>Eight positions, ranked by how much room is left</h2>
+      <p>
+        Order carries the argument. The first two are genuinely uncontested. The
+        broker position has moved — it was the cheapest win on this list until
+        RCN Capital turned up buying it.
+      </p>
     </div>
 
     <div class="ops">
@@ -1049,6 +1248,25 @@
       <div class="op">
         <span class="n">02</span>
         <div>
+          <h3>Publish the arithmetic they already own</h3>
+          <p>
+            The best-performing format in this entire audience is line-item deal
+            math, and not one lender uses it. Trilith has four funded deals with
+            real numbers sitting as static pages. A creator gets 16,300 views
+            narrating a BRRRR financed with private money; Trilith actually funds
+            those deals and publishes them as a spec sheet.
+          </p>
+          <p class="proof">
+            Sean Pan’s 4plex P&amp;L: 59.8K views. Trilith’s Baltimore portfolio —
+            $370,900, 7.875%, 70% LTV, four properties — currently has no narration,
+            no breakdown and no capture.
+          </p>
+        </div>
+      </div>
+
+      <div class="op">
+        <span class="n">03</span>
+        <div>
           <h3>Macro-to-micro market commentary</h3>
           <p>
             Trilith’s blog already covers the SpaceX IPO’s liquidity effects, the
@@ -1062,7 +1280,7 @@
       </div>
 
       <div class="op">
-        <span class="n">03</span>
+        <span class="n">04</span>
         <div>
           <h3>The founder as the channel</h3>
           <p>
@@ -1076,7 +1294,7 @@
       </div>
 
       <div class="op">
-        <span class="n">04</span>
+        <span class="n">05</span>
         <div>
           <h3>“Your lender just got acquired”</h3>
           <p>
@@ -1090,21 +1308,28 @@
       </div>
 
       <div class="op">
-        <span class="n">05</span>
+        <span class="n">06</span>
         <div>
-          <h3>A real broker-facing brand</h3>
+          <h3>A real broker-facing brand — now contested</h3>
           <p>
-            Visio points two of its four landing pages at brokers. Anchor runs
-            broker testimonials. Trilith has a live broker portal with no brand,
-            no landing page and no content behind it — the infrastructure is
-            already built.
+            Visio points two of its four landing pages at brokers and Anchor runs
+            broker testimonials, but RCN Capital changes the picture: every one of
+            its ~15 active ads targets brokers, and it has been buying that position
+            since June. It works a pain nobody else touches — not the borrower’s
+            deal, the <em>broker’s commission and pipeline</em>.
           </p>
-          <p class="proof">Cheapest win on this list.</p>
+          <p class="proof">
+            Trilith still has a live broker portal with no brand, no landing page and
+            no content behind it. The infrastructure is built; the position is no
+            longer free. Also note the collision — RCN’s landing page reads “Skip the
+            Bank’s Red Tape” against Trilith’s “No red tape.” That phrase now has
+            budget behind it and should be replaced.
+          </p>
         </div>
       </div>
 
       <div class="op">
-        <span class="n">06</span>
+        <span class="n">07</span>
         <div>
           <h3>First-time flippers</h3>
           <p>
@@ -1119,7 +1344,7 @@
       </div>
 
       <div class="op">
-        <span class="n">07</span>
+        <span class="n">08</span>
         <div>
           <h3>Any capture mechanic at all</h3>
           <p>
@@ -1141,9 +1366,18 @@
     <div class="method">
       <h3>How this was built, and what it does not prove</h3>
       <p>
-        Drawn from the Spyglass advertising corpus covering Meta, Instagram and
-        TikTok, cross-read against each lender’s live site and landing pages.
-        130 creatives across five brands, trailing 90 days.
+        Two sources. The Spyglass advertising corpus (Meta, Instagram, TikTok) for
+        the five indexed lenders and the creator set, cross-read against each
+        lender’s live site and landing pages. Meta’s public Ad Library for
+        advertisers Spyglass does not index.
+      </p>
+      <p>
+        <strong>The lender category is only five deep in Spyglass.</strong> Thirty
+        named private lenders were searched by name and a substring sweep run across
+        the whole corpus; the US investor lenders in it are Kiavi, Lima One, Visio,
+        New Silver and Anchor. That is a limit of the corpus, not of the market —
+        RCN Capital is on this page precisely because it is advertising heavily and
+        is entirely absent from it.
       </p>
       <p>
         <strong>Days-in-market is a proxy, not a metric.</strong> Platforms do not
@@ -1152,8 +1386,10 @@
       </p>
       <p>
         <strong>Absence is not proof of absence.</strong> Trilith returning no
-        results means no indexed paid social — not that no marketing exists.
-        The same applies to any competitor channel outside these three platforms.
+        results means no indexed paid social — not that no marketing exists. Of the
+        other missing lenders, only CoreVest was confirmed to have no active ads.
+        Ad Library keyword search fuzzy-matches badly, so the rest are unresolved
+        rather than quiet, and would need per-advertiser page IDs to check properly.
       </p>
       <p>
         <strong>One figure needs validating before it is acted on.</strong> The
