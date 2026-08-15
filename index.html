@@ -412,12 +412,53 @@
     border-radius: 4px;
     padding: var(--s3) var(--s3) var(--s3) calc(var(--s3) - 3px);
     border-left: 3px solid var(--rule-strong);
-    display: flex;
-    flex-direction: column;
-    gap: var(--s2);
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: var(--s3);
+    align-items: start;
     text-decoration: none;
     transition: border-left-color .15s ease, transform .15s ease;
   }
+  .creative .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    min-height: 148px;
+  }
+  /* Ad stills are 9:16. Held at a fixed ratio so a row of cards lines up
+     regardless of what the CDN returns. */
+  .thumb {
+    display: block;
+    width: 84px;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    border-radius: 3px;
+    background: var(--card-sunk);
+    border: 1px solid var(--rule);
+  }
+  /* Ad Library entries expose copy but no hosted asset — say so rather
+     than leaving a gap where an image should be. */
+  .thumb-none {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 84px;
+    aspect-ratio: 9 / 16;
+    border-radius: 3px;
+    background: var(--card-sunk);
+    border: 1px dashed var(--rule-strong);
+    font-family: var(--mono);
+    font-size: .5625rem;
+    line-height: 1.4;
+    letter-spacing: .06em;
+    color: var(--ink-quiet);
+    padding: .25rem;
+  }
+  /* If the image host is blocked (the artifact sandbox does block it),
+     collapse the column instead of showing a broken-image box. */
+  .creative.no-thumb { grid-template-columns: minmax(0, 1fr); }
+  .creative.no-thumb .thumb { display: none; }
   .creative:hover {
     border-left-color: var(--emerald-bar);
     transform: translateY(-2px);
@@ -846,11 +887,12 @@
       <p class="eyebrow">The creative wall</p>
       <h2>What they are running right now</h2>
       <p>
-        Live and recently-live creative, verbatim. Cards from the Spyglass corpus
-        link to the actual asset that ran; the RCN cards come from Meta’s Ad Library,
-        which exposes the copy but not a hosted file. Kiavi’s longest-running ads
-        have been in market 67 days — in paid social, longevity is the closest thing
-        to a public performance signal.
+        Live and recently-live creative, verbatim, with the actual ad still on each
+        card. Click any Spyglass card to open the full asset — the video or image as
+        it ran. Ad Library entries expose the copy but no hosted file, so those cards
+        are marked and carry no still. Kiavi’s longest-running ads have been in market
+        67 days; in paid social, longevity is the closest thing to a public
+        performance signal.
       </p>
     </div>
 
@@ -870,195 +912,291 @@
     <div class="wall" id="wall">
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/110644e818472b17274dc16b14e03b23.mp4">
-        <span class="who">Kiavi · testimonial</span>
-        <span class="line">“It wasn’t the flip that scared me. It was figuring out how to get a loan to pay for it.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 65d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi testimonial ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/110644e818472b17274dc16b14e03b23.webp">
+        <span class="body">
+          <span class="who">Kiavi · testimonial</span>
+          <span class="line">“It wasn’t the flip that scared me. It was figuring out how to get a loan to pay for it.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 65d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/2c0fdcf6a140b1254629461b5183510a.mp4">
-        <span class="who">Kiavi · testimonial</span>
-        <span class="line">“I had 3 closings in one month and Kiavi funded all of them.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 67d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi testimonial ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/2c0fdcf6a140b1254629461b5183510a.webp">
+        <span class="body">
+          <span class="who">Kiavi · testimonial</span>
+          <span class="line">“I had 3 closings in one month and Kiavi funded all of them.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 67d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/9d7854d99d116a0063eae29f8791fcbb.webp">
-        <span class="who">Kiavi · evergreen</span>
-        <span class="line">“You Find It, Kiavi will Fund It”</span>
-        <span class="meta"><span class="chip">IMAGE</span> 67d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi evergreen ad" src="https://cdn.generalcontext.com/adspy/media/9d7854d99d116a0063eae29f8791fcbb.webp">
+        <span class="body">
+          <span class="who">Kiavi · evergreen</span>
+          <span class="line">“You Find It, Kiavi will Fund It”</span>
+          <span class="meta"><span class="chip">IMAGE</span> 67d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/a6857b9188c28fa3805aeebb4edae6d3.webp">
-        <span class="who">Kiavi · offer</span>
-        <span class="line">“$500 off your first loan”</span>
-        <span class="meta"><span class="chip">CAROUSEL · 6</span> 67d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi discount carousel first card" src="https://cdn.generalcontext.com/adspy/media/a6857b9188c28fa3805aeebb4edae6d3.webp">
+        <span class="body">
+          <span class="who">Kiavi · offer</span>
+          <span class="line">“$500 off your first loan”</span>
+          <span class="meta"><span class="chip">CAROUSEL · 6</span> 67d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/f35473eafb8d9ee469e1f765ec9a001b.mp4">
-        <span class="who">Kiavi · construction</span>
-        <span class="line">“Your builds are modern. So why is your financing stuck in the past?”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 61d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi construction ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/f35473eafb8d9ee469e1f765ec9a001b.webp">
+        <span class="body">
+          <span class="who">Kiavi · construction</span>
+          <span class="line">“Your builds are modern. So why is your financing stuck in the past?”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 61d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/afefd804b53081c38bc4c44f685cd46a.webp">
-        <span class="who">Kiavi · geo-targeted</span>
-        <span class="line">“Keep your cash, scale your portfolio in AZ”</span>
-        <span class="meta"><span class="chip">IMAGE</span> 44d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi Arizona geo-targeted ad" src="https://cdn.generalcontext.com/adspy/media/afefd804b53081c38bc4c44f685cd46a.webp">
+        <span class="body">
+          <span class="who">Kiavi · geo-targeted</span>
+          <span class="line">“Keep your cash, scale your portfolio in AZ”</span>
+          <span class="meta"><span class="chip">IMAGE</span> 44d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/537fd4e8fdc26b01e76066021966e9f6.mp4">
-        <span class="who">Kiavi · best organic</span>
-        <span class="line">“You found the deal, now you need to move.” — comment KIAVI for the link</span>
-        <span class="meta"><span class="chip">VIDEO</span> 5.7K views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi BiggerPockets partnership reel still" src="https://cdn.generalcontext.com/adspy/thumbnails/537fd4e8fdc26b01e76066021966e9f6.webp">
+        <span class="body">
+          <span class="who">Kiavi · best organic</span>
+          <span class="line">“You found the deal, now you need to move.” — comment KIAVI for the link</span>
+          <span class="meta"><span class="chip">VIDEO</span> 5.7K views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/d3dc593fb3bf5f6cc0414d062f5240db.mp4">
-        <span class="who">Lima One</span>
-        <span class="line">“Compete like a cash buyer”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 36d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/d3dc593fb3bf5f6cc0414d062f5240db.webp">
+        <span class="body">
+          <span class="who">Lima One</span>
+          <span class="line">“Compete like a cash buyer”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 36d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/df7db6342a77c8be8d0bacea173d6c3b.mp4">
-        <span class="who">Lima One</span>
-        <span class="line">“You fixed it. Now rent it.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 36d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/df7db6342a77c8be8d0bacea173d6c3b.webp">
+        <span class="body">
+          <span class="who">Lima One</span>
+          <span class="line">“You fixed it. Now rent it.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 36d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/27f4ce55c218637afdbdc3bf4db48efb.mp4">
-        <span class="who">Lima One</span>
-        <span class="line">“Scaling your fix and flip business means having a capital partner that maximizes leverage”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 45d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Lima One leverage ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/27f4ce55c218637afdbdc3bf4db48efb.webp">
+        <span class="body">
+          <span class="who">Lima One</span>
+          <span class="line">“Scaling your fix and flip business means having a capital partner that maximizes leverage”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 45d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/9b59481a3411e8c5b6f5549989c1ecdc.mp4">
-        <span class="who">Lima One · organic</span>
-        <span class="line">A loan officer walks through a Boston flip that hit unexpected repairs — and how they funded the overage.</span>
-        <span class="meta"><span class="chip">VIDEO</span> 770 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Lima One loan officer deal story still" src="https://cdn.generalcontext.com/adspy/thumbnails/9b59481a3411e8c5b6f5549989c1ecdc.webp">
+        <span class="body">
+          <span class="who">Lima One · organic</span>
+          <span class="line">A loan officer walks through a Boston flip that hit unexpected repairs — and how they funded the overage.</span>
+          <span class="meta"><span class="chip">VIDEO</span> 770 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/35bdea9018312b78683b8ec00ab7f721.mp4">
-        <span class="who">Lima One · organic</span>
-        <span class="line">“Fairway Talks” — team interview series filmed on a golf course.</span>
-        <span class="meta"><span class="chip">VIDEO</span> 721 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Lima One Fairway Talks still" src="https://cdn.generalcontext.com/adspy/thumbnails/35bdea9018312b78683b8ec00ab7f721.webp">
+        <span class="body">
+          <span class="who">Lima One · organic</span>
+          <span class="line">“Fairway Talks” — team interview series filmed on a golf course.</span>
+          <span class="meta"><span class="chip">VIDEO</span> 721 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="visio" href="https://cdn.generalcontext.com/adspy/media/3b0a26cbd3d614263f8dcccf7003b105.mp4">
-        <span class="who">Visio</span>
-        <span class="line">“5-star host, meet the #1 DSCR lender.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 54d <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Visio DSCR ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/3b0a26cbd3d614263f8dcccf7003b105.webp">
+        <span class="body">
+          <span class="who">Visio</span>
+          <span class="line">“5-star host, meet the #1 DSCR lender.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 54d <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="visio" href="https://cdn.generalcontext.com/adspy/media/80f38331897a681ec256f0357b4835ba.webp">
-        <span class="who">Visio · attack ad</span>
-        <span class="line">“You applied for a loan to get that super-low rate they promised and got hit with the bait-and-switch.”</span>
-        <span class="meta"><span class="chip">IMAGE</span> organic <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Visio bait-and-switch post" src="https://cdn.generalcontext.com/adspy/media/80f38331897a681ec256f0357b4835ba.webp">
+        <span class="body">
+          <span class="who">Visio · attack ad</span>
+          <span class="line">“You applied for a loan to get that super-low rate they promised and got hit with the bait-and-switch.”</span>
+          <span class="meta"><span class="chip">IMAGE</span> organic <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="visio" href="https://cdn.generalcontext.com/adspy/media/766386d4ee4b433bb8a878eddc19ecc0.mp4">
-        <span class="who">Visio · persona</span>
-        <span class="line">“You’ve perfected the welcome basket. You reply to guest messages faster than your own family. Maybe it’s time your financing matched your hustle.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 198 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Visio short-term rental host ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/766386d4ee4b433bb8a878eddc19ecc0.webp">
+        <span class="body">
+          <span class="who">Visio · persona</span>
+          <span class="line">“You’ve perfected the welcome basket. You reply to guest messages faster than your own family. Maybe it’s time your financing matched your hustle.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 198 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="anchor" href="https://cdn.generalcontext.com/adspy/media/84c83ce6b4f7ee6af3a37c848ff49879.mp4">
-        <span class="who">Anchor · the judgment story</span>
-        <span class="line">“Zoning changed mid-build. Most lenders would’ve focused on the risk. At Anchor, we focused on the opportunity.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 89 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Anchor Loans zoning story still" src="https://cdn.generalcontext.com/adspy/thumbnails/84c83ce6b4f7ee6af3a37c848ff49879.webp">
+        <span class="body">
+          <span class="who">Anchor · the judgment story</span>
+          <span class="line">“Zoning changed mid-build. Most lenders would’ve focused on the risk. At Anchor, we focused on the opportunity.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 89 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="anchor" href="https://cdn.generalcontext.com/adspy/media/33b0b83939e514f12a02edca359b651d.mp4">
-        <span class="who">Anchor · testimonial</span>
-        <span class="line">“Ever since I started with Anchor Loans, my business has exploded.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 393 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Anchor Loans borrower testimonial still" src="https://cdn.generalcontext.com/adspy/thumbnails/33b0b83939e514f12a02edca359b651d.webp">
+        <span class="body">
+          <span class="who">Anchor · testimonial</span>
+          <span class="line">“Ever since I started with Anchor Loans, my business has exploded.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 393 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="anchor" href="https://cdn.generalcontext.com/adspy/media/732e2def60152c7b6cae5c85bc64b425.mp4">
-        <span class="who">Anchor · broker channel</span>
-        <span class="line">“Brokers deserve a lender who answers quickly and supports every deal with clarity.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 157 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="Anchor Loans broker testimonial still" src="https://cdn.generalcontext.com/adspy/thumbnails/732e2def60152c7b6cae5c85bc64b425.webp">
+        <span class="body">
+          <span class="who">Anchor · broker channel</span>
+          <span class="line">“Brokers deserve a lender who answers quickly and supports every deal with clarity.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 157 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="silver" href="https://cdn.generalcontext.com/adspy/media/cb408beddd72333c84c27699469bc720.mp4">
-        <span class="who">New Silver · founder</span>
-        <span class="line">“Stop comparing lenders on rate alone. Interest rates won’t tell you how long it actually takes to close.”</span>
-        <span class="meta"><span class="chip">VIDEO</span> 148 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="New Silver founder to camera still" src="https://cdn.generalcontext.com/adspy/thumbnails/cb408beddd72333c84c27699469bc720.webp">
+        <span class="body">
+          <span class="who">New Silver · founder</span>
+          <span class="line">“Stop comparing lenders on rate alone. Interest rates won’t tell you how long it actually takes to close.”</span>
+          <span class="meta"><span class="chip">VIDEO</span> 148 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="silver" href="https://cdn.generalcontext.com/adspy/media/773c4eca94b9c3aa44d5ecc7a3456dae.mp4">
-        <span class="who">New Silver · founder</span>
-        <span class="line">“Your lender should be your first call, not your last.” — over half our borrowers come back.</span>
-        <span class="meta"><span class="chip">VIDEO</span> 64 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="New Silver founder to camera still" src="https://cdn.generalcontext.com/adspy/thumbnails/773c4eca94b9c3aa44d5ecc7a3456dae.webp">
+        <span class="body">
+          <span class="who">New Silver · founder</span>
+          <span class="line">“Your lender should be your first call, not your last.” — over half our borrowers come back.</span>
+          <span class="meta"><span class="chip">VIDEO</span> 64 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <a class="creative" data-b="silver" href="https://cdn.generalcontext.com/adspy/media/ebf84f9caf004ae66b494402504c1a57.mp4">
-        <span class="who">New Silver · webinar clip</span>
-        <span class="line">One webinar, cut into a month of posts — an entire AI-for-investors series.</span>
-        <span class="meta"><span class="chip">VIDEO</span> 20 views <span class="view">View →</span></span>
+        <img class="thumb" loading="lazy" decoding="async" alt="New Silver webinar clip still" src="https://cdn.generalcontext.com/adspy/thumbnails/ebf84f9caf004ae66b494402504c1a57.webp">
+        <span class="body">
+          <span class="who">New Silver · webinar clip</span>
+          <span class="line">One webinar, cut into a month of posts — an entire AI-for-investors series.</span>
+          <span class="meta"><span class="chip">VIDEO</span> 20 views <span class="view">View →</span></span>
+        </span>
       </a>
 
       <div class="creative" data-b="rcn">
-        <span class="who">RCN Capital · broker</span>
-        <span class="line">“Don’t let a slow lender cost your client the deal — <b>or your commission</b>.”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">RCN Capital · broker</span>
+          <span class="line">“Don’t let a slow lender cost your client the deal — <b>or your commission</b>.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+        </span>
       </div>
 
       <div class="creative" data-b="rcn">
-        <span class="who">RCN Capital · broker</span>
-        <span class="line">“Stop losing deals to strict bank guidelines… learn more about our broker referral program.”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 22</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">RCN Capital · broker</span>
+          <span class="line">“Stop losing deals to strict bank guidelines… learn more about our broker referral program.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 22</span>
+        </span>
       </div>
 
       <div class="creative" data-b="rcn">
-        <span class="who">RCN Capital · broker</span>
-        <span class="line">“Your investor clients need a lender they can rely on, and <b>you need a partner who protects your pipeline</b>.”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">RCN Capital · broker</span>
+          <span class="line">“Your investor clients need a lender they can rely on, and <b>you need a partner who protects your pipeline</b>.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Jun 26</span>
+        </span>
       </div>
 
       <div class="creative" data-b="rcn">
-        <span class="who">RCN Capital · landing page</span>
-        <span class="line">“Skip the Bank’s Red Tape” · “Dependable Underwriting. Certainty of Execution.”</span>
-        <span class="meta"><span class="chip">LANDING</span> collides with Trilith’s “No red tape”</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">RCN Capital · landing page</span>
+          <span class="line">“Skip the Bank’s Red Tape” · “Dependable Underwriting. Certainty of Execution.”</span>
+          <span class="meta"><span class="chip">LANDING</span> collides with Trilith’s “No red tape”</span>
+        </span>
       </div>
 
       <div class="creative" data-b="l1">
-        <span class="who">LendingOne · direct</span>
-        <span class="line">“Your next deal should not stall waiting on your lender.”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">LendingOne · direct</span>
+          <span class="line">“Your next deal should not stall waiting on your lender.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+        </span>
       </div>
 
       <div class="creative" data-b="l1">
-        <span class="who">LendingOne · direct</span>
-        <span class="line">“Every stage of your strategy runs through <b>one team</b>.” — fix &amp; flip, fix to rent, DSCR, portfolio</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Every Product. One Lender.”</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">LendingOne · direct</span>
+          <span class="line">“Every stage of your strategy runs through <b>one team</b>.” — fix &amp; flip, fix to rent, DSCR, portfolio</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Every Product. One Lender.”</span>
+        </span>
       </div>
 
       <div class="creative" data-b="l1">
-        <span class="who">LendingOne · direct</span>
-        <span class="line">“Max Leverage, Low Rates, Fast Closing” — quick approvals, closings in weeks</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">LendingOne · direct</span>
+          <span class="line">“Max Leverage, Low Rates, Fast Closing” — quick approvals, closings in weeks</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> since Aug 3</span>
+        </span>
       </div>
 
       <div class="creative" data-b="renovo">
-        <span class="who">Renovo Financial · direct</span>
-        <span class="line">“National lending power. <b>Local lending love.</b>” — hyperlocal experts in your market</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> the only local angle in the category</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">Renovo Financial · direct</span>
+          <span class="line">“National lending power. <b>Local lending love.</b>” — hyperlocal experts in your market</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> the only local angle in the category</span>
+        </span>
       </div>
 
       <div class="creative" data-b="renovo">
-        <span class="who">Renovo Financial · direct</span>
-        <span class="line">“Scaling a rental portfolio takes more than funding — it takes the right financing strategy.”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> Jul 22</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">Renovo Financial · direct</span>
+          <span class="line">“Scaling a rental portfolio takes more than funding — it takes the right financing strategy.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> Jul 22</span>
+        </span>
       </div>
 
       <div class="creative" data-b="temple">
-        <span class="who">Temple View · direct</span>
-        <span class="line">“We’ve designed our investment programs to address the investor pain points <b>we’ve experienced ourselves</b>.”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Founded by Investors”</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">Temple View · direct</span>
+          <span class="line">“We’ve designed our investment programs to address the investor pain points <b>we’ve experienced ourselves</b>.”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> collides with “Founded by Investors”</span>
+        </span>
       </div>
 
       <div class="creative" data-b="temple">
-        <span class="who">Temple View · market outlook</span>
-        <span class="line">“What’s the potential outlook for the residential market? How can serious investors capitalize?”</span>
-        <span class="meta"><span class="chip">AD LIBRARY</span> the only macro-commentary ad found</span>
+        <span class="thumb-none">NO HOSTED<br>ASSET</span>
+        <span class="body">
+          <span class="who">Temple View · market outlook</span>
+          <span class="line">“What’s the potential outlook for the residential market? How can serious investors capitalize?”</span>
+          <span class="meta"><span class="chip">AD LIBRARY</span> the only macro-commentary ad found</span>
+        </span>
       </div>
 
     </div>
@@ -1526,6 +1664,19 @@
 </footer>
 
 <script>
+  // Ad stills are hotlinked from the Spyglass CDN. Some embedding contexts
+  // block third-party image hosts outright; when that happens collapse the
+  // thumbnail column rather than leaving a broken-image box in every card.
+  (function () {
+    document.addEventListener('error', function (e) {
+      var el = e.target;
+      if (el && el.tagName === 'IMG' && el.classList.contains('thumb')) {
+        var card = el.closest('.creative');
+        if (card) card.classList.add('no-thumb');
+      }
+    }, true);
+  })();
+
   (function () {
     var buttons = document.querySelectorAll('.filters button');
     var cards = document.querySelectorAll('#wall .creative');
