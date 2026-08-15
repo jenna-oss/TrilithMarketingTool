@@ -51,14 +51,16 @@ const FIELDS = [
   'ad_snapshot_url', 'publisher_platforms'
 ].join(',');
 
-async function call(params) {
-  const url = new URL(API);
-  url.searchParams.set('access_token', TOKEN);
-  url.searchParams.set('ad_reached_countries', JSON.stringify(['US']));
-  url.searchParams.set('fields', FIELDS);
-  url.searchParams.set('limit', '100');
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+/* Page size Meta will return per request. 100 is comfortably inside its
+ * limits; raising it tends to get silently clamped rather than honoured. */
+const PAGE_SIZE = 100;
 
+/* Cap on pages followed per (ad_type, query). Guards against a broad term
+ * pulling tens of thousands of rows and burning the rate limit in one run.
+ * Raise via API_MAX_PAGES once you know what a query actually returns. */
+const MAX_PAGES = Number(process.env.API_MAX_PAGES || 10);
+
+async function fetchJson(url) {
   const res = await fetch(url);
   const body = await res.json().catch(() => ({}));
   if (!res.ok || body.error) {
@@ -66,6 +68,32 @@ async function call(params) {
     return { ok: false, status: res.status, code: e.code, message: redact(e.message || res.statusText) };
   }
   return { ok: true, data: body.data || [], next: body.paging?.next || null };
+}
+
+/* Follows paging.next up to MAX_PAGES. Reports pagesFetched and whether more
+ * was left on the table, so the volume question has a real answer. */
+async function call(params) {
+  const url = new URL(API);
+  url.searchParams.set('access_token', TOKEN);
+  url.searchParams.set('ad_reached_countries', JSON.stringify(['US']));
+  url.searchParams.set('fields', FIELDS);
+  url.searchParams.set('limit', String(PAGE_SIZE));
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+  let next = url.toString();
+  const all = [];
+  let pages = 0;
+
+  while (next && pages < MAX_PAGES) {
+    const r = await fetchJson(next);
+    if (!r.ok) return pages ? { ok: true, data: all, pages, truncated: true, lastError: r.message } : r;
+    all.push(...r.data);
+    pages++;
+    next = r.next;
+    if (r.data.length === 0) break;
+  }
+
+  return { ok: true, data: all, pages, truncated: Boolean(next) };
 }
 
 /* ---- probe: report what is actually reachable --------------------------- */
@@ -78,7 +106,9 @@ if (PROBE) {
       grid.push({
         ad_type,
         query: q,
-        result: r.ok ? `${r.data.length} rows` : `ERROR ${r.code ?? r.status}: ${r.message}`.slice(0, 110)
+        result: r.ok
+          ? `${r.data.length} rows over ${r.pages} page(s)${r.truncated ? ' — capped, more available' : ''}`
+          : `ERROR ${r.code ?? r.status}: ${r.message}`.slice(0, 110)
       });
       console.log(`${ad_type.padEnd(38)} ${q.padEnd(22)} ${grid.at(-1).result}`);
     }
@@ -98,11 +128,17 @@ const day = runAt.slice(0, 10);
 const ads = [];
 const perTarget = {};
 
+let truncatedAny = false;
+
 for (const q of QUERIES) {
   let n = 0;
   for (const ad_type of AD_TYPES) {
     const r = await call({ ad_type, search_terms: q });
     if (!r.ok) { console.log(`${q} / ${ad_type}: ${r.message}`.slice(0, 120)); continue; }
+    if (r.truncated) {
+      truncatedAny = true;
+      console.log(`  ${ad_type} / "${q}" hit the ${MAX_PAGES}-page cap — more available, raise API_MAX_PAGES`);
+    }
     for (const a of r.data) {
       ads.push({
         libraryId: a.id,
@@ -129,7 +165,11 @@ await writeFile(
   JSON.stringify({ runAt, healthy, via: 'api', perTarget, ads: unique }, null, 2)
 );
 
-console.log(`\n${unique.length} unique ads across ${new Set(unique.map((a) => a.advertiser)).size} advertisers`);
+console.log(
+  `\n${unique.length} unique ads across ${new Set(unique.map((a) => a.advertiser)).size} advertisers` +
+  ` (${ads.length} rows before dedupe, ${PAGE_SIZE}/page, cap ${MAX_PAGES} pages per query)` +
+  (truncatedAny ? '\nSome queries were capped — the true ceiling is higher than this run.' : '')
+);
 if (!healthy) {
   console.error('UNHEALTHY API PULL — refusing to continue so nothing bad gets published.');
   process.exit(1);
