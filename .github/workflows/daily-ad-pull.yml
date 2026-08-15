@@ -58,7 +58,23 @@ jobs:
             exit 0
           fi
           git commit -m "Daily ad pull: $(date -u +%Y-%m-%d)"
-          git push
+
+          # A commit landing while the run is in flight leaves this checkout
+          # behind and the push is rejected. Rebase onto whatever arrived and
+          # try again rather than losing the day's data.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected — rebasing onto origin/main and retrying."
+            git pull --rebase --autostash origin main || {
+              echo "::error::Rebase failed; leaving the branch untouched."
+              exit 1
+            }
+          done
+          echo "::error::Could not push after 3 attempts."
+          exit 1
 
       - name: Explain a failed harvest
         if: failure() && steps.harvest.outcome == 'failure'
