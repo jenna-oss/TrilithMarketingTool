@@ -34,6 +34,48 @@ Three limits are stated on the page itself and repeated here:
 3. **The Spanish-language demand signal needs validating.** It comes from creator
    accounts whose audience geography is not verified in this data.
 
+## Ask the corpus (chat)
+
+`ask.html` is a chat interface over the tracked ads, backed by a Cloudflare Worker
+(`worker/`) that holds the Anthropic API key. The key never reaches the browser.
+
+**There is deliberately no retrieval layer.** The whole corpus — 774 ads, ~70K
+tokens — fits inside the context window, so every question is answered against
+every ad rather than against whatever a search step happened to surface. Prompt
+caching (1-hour TTL) makes the repeat cost of that small: the corpus sits in a
+cached system prefix and only the question is billed at full rate.
+
+### Deploying the backend
+
+```
+cd worker
+npm install
+npx wrangler secret put ANTHROPIC_API_KEY   # prompts — never type the key into a file
+npx wrangler deploy
+```
+
+Then set `WORKER_URL` at the top of the script in `ask.html` to the deployed URL
+and commit. Until that constant is set, the page loads and shows setup instructions
+rather than failing.
+
+### Guards
+
+- **Origin allowlist** — the Worker only answers requests from the Pages origin.
+  It holds a spendable API key, so an open endpoint would let anyone use it.
+- **Input caps** — 2,000 characters per question, 12 turns of history.
+- **Refusals handled** — `stop_reason: "refusal"` is surfaced as a readable message,
+  and server-side fallbacks are enabled so a declined request reroutes automatically.
+- **Token usage is shown per answer** so cost stays visible rather than invisible.
+
+### What it cannot do
+
+Spyglass is an authenticated connector tied to a Claude account, not a public API,
+so the chat cannot query it live. It reads the corpus snapshot that the daily job
+maintains — same data, refreshed on a schedule.
+
+**A public endpoint spends real money.** Add a Cloudflare rate-limiting rule on the
+Worker route before sharing the link widely.
+
 ## Daily automation
 
 `.github/workflows/daily-ad-pull.yml` runs at 11:00 UTC (06:00 ET) and can also be

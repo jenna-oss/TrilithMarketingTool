@@ -1,0 +1,16 @@
+name = "trilith-ask"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Needed so the Anthropic SDK's Node built-in imports resolve inside Workers.
+compatibility_flags = ["nodejs_compat"]
+
+# The API key is NOT set here. Secrets in a committed file would be public.
+# Set it once, from your terminal, and it stays encrypted on Cloudflare:
+#
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#
+# That prompts for the value — it is never typed into a file or a chat window.
+
+[observability]
+enabled = true
