@@ -166,9 +166,7 @@
   .masthead::after  { width: 300px; height: 300px; right: 120px;  bottom: -190px; }
 
   .masthead-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    gap: var(--s6);
+    max-width: 62ch;
     padding: var(--s6) 0 var(--s7);
     position: relative;
     z-index: 1;
@@ -207,28 +205,18 @@
     margin: var(--s4) 0 0;
   }
 
-  /* prepared-for block */
-  .dossier {
-    align-self: end;
-    border-left: 2px solid var(--rule-on-panel);
-    padding-left: var(--s4);
-    display: grid;
-    gap: var(--s3);
-  }
-  .dossier dt {
-    font-size: .625rem;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--ink-on-panel-quiet);
-    font-weight: 700;
-  }
-  .dossier dd {
-    margin: .125rem 0 0;
+  .ask-link {
+    display: inline-block;
+    font-size: .875rem;
+    font-weight: 600;
+    letter-spacing: .02em;
     color: var(--cream-text);
-    font-size: .9375rem;
-    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid var(--emerald-bar);
+    padding-bottom: 2px;
   }
-  .dossier dd.fig { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .ask-link:hover { border-bottom-color: var(--sage); }
+  .ask-link:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
 
   /* ============================================================
      Sections
@@ -703,8 +691,7 @@
   }
 
   @media (max-width: 760px) {
-    .masthead-inner { grid-template-columns: 1fr; gap: var(--s5); padding-bottom: var(--s6); }
-    .dossier { border-left: none; border-top: 2px solid var(--rule-on-panel); padding-left: 0; padding-top: var(--s3); }
+    .masthead-inner { padding-bottom: var(--s6); }
     .hook { grid-template-columns: 2.5rem 1fr; }
     .hook .ex { grid-column: 2; }
     section { padding: var(--s6) 0; }
@@ -733,37 +720,13 @@
       <h1>What every other investor lender is saying — and where the room is.</h1>
       <div class="rule-under"></div>
       <p class="standfirst" style="margin-top:var(--s4)">
-        A read of the live advertising and organic output of the five lenders
-        Trilith competes with for the same borrower.
+        A read of the live advertising and organic output of the lenders Trilith
+        competes with for the same borrower.
+      </p>
+      <p style="margin:var(--s4) 0 0">
+        <a class="ask-link" href="./ask.html">Ask the corpus &rarr;</a>
       </p>
     </div>
-
-    <dl class="dossier">
-      <div>
-        <dt>Prepared for</dt>
-        <dd>Trilith Funding</dd>
-      </div>
-      <div>
-        <dt>Sources</dt>
-        <dd>Spyglass ad corpus · Meta Ad Library</dd>
-      </div>
-      <div>
-        <dt>Ads tracked</dt>
-        <dd class="fig">774 · 249 advertisers</dd>
-      </div>
-      <div>
-        <dt>Lenders watched daily</dt>
-        <dd class="fig">18 by page ID · 4 keyword sweeps</dd>
-      </div>
-      <div>
-        <dt>Query it directly</dt>
-        <dd><a href="./ask.html" style="color:var(--cream-text);border-bottom:1px solid var(--emerald-bar);text-decoration:none">Ask the corpus →</a></dd>
-      </div>
-      <div>
-        <dt>Window</dt>
-        <dd class="fig">Trailing 90 days · Aug 2026</dd>
-      </div>
-    </dl>
   </div>
 </header>
 
