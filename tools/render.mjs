@@ -38,8 +38,13 @@ const byFirstSeen = [...ads].sort((x, y) =>
 const newest = byFirstSeen.slice(0, 12);
 const advertisers = new Set(ads.map((x) => x.advertiser));
 
+/* Exclude the baseline sweep: those ads were first *observed* on day one but
+ * are not new to the market, and counting them would overstate the feed for a
+ * week after setup. */
 const cutoff = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
-const thisWeek = corpus.baselineRun ? [] : ads.filter((x) => x.firstSeen >= cutoff);
+const thisWeek = ads.filter(
+  (x) => x.firstSeen >= cutoff && x.firstSeen !== corpus.baselineDay
+);
 
 const updated = new Date(corpus.updatedAt);
 const stale = (Date.now() - updated.getTime()) > 3 * 864e5;
@@ -55,11 +60,15 @@ const cards = newest.map((x) => `
       </div>`).join('\n');
 
 const summary = corpus.baselineRun
-  ? `<p><strong>Baseline run.</strong> The first sweep records the category as it
-       stands, so nothing is marked new yet. From the next run onward this section
-       reports only creative that was not present the day before.</p>`
-  : `<p><strong>${thisWeek.length} ${thisWeek.length === 1 ? 'ad' : 'ads'} first seen in the last
-       seven days</strong>, out of ${ads.length} tracked across ${advertisers.size} advertisers.</p>`;
+  ? `<p><strong>Baseline sweep.</strong> The first run records the category as it
+       stands, so nothing is marked new yet — ${ads.length} ads across
+       ${advertisers.size} advertisers. From here on this section reports only
+       creative that was not there the day before.</p>`
+  : `<p><strong>${thisWeek.length} ${thisWeek.length === 1 ? 'ad' : 'ads'} newly observed in the
+       last seven days</strong>, against a tracked corpus of ${ads.length} ads across
+       ${advertisers.size} advertisers. The baseline sweep of
+       ${esc(corpus.baselineDay || 'setup')} is excluded — those were first seen by us
+       that day but were already running.</p>`;
 
 const staleNote = stale
   ? `<p class="dark-list">⚠ Last successful run was ${esc(corpus.updatedAt.slice(0, 10))} —

@@ -48,8 +48,15 @@ function page(id) {
 const MIN_TOTAL_ADS = 15;
 const MIN_KEYWORD_TARGETS_WITH_RESULTS = 2;
 
-const SCROLLS = 18;
-const PAUSE_MS = 1200;
+/* CI runners are slower to paint than a warm local browser. The first version
+ * of this used a 3.5s settle and broke after 2 stagnant rounds, which on GitHub
+ * Actions exited each target in ~8s and harvested a third of what the same code
+ * collected locally. Wait for results to actually appear, then be patient about
+ * calling it done. */
+const SCROLLS = 24;
+const PAUSE_MS = 1800;
+const STAGNANT_LIMIT = 4;
+const SETTLE_MS = 6000;
 
 /* Runs inside the page. Kept dependency-free and defensive: Meta reorders and
  * renames DOM nodes often, so we parse the rendered text rather than classes. */
@@ -73,7 +80,14 @@ async function sweep(page_, target) {
     const btn = page_.getByRole('button', { name: label });
     if (await btn.count().catch(() => 0)) { await btn.first().click().catch(() => {}); break; }
   }
-  await page_.waitForTimeout(3500);
+  /* Wait for the first results to render rather than assuming a fixed delay.
+   * A page-id target with no ads never satisfies this, so cap the wait and
+   * let the "No ads match" path in harvest() handle it. */
+  await page_.waitForFunction(
+    () => /Library ID:|No ads match/i.test(document.body.innerText),
+    null, { timeout: SETTLE_MS, polling: 500 }
+  ).catch(() => {});
+  await page_.waitForTimeout(1500);
 
   let last = -1, stagnant = 0;
   for (let i = 0; i < SCROLLS; i++) {
@@ -82,7 +96,7 @@ async function sweep(page_, target) {
     const n = await page_.evaluate(() => (document.body.innerText.match(/Library ID:/g) || []).length);
     stagnant = n === last ? stagnant + 1 : 0;
     last = n;
-    if (stagnant >= 2) break;
+    if (stagnant >= STAGNANT_LIMIT) break;
   }
   return page_.evaluate(harvest);
 }

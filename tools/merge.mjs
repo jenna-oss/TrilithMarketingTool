@@ -54,10 +54,13 @@ for (const ad of latest.ads) {
 
 corpus.updatedAt = latest.runAt;
 corpus.runs = (corpus.runs || 0) + 1;
-
-/* A first run would mark every historical ad as "new", which would be
- * misleading on the page. Flag it so render.mjs can say so plainly. */
 corpus.baselineRun = corpus.runs === 1;
+
+/* Everything captured on the first sweep shares a firstSeen of that day, so a
+ * naive "new in the last 7 days" count would report the entire back catalogue
+ * as new for a week. Remember the baseline date so render.mjs can exclude it
+ * and only ever claim genuinely newly-observed creative. */
+if (corpus.runs === 1) corpus.baselineDay = day;
 
 await mkdir(dirname(CORPUS), { recursive: true });
 await writeFile(CORPUS, JSON.stringify(corpus, null, 2));
