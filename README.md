@@ -34,6 +34,26 @@ Three limits are stated on the page itself and repeated here:
 3. **The Spanish-language demand signal needs validating.** It comes from creator
    accounts whose audience geography is not verified in this data.
 
+## Tools
+
+`tools/recency-pull.js` — re-run the category sweep to see new competitor creative
+as it launches.
+
+Meta's Ad Library has **no recency sort**. Keyword searches are forced to
+`sort_data[mode]=total_impressions`, and passing `creation_time` is silently
+overridden back to impressions. Its date filter matches ads *active during* a
+window rather than ads that *started* in it, so long-running 2024 ads still
+surface inside a 2026 window.
+
+The script works around that: it scrolls the results, reads the "Started running
+on" date off each ad, de-duplicates creative variants, sorts newest-first, and
+copies a CSV to the clipboard. It has to run in the browser console — the Ad
+Library is a JavaScript app and returns an empty shell to `curl`.
+
+Usage, the working search URLs, and pre-resolved lender page IDs are in the file
+header. Last verified 2026-08-15: 29 unique ads across 27 advertisers in a single
+sweep, 7 of them started within the prior 45 days.
+
 ## Notes
 
 - Figures and metrics use a monospace face; competitor ad copy is set in serif

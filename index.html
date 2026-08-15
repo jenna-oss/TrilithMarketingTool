@@ -674,7 +674,9 @@
   .method p { margin: 0 0 var(--s2); font-size: .875rem; color: var(--ink-body); }
   .method p:last-child { margin-bottom: 0; }
   .method strong { color: var(--ink); }
-  .method .dark-list {
+  /* Used both inside .method and standalone in the long-tail section,
+     so it is deliberately not scoped to a parent. */
+  .dark-list {
     font-family: var(--mono);
     font-size: .8125rem;
     color: var(--ink-quiet);
@@ -682,7 +684,7 @@
     padding-left: var(--s3);
     line-height: 1.8;
   }
-  .method .dark-list i { font-style: normal; opacity: .75; }
+  .dark-list i { font-style: normal; opacity: .75; }
 
   footer {
     background: var(--panel-deep);
@@ -871,10 +873,141 @@
         · Velocity Mortgage Capital · Longhorn Investments
       </p>
       <p>
-        That reframes Trilith’s own absence. Of eleven investor lenders checked,
-        <strong>only four run paid social at all</strong>. Silence is the category norm,
-        not a Trilith failing — but the four that do spend are the ones taking the
-        positions on this page.
+        Of eleven <em>named national</em> investor lenders checked, only four run paid
+        social at all. Among the majors, silence is normal — but that is not the whole
+        market, and the next section is the correction.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LONG TAIL ================= -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">The long tail</p>
+      <h2>The majors are quiet. The category is not.</h2>
+      <p>
+        Searching Meta’s Ad Library by keyword rather than by company changes the
+        picture completely. <strong>“fix and flip loan” returns roughly 1,600 live ads;
+        “DSCR loan” roughly 1,100.</strong> Almost none come from the lenders on the
+        board above. They come from regional shops, brokers and individual loan
+        officers — and their copy is sharper than anything the platforms are running.
+      </p>
+    </div>
+
+    <div class="tail-grid">
+      <div>
+        <p class="eyebrow">~45 advertisers found in two keyword sweeps</p>
+        <p class="dark-list">
+          Bayport Funding · Black Label Capital · Pacific Equity and Loan · Investmark
+          Mortgage · Loan Mountain Capital · National Private Lending · REI Capital Fund
+          · Stackd Capital · Lennox Lending · Mako Loans · IEO Loan Group · Stone Bridge
+          Mortgage · Upperhand Solutions · Griffin Funding · Launch Financial Group ·
+          Springboard To Wealth · Strong Home Mortgage · The DSCR Shop · NewKey Lending ·
+          Red Heart Capital · Pulpos Capital Group · Levine Capital · LendingWise ·
+          Investment Property Brothers · KisonTeam · West Capital Lending · My Lending
+          Genie · plus creators <i>Grant Cardone</i> and <i>Brandon Turner</i>
+        </p>
+      </div>
+    </div>
+
+    <div class="sec-head" style="margin-top:var(--s6)">
+      <h2 style="font-size:1.125rem">What the newest creative actually says</h2>
+      <p>Sorted by start date, newest first — the live edge of the category.</p>
+    </div>
+
+    <div class="wall">
+      <div class="creative">
+        <span class="thumb-none">AUG 10</span>
+        <span class="body">
+          <span class="who">Bayport Funding</span>
+          <span class="line">“Found the flip? Let’s fund it.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">AUG 4</span>
+        <span class="body">
+          <span class="who">Investment Property Brothers</span>
+          <span class="line">“You took the hard money loan to win the deal. That part worked. Now the rate is still running and the property has already stabilized.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span> the refi-trap angle</span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUL 24</span>
+        <span class="body">
+          <span class="who">The DSCR Shop</span>
+          <span class="line">“If you’re a landlord carrying a rate above 6%, this math is going to bother you. Take your current rate. Subtract 5.375%. Multiply by your loan balance.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span> arithmetic as the hook</span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUL 20</span>
+        <span class="body">
+          <span class="who">Springboard To Wealth</span>
+          <span class="line">“Self-employed? Getting denied because your write-offs make your income look low?”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUL 15</span>
+        <span class="body">
+          <span class="who">The Eric Vavere Team</span>
+          <span class="line">“You found a rental that cash flows. Your lender just asked for 2 years of tax returns and a letter from your accountant. That is not how investors work.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUL 15</span>
+        <span class="body">
+          <span class="who">Brandon Turner <i>· creator</i></span>
+          <span class="line">“Banks won’t finance a property that needs real work. Too risky, too slow, too many reasons to say no. That’s exactly what hard money is for.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUL 13</span>
+        <span class="body">
+          <span class="who">Brandon Turner <i>· creator</i></span>
+          <span class="line">“Denied because your income’s ‘too low’ or your DTI’s ‘too high’? That’s the bank talking. Not the deal.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUL 12</span>
+        <span class="body">
+          <span class="who">Launch Financial Group</span>
+          <span class="line">“Property investors — have you lost a good deal because traditional financing took too long?”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+      <div class="creative">
+        <span class="thumb-none">JUN 17</span>
+        <span class="body">
+          <span class="who">Strong Home Mortgage</span>
+          <span class="line">“Got denied because of your tax returns? Traditional lenders aren’t built for investors — they’re built for W2 employees.”</span>
+          <span class="meta"><span class="chip">KEYWORD SWEEP</span></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="method" style="margin-top:var(--s5)">
+      <h3>What this changes</h3>
+      <p>
+        The competitive picture is not an empty field. It is
+        <strong>dozens of small operators fighting over four pain points</strong> —
+        tax returns, DTI, speed, and the hard-money-to-DSCR refinance — while the
+        large national lenders sit it out.
+      </p>
+      <p>
+        Two of those angles are the sharpest writing anywhere in this research, and
+        neither is on the board above. <strong>The refi trap</strong> — you won the deal
+        with hard money and are now bleeding on the rate — is a live pain that maps
+        exactly onto Trilith’s bridge-to-DSCR product, and only one small shop is
+        naming it. <strong>Arithmetic as the hook</strong> — “take your rate, subtract
+        5.375%, multiply by your balance” — is the creator-format finding from earlier
+        in this document, already being run as a paid ad by a competitor.
       </p>
     </div>
   </div>
