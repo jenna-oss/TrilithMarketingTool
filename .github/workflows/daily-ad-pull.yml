@@ -48,6 +48,18 @@ jobs:
       - name: Render the live feed
         run: node tools/render.mjs
 
+      - name: Shape the load payload
+        run: node tools/to-sql.mjs
+
+      # Keeps the retrieval corpus in step with the page. Skips itself with a
+      # note when the secrets are absent, so the harvest still runs for anyone
+      # who has not wired up a database.
+      - name: Push to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node tools/push-supabase.mjs
+
       - name: Commit and push
         run: |
           git config user.name  "github-actions[bot]"
