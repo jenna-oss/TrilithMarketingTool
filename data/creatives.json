@@ -1,0 +1,126 @@
+{
+  "fetchedAt": "2026-08-16T17:58:43.589Z",
+  "cards": [
+    {
+      "slug": "kiavi",
+      "brand": "Kiavi",
+      "category": "Text Overlay",
+      "line": "Your builds are modern, so why is your financing stuck in the past?",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f35473eafb8d9ee469e1f765ec9a001b.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f35473eafb8d9ee469e1f765ec9a001b.webp",
+      "platform": null,
+      "daysRun": 12,
+      "startAt": "2026-08-03"
+    },
+    {
+      "slug": "kiavi",
+      "brand": "Kiavi",
+      "category": "Explainer",
+      "line": "Building new construction projects is complex.",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/02e32a55d04e4f07c54ef11e12396249.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/02e32a55d04e4f07c54ef11e12396249.webp",
+      "platform": null,
+      "daysRun": 1,
+      "startAt": "2026-08-14"
+    },
+    {
+      "slug": "lima",
+      "brand": "Lima One",
+      "category": "Announcement",
+      "line": "Reno to rent faster",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/53a5c74ae05451671eaf935299c84531.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/53a5c74ae05451671eaf935299c84531.webp",
+      "platform": null,
+      "daysRun": 28,
+      "startAt": "2026-07-18"
+    },
+    {
+      "slug": "lima",
+      "brand": "Lima One",
+      "category": "Text Overlay",
+      "line": "Scale your flip investments",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/7ffce8b89d7180e717be842332931f77.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/7ffce8b89d7180e717be842332931f77.webp",
+      "platform": null,
+      "daysRun": 27,
+      "startAt": "2026-07-19"
+    },
+    {
+      "slug": "lima",
+      "brand": "Lima One",
+      "category": "Announcement",
+      "line": "Scaling your fix and flip business means having a capital partner that maximizes leverage",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/27f4ce55c218637afdbdc3bf4db48efb.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/27f4ce55c218637afdbdc3bf4db48efb.webp",
+      "platform": null,
+      "daysRun": 27,
+      "startAt": "2026-07-19"
+    },
+    {
+      "slug": "lima",
+      "brand": "Lima One",
+      "category": "Announcement",
+      "line": "Reno to rent faster",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/bc0094295f04d9a44300140c369d4449.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/bc0094295f04d9a44300140c369d4449.webp",
+      "platform": null,
+      "daysRun": 25,
+      "startAt": "2026-07-21"
+    },
+    {
+      "slug": "lima",
+      "brand": "Lima One",
+      "category": "Announcement",
+      "line": "Reno to rent faster",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/bc0094295f04d9a44300140c369d4449.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/bc0094295f04d9a44300140c369d4449.webp",
+      "platform": null,
+      "daysRun": 25,
+      "startAt": "2026-07-21"
+    },
+    {
+      "slug": "visio",
+      "brand": "Visio Lending",
+      "category": "Announcement",
+      "line": "Visio Lending",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6988ccd87aba4414b2282109009c0b6d.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6988ccd87aba4414b2282109009c0b6d.webp",
+      "platform": null,
+      "daysRun": 30,
+      "startAt": "2026-07-16"
+    },
+    {
+      "slug": "visio",
+      "brand": "Visio Lending",
+      "category": "Text Overlay",
+      "line": "Built for Real Estate Investors.",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8e3b266c35f87b78f184e6a02505ee3b.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8e3b266c35f87b78f184e6a02505ee3b.webp",
+      "platform": null,
+      "daysRun": 24,
+      "startAt": "2026-07-22"
+    },
+    {
+      "slug": "visio",
+      "brand": "Visio Lending",
+      "category": "Announcement",
+      "line": "DSCR Loans Designed for Long-Term Rentals",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/bae7c8f7275bd22e32dc50d3745066a5.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/bae7c8f7275bd22e32dc50d3745066a5.webp",
+      "platform": null,
+      "daysRun": 24,
+      "startAt": "2026-07-22"
+    }
+  ],
+  "failures": []
+}
