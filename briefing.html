@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Competitive Intelligence — Private Real Estate Lending</title>
 
+<link rel="stylesheet" href="./assets/nav.css">
 <link rel="stylesheet" href="./assets/chat.css">
 <style>
   /* ============================================================
@@ -276,26 +277,6 @@
   .topbar .who:hover { color: var(--cream-text); }
   .topbar nav { margin-left: auto; display: flex; gap: .375rem; flex: none; }
   .topbar .ask-link { font-size: .8125rem; }
-
-  /* The section menu, matching the one on the front page so the two read as
-     one site rather than two documents that happen to link to each other. */
-  .nav-link {
-    color: var(--sage);
-    font-size: .8125rem;
-    font-weight: 600;
-    text-decoration: none;
-    padding: .3125rem .75rem;
-    border-radius: 999px;
-    border: 1px solid transparent;
-    white-space: nowrap;
-  }
-  .nav-link:hover { color: var(--cream-text); border-color: var(--sage); }
-  .nav-link[aria-current="page"] {
-    color: var(--cream-text);
-    background: #ffffff14;
-    border-color: #ffffff26;
-  }
-  .nav-link:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 
   /* ============================================================
      Ask panel — the agent, available from anywhere in the document
@@ -918,9 +899,11 @@
       </svg>
       <span>Competitive Intelligence</span>
     </a>
-    <nav aria-label="Sections">
-      <a class="nav-link" href="./">Ask &amp; brainstorm</a>
-      <a class="nav-link" href="./briefing.html" aria-current="page">Briefing</a>
+    <nav class="site-nav" aria-label="Sections">
+    <a class="nav-link" href="./">Brainstorm &amp; plan</a>
+    <a class="nav-link" href="./edit.html">Video editing</a>
+    <a class="nav-link" href="./output.html">Output</a>
+    <a class="nav-link" href="./briefing.html" aria-current="page">Briefing</a>
     </nav>
   </div>
 </div>

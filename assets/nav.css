@@ -1,0 +1,51 @@
+/* ---------------------------------------------------------------------------
+ * Shared site chrome: the section menu and the page header it sits in.
+ *
+ * Four pages carry this now. The markup stays inline in each page so the nav
+ * works without JavaScript, but the styling lives here so it cannot drift into
+ * four slightly different pill rows.
+ * ------------------------------------------------------------------------ */
+
+.site-head {
+  background: var(--panel, #0B3529);
+  color: var(--cream-text, #EAE9D5);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.site-head .mark { display: inline-flex; align-items: center; gap: .625rem; }
+.site-head h1 {
+  margin: 0; font-size: 1.0625rem; font-weight: 700;
+  color: var(--cream-text, #EAE9D5); letter-spacing: -.01em;
+}
+.site-head .sub { margin: 0; font-size: .8125rem; color: var(--sage, #6E9C86); }
+
+.site-nav { margin-left: auto; display: flex; gap: .375rem; flex-wrap: wrap; }
+
+.nav-link {
+  color: var(--sage, #6E9C86);
+  font-size: .8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: .3125rem .75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.nav-link:hover { color: var(--cream-text, #EAE9D5); border-color: var(--sage, #6E9C86); }
+
+/* The current section reads as selected rather than as another destination. */
+.nav-link[aria-current="page"] {
+  color: var(--cream-text, #EAE9D5);
+  background: #ffffff14;
+  border-color: #ffffff26;
+}
+.nav-link:focus-visible { outline: 2px solid var(--sage, #6E9C86); outline-offset: 2px; }
+
+/* Four items wrap on a phone. Let them, rather than shrinking them below the
+   size of a comfortable tap target. */
+@media (max-width: 560px) {
+  .site-nav { width: 100%; margin-left: 0; }
+}

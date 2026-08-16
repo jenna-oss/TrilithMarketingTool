@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Output — Private Real Estate Lending</title>
+<link rel="stylesheet" href="./assets/nav.css">
+<style>
+  :root {
+    --cream-text:#EAE9D5; --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
+    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C; --ochre:#B5823F;
+    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
+    --s1:.5rem; --s2:.75rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57; --ochre:#D0A05C;
+    }
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink-body);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1080px; margin:0 auto; padding:var(--s5) var(--s4) var(--s6); }
+  h2 { color:var(--ink); font-weight:700; line-height:1.12; margin:0 0 var(--s2); font-size:1.5rem; }
+  .eyebrow {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin:0 0 var(--s1);
+  }
+  .lede { max-width:68ch; margin:0 0 var(--s4); }
+
+  .filters { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:var(--s4); }
+  .filters button {
+    font-family:var(--sans); font-size:.8125rem; color:var(--ink-body);
+    background:transparent; border:1px solid var(--rule-strong); border-radius:999px;
+    padding:.4375rem .875rem; cursor:pointer;
+  }
+  .filters button:hover { border-color:var(--accent); color:var(--ink); }
+  .filters button[aria-pressed="true"] { border-color:var(--accent); color:var(--ink); background:var(--card); }
+  .filters button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  .grid {
+    display:grid; gap:var(--s3);
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .vid {
+    background:var(--card); border:1px solid var(--rule); border-radius:4px;
+    overflow:hidden; display:flex; flex-direction:column; text-align:left;
+    font-family:var(--sans); cursor:pointer; padding:0;
+  }
+  .vid:hover { border-color:var(--accent); }
+  .vid:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  /* 9:16 — every preview surface on this page is portrait. */
+  .vid .frame {
+    aspect-ratio:9/16; background:var(--card-sunk); position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .vid .frame img { width:100%; height:100%; object-fit:cover; display:block; }
+  .vid .dur {
+    position:absolute; right:.375rem; bottom:.375rem;
+    font-family:var(--mono); font-size:.625rem; color:#EAE9D5;
+    background:#0B3529cc; padding:.125rem .375rem; border-radius:2px;
+  }
+  .vid .body { padding:.625rem .75rem; }
+  .vid .t { font-weight:700; color:var(--ink); font-size:.875rem; line-height:1.3; }
+  .vid .m { font-family:var(--mono); font-size:.625rem; color:var(--ink-quiet); margin-top:.375rem; }
+  .vid .st {
+    font-family:var(--mono); font-size:.5625rem; letter-spacing:.08em; text-transform:uppercase;
+    font-weight:700; padding:.125rem .4375rem; border-radius:999px; display:inline-block;
+  }
+  .st.draft     { color:var(--ochre); border:1px solid var(--ochre); }
+  .st.approved  { color:var(--accent); border:1px solid var(--accent); }
+  .st.published { color:#F4F2E7; background:var(--emerald); }
+  .st.failed    { color:var(--clay); border:1px solid var(--clay); }
+
+  .empty {
+    border:1px solid var(--rule); border-radius:4px; background:var(--card);
+    padding:var(--s6) var(--s4); text-align:center;
+  }
+  .empty h3 { margin:0 0 var(--s2); color:var(--ink); font-size:1rem; }
+  .empty p { margin:0 auto var(--s3); max-width:46ch; font-size:.875rem; }
+  .btn {
+    display:inline-block; font-family:var(--sans); font-size:.875rem; font-weight:600;
+    color:#F4F2E7; background:var(--emerald); border:none; border-radius:4px;
+    padding:.5625rem 1.125rem; cursor:pointer; text-decoration:none;
+  }
+  .btn:hover { background:var(--emerald-bar); }
+
+  /* Detail — the brief that produced the video, which is the point of the page */
+  dialog.detail {
+    border:1px solid var(--rule-strong); border-radius:8px; padding:0;
+    background:var(--ground); color:var(--ink-body); max-width:52rem; width:calc(100vw - 2rem);
+  }
+  dialog.detail::backdrop { background:#07201799; }
+  .detail-head {
+    display:flex; align-items:center; gap:.625rem;
+    background:var(--panel); color:var(--cream-text); padding:.75rem 1rem;
+  }
+  .detail-head h3 { margin:0; font-size:.9375rem; color:var(--cream-text); }
+  .detail-close {
+    margin-left:auto; background:transparent; border:none; cursor:pointer;
+    color:var(--sage); font-size:1.25rem; line-height:1; padding:.25rem .5rem;
+  }
+  .detail-close:hover { color:var(--cream-text); }
+  .detail-body { display:grid; grid-template-columns:minmax(0,220px) 1fr; gap:var(--s4); padding:var(--s4); }
+  .detail-body video, .detail-body .frame-lg {
+    width:100%; aspect-ratio:9/16; background:var(--card-sunk); border-radius:4px;
+  }
+  .detail dt {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin-top:var(--s3);
+  }
+  .detail dt:first-of-type { margin-top:0; }
+  .detail dd { margin:.25rem 0 0; font-size:.875rem; }
+  .detail .line { font-style:italic; color:var(--ink); border-left:2px solid var(--emerald-bar); padding-left:.625rem; }
+  @media (max-width:640px) { .detail-body { grid-template-columns:1fr; } }
+
+  .note {
+    background:var(--card); border:1px dashed var(--clay); border-radius:4px;
+    padding:var(--s3) var(--s4); margin-bottom:var(--s5); font-size:.875rem;
+  }
+  .note h3 { margin:0 0 var(--s2); color:var(--clay); font-size:1rem; }
+  .note code { font-family:var(--mono); font-size:.8125rem; background:var(--card-sunk); padding:.125rem .375rem; border-radius:2px; }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <span class="mark">
+    <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+  </span>
+  <span>
+    <h1>Output</h1>
+    <p class="sub">Finished short-form video, and the evidence behind each one</p>
+  </span>
+  <nav class="site-nav" aria-label="Sections">
+    <a class="nav-link" href="./">Brainstorm &amp; plan</a>
+    <a class="nav-link" href="./edit.html">Video editing</a>
+    <a class="nav-link" href="./output.html" aria-current="page">Output</a>
+    <a class="nav-link" href="./briefing.html">Briefing</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Library</p>
+  <h2>What has been made</h2>
+  <p class="lede">
+    Every finished cut, with the concept that produced it. Open one to see the
+    hook it borrowed, the topic it carries and the competitor evidence that
+    justified making it.
+  </p>
+
+  <div class="note" id="note" hidden>
+    <h3>Nothing is rendering yet</h3>
+    <p style="margin:0">
+      This page reads <code>data/video-output.json</code>, which is written by the
+      processing service. That service does not exist yet, so the library is
+      empty by fact rather than by filter.
+    </p>
+  </div>
+
+  <div class="filters" id="filters" role="group" aria-label="Filter videos" hidden></div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="empty" id="empty" hidden>
+    <h3>No finished video yet</h3>
+    <p>
+      Videos appear here once footage has been processed. Start by planning a
+      batch, then add footage against one of the locked concepts.
+    </p>
+    <a class="btn" href="./edit.html">Go to video editing</a>
+  </div>
+</main>
+
+<dialog class="detail" id="detail">
+  <div class="detail-head">
+    <h3 id="detail-title">Video</h3>
+    <button class="detail-close" id="detail-close" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</dialog>
+
+<script>
+const grid = document.getElementById('grid');
+const emptyEl = document.getElementById('empty');
+const noteEl = document.getElementById('note');
+const filtersEl = document.getElementById('filters');
+const detail = document.getElementById('detail');
+const detailBody = document.getElementById('detail-body');
+const detailTitle = document.getElementById('detail-title');
+
+let videos = [];
+let active = 'all';
+
+const esc = (s) => String(s ?? '');
+
+/* Written by the processing service. Absent is the normal state until one
+   exists, so a 404 is an empty library, not an error. */
+fetch('./data/video-output.json')
+  .then((r) => r.ok ? r.json() : null)
+  .then((data) => {
+    videos = (data && Array.isArray(data.videos)) ? data.videos : [];
+    if (!data) noteEl.hidden = false;
+    render();
+  })
+  .catch(() => { noteEl.hidden = false; render(); });
+
+function render() {
+  grid.innerHTML = '';
+
+  if (!videos.length) {
+    emptyEl.hidden = false;
+    filtersEl.hidden = true;
+    return;
+  }
+  emptyEl.hidden = true;
+
+  /* Filters are built from what is actually present, so there is never a
+     control that selects nothing. */
+  if (!filtersEl.children.length) {
+    const products = [...new Set(videos.map((v) => v.product).filter(Boolean))];
+    const audiences = [...new Set(videos.map((v) => v.audience).filter(Boolean))];
+    const statuses = [...new Set(videos.map((v) => v.status).filter(Boolean))];
+    [['all', 'All'], ...products.map((p) => [p, p]), ...audiences.map((a) => [a, a]),
+     ...statuses.map((s) => [s, s])].forEach(([key, label], i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.f = key;
+      b.textContent = label;
+      b.setAttribute('aria-pressed', String(i === 0));
+      b.addEventListener('click', () => {
+        active = key;
+        filtersEl.querySelectorAll('button').forEach((x) =>
+          x.setAttribute('aria-pressed', String(x === b)));
+        render();
+      });
+      filtersEl.append(b);
+    });
+    filtersEl.hidden = false;
+  }
+
+  const shown = videos.filter((v) =>
+    active === 'all' || v.product === active || v.audience === active || v.status === active);
+
+  shown.forEach((v) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'vid';
+
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+    if (v.thumbnailUrl) {
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.src = v.thumbnailUrl;
+      img.alt = '';
+      frame.append(img);
+    }
+    if (v.duration) {
+      const d = document.createElement('span');
+      d.className = 'dur';
+      d.textContent = v.duration;
+      frame.append(d);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'body';
+    const t = document.createElement('div');
+    t.className = 't';
+    t.textContent = esc(v.topic || v.title || 'Untitled');
+    const st = document.createElement('span');
+    st.className = 'st ' + esc(v.status || 'draft');
+    st.textContent = esc(v.status || 'draft');
+    const m = document.createElement('div');
+    m.className = 'm';
+    m.textContent = [v.product, v.audience, v.producedAt].filter(Boolean).join(' · ');
+    body.append(t, m, st);
+
+    card.append(frame, body);
+    card.addEventListener('click', () => open(v));
+    grid.append(card);
+  });
+}
+
+/* The detail view is the point of the page: it closes the loop from competitor
+   evidence, through the borrowed hook, to the finished asset. */
+function open(v) {
+  detailTitle.textContent = esc(v.topic || v.title || 'Video');
+  detailBody.innerHTML = '';
+
+  const left = document.createElement('div');
+  if (v.videoUrl) {
+    const el = document.createElement('video');
+    el.src = v.videoUrl;
+    el.controls = true;
+    el.playsInline = true;
+    if (v.thumbnailUrl) el.poster = v.thumbnailUrl;
+    left.append(el);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'frame-lg';
+    left.append(ph);
+  }
+
+  const dl = document.createElement('dl');
+  const add = (label, value, cls) => {
+    if (!value) return;
+    const dt = document.createElement('dt');
+    dt.textContent = label;
+    const dd = document.createElement('dd');
+    if (cls) dd.className = cls;
+    dd.textContent = value;
+    dl.append(dt, dd);
+  };
+  add('Topic', v.topic);
+  add('Opening line', v.opening_line ? '“' + v.opening_line + '”' : null, 'line');
+  add('Hook form', v.hook_form);
+  add('Borrowed from', v.hook_source);
+  add('Evidence', v.evidence);
+  add('Product', v.product);
+  add('Audience', v.audience);
+  add('Produced', v.producedAt);
+  add('Status', v.status);
+
+  detailBody.append(left, dl);
+  detail.showModal();
+}
+
+document.getElementById('detail-close').addEventListener('click', () => detail.close());
+detail.addEventListener('click', (e) => { if (e.target === detail) detail.close(); });
+</script>
+</body>
+</html>

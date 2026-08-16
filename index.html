@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Brainstorm &amp; plan — Private Real Estate Lending</title>
+<link rel="stylesheet" href="./assets/nav.css">
 <link rel="stylesheet" href="./assets/chat.css">
 <style>
   :root {
@@ -48,18 +49,7 @@
   }
   header .mark { display:inline-flex; align-items:center; gap:.625rem; }
   header h1 { margin:0; font-size:1.0625rem; font-weight:700; color:var(--cream-text); letter-spacing:-.01em; }
-  header .sub { margin:0; font-size:.8125rem; color:var(--sage); }
-  header nav { margin-left:auto; display:flex; gap:.375rem; }
-  header nav a {
-    color:var(--sage); font-size:.8125rem; font-weight:600; text-decoration:none;
-    padding:.3125rem .75rem; border-radius:999px; border:1px solid transparent;
-  }
-  header nav a:hover { color:var(--cream-text); border-color:var(--sage); }
-  /* The current section reads as selected rather than as another destination. */
-  header nav a[aria-current="page"] {
-    color:var(--cream-text); background:#ffffff14; border-color:#ffffff26;
-  }
-  header nav a:focus-visible { outline:2px solid var(--sage); outline-offset:2px; }
+  header .sub { margin:0; font-size:.8125rem; color:var(--sage); }
 
   main { flex:1; overflow-y:auto; }
   .wrap { max-width:860px; margin:0 auto; padding:1.5rem; }
@@ -145,7 +135,7 @@
 </head>
 <body class="chat">
 
-<header>
+<header class="site-head">
   <span class="mark">
     <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
       <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
@@ -157,9 +147,11 @@
     <h1>Brainstorm &amp; plan</h1>
     <p class="sub">Hooks from outside the category, topics from inside it</p>
   </span>
-  <nav aria-label="Sections">
-    <a href="./" aria-current="page">Brainstorm &amp; plan</a>
-    <a href="./briefing.html">Briefing</a>
+  <nav class="site-nav" aria-label="Sections">
+    <a class="nav-link" href="./" aria-current="page">Brainstorm &amp; plan</a>
+    <a class="nav-link" href="./edit.html">Video editing</a>
+    <a class="nav-link" href="./output.html">Output</a>
+    <a class="nav-link" href="./briefing.html">Briefing</a>
   </nav>
 </header>
 

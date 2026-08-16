@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Video editing — Private Real Estate Lending</title>
+<link rel="stylesheet" href="./assets/nav.css">
+<style>
+  :root {
+    --cream-text:#EAE9D5; --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
+    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C; --ochre:#B5823F;
+    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
+    --s1:.5rem; --s2:.75rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57; --ochre:#D0A05C;
+    }
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink-body);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1080px; margin:0 auto; padding:var(--s5) var(--s4) var(--s6); }
+  h2 { color:var(--ink); font-weight:700; line-height:1.12; margin:0 0 var(--s2); font-size:1.5rem; }
+  h3 { color:var(--ink); font-weight:700; margin:0 0 var(--s2); font-size:1rem; }
+  .eyebrow {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin:0 0 var(--s1);
+  }
+  .lede { max-width:68ch; margin:0 0 var(--s5); }
+
+  .notice {
+    background:var(--card); border:1px dashed var(--clay); border-radius:4px;
+    padding:var(--s3) var(--s4); margin-bottom:var(--s5);
+  }
+  .notice h3 { color:var(--clay); }
+  .notice p { margin:0 0 var(--s2); font-size:.875rem; }
+  .notice p:last-child { margin-bottom:0; }
+  .notice code { font-family:var(--mono); font-size:.8125rem; background:var(--card-sunk); padding:.125rem .375rem; border-radius:2px; }
+
+  .step { margin-bottom:var(--s5); }
+  .card {
+    background:var(--card); border:1px solid var(--rule);
+    border-left:3px solid var(--emerald-bar); border-radius:4px; padding:var(--s3) var(--s4);
+  }
+
+  /* Intake */
+  .drop {
+    border:2px dashed var(--rule-strong); border-radius:4px;
+    background:var(--card-sunk); padding:var(--s6) var(--s4);
+    text-align:center; transition:border-color .15s ease, background .15s ease;
+  }
+  .drop.over { border-color:var(--accent); background:var(--card); }
+  .drop p { margin:0 0 var(--s2); }
+  .drop .hint { font-size:.8125rem; color:var(--ink-quiet); margin:0; }
+  .btn {
+    font-family:var(--sans); font-size:.875rem; font-weight:600; color:#F4F2E7;
+    background:var(--emerald); border:none; border-radius:4px;
+    padding:.5625rem 1.125rem; cursor:pointer;
+  }
+  .btn:hover { background:var(--emerald-bar); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn.ghost { background:transparent; color:var(--ink-body); border:1px solid var(--rule-strong); }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* Concept picker */
+  .concepts { display:flex; flex-direction:column; gap:.5rem; margin-top:var(--s3); }
+  .concept {
+    display:flex; gap:.75rem; align-items:flex-start; text-align:left; width:100%;
+    background:var(--card); border:1px solid var(--rule); border-radius:4px;
+    padding:.75rem .875rem; cursor:pointer; font-family:var(--sans);
+  }
+  .concept:hover { border-color:var(--accent); }
+  .concept[aria-pressed="true"] { border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent); }
+  .concept .t { font-weight:700; color:var(--ink); font-size:.9375rem; }
+  .concept .l { font-style:italic; color:var(--ink); font-size:.875rem; margin:.25rem 0; }
+  .concept .m { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
+
+  /* Queue */
+  .queue { display:flex; flex-direction:column; gap:.5rem; }
+  .job {
+    display:grid; grid-template-columns:auto 1fr auto; gap:.75rem; align-items:center;
+    background:var(--card); border:1px solid var(--rule); border-radius:4px; padding:.625rem .875rem;
+  }
+  .job .name { font-size:.875rem; color:var(--ink); word-break:break-all; }
+  .job .meta { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
+  .job .state {
+    font-family:var(--mono); font-size:.625rem; letter-spacing:.08em; text-transform:uppercase;
+    font-weight:700; padding:.1875rem .5rem; border-radius:999px; white-space:nowrap;
+  }
+  .state.ready   { color:var(--accent); border:1px solid var(--accent); }
+  .state.blocked { color:var(--ochre); border:1px solid var(--ochre); }
+  .state.rejected{ color:var(--clay);  border:1px solid var(--clay); }
+  .bar { height:3px; background:var(--card-sunk); border-radius:999px; overflow:hidden; margin-top:.375rem; }
+  .bar span { display:block; height:100%; background:var(--accent); width:0; }
+
+  .empty {
+    text-align:center; color:var(--ink-quiet); font-size:.875rem;
+    border:1px solid var(--rule); border-radius:4px; padding:var(--s5) var(--s4);
+  }
+  .sr-only {
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <span class="mark">
+    <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+  </span>
+  <span>
+    <h1>Video editing</h1>
+    <p class="sub">Raw footage in, short-form vertical out</p>
+  </span>
+  <nav class="site-nav" aria-label="Sections">
+    <a class="nav-link" href="./">Brainstorm &amp; plan</a>
+    <a class="nav-link" href="./edit.html" aria-current="page">Video editing</a>
+    <a class="nav-link" href="./output.html">Output</a>
+    <a class="nav-link" href="./briefing.html">Briefing</a>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- Stated up front rather than discovered after a failed upload. -->
+  <div class="notice" id="notice">
+    <h3>Processing is not connected yet</h3>
+    <p>
+      Footage can be selected and checked here, and a locked concept attached to
+      it, but nothing is uploaded or rendered — there is no processing service
+      behind this page yet. Files stay in your browser and go nowhere.
+    </p>
+    <p>
+      What is missing: somewhere to store the upload, a job queue, and a renderer.
+      Once those exist, set <code>PIPELINE_URL</code> at the top of the script in
+      <code>edit.html</code> and this notice disappears.
+    </p>
+  </div>
+
+  <section class="step">
+    <p class="eyebrow">Step one</p>
+    <h2>Choose what this footage is for</h2>
+    <p class="lede">
+      Locked concepts come from the planner. Attaching one carries its hook and
+      opening line into the edit. Skip it if this footage was not planned.
+    </p>
+    <div class="card">
+      <div id="concepts" class="concepts" role="group" aria-label="Locked concepts">
+        <p class="empty" id="concepts-empty">Loading locked concepts…</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="eyebrow">Step two</p>
+    <h2>Add raw footage</h2>
+    <div class="drop" id="drop">
+      <p><strong>Drop video files here</strong></p>
+      <p class="hint">or</p>
+      <p>
+        <button class="btn" type="button" id="pick">Choose files</button>
+        <input type="file" id="file" multiple accept="video/*" class="sr-only">
+      </p>
+      <p class="hint" id="accepts">MP4, MOV, WebM or MKV · up to 2 GB per file</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="eyebrow">Step three</p>
+    <h2>Queue</h2>
+    <p class="lede">
+      Each file becomes one vertical cut. Nothing here is sent anywhere until a
+      processing service is connected.
+    </p>
+    <div class="queue" id="queue">
+      <p class="empty" id="queue-empty">No footage added yet.</p>
+    </div>
+    <p style="margin-top:var(--s3)">
+      <button class="btn" type="button" id="start" disabled>Start processing</button>
+      <button class="btn ghost" type="button" id="clear" disabled>Clear all</button>
+    </p>
+  </section>
+
+</main>
+
+<script>
+/* Set this once a processing service exists. Empty keeps the page in the
+   honest, disconnected state above rather than pretending to upload. */
+const PIPELINE_URL = '';
+
+const MAX_BYTES = 2 * 1024 * 1024 * 1024;          // 2 GB
+const OK_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-matroska'];
+const OK_EXT = /\.(mp4|mov|webm|mkv|m4v)$/i;
+
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+const queueEl = document.getElementById('queue');
+const queueEmpty = document.getElementById('queue-empty');
+const startBtn = document.getElementById('start');
+const clearBtn = document.getElementById('clear');
+const conceptsEl = document.getElementById('concepts');
+const conceptsEmpty = document.getElementById('concepts-empty');
+
+let jobs = [];
+let chosenConcept = null;
+
+const bytes = (n) => n > 1e9 ? (n / 1e9).toFixed(2) + ' GB'
+                  : n > 1e6 ? Math.round(n / 1e6) + ' MB'
+                  : Math.round(n / 1e3) + ' KB';
+
+/* Locked batches are committed to the repo by tools/add-briefs.mjs. A missing
+   file is the normal state before the first batch, not an error. */
+fetch('./data/video-briefs.json')
+  .then((r) => r.ok ? r.json() : null)
+  .then((store) => {
+    const briefs = (store?.batches || []).flatMap((b) =>
+      (b.briefs || []).map((x) => ({ ...x, batch: b.id, lockedAt: b.lockedAt })));
+    if (!briefs.length) {
+      conceptsEmpty.textContent =
+        'No locked concepts yet. Plan a batch first, or add footage without one.';
+      return;
+    }
+    conceptsEmpty.remove();
+    briefs.forEach((b, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'concept';
+      btn.setAttribute('aria-pressed', 'false');
+      const body = document.createElement('span');
+      const t = document.createElement('span'); t.className = 't'; t.textContent = b.topic;
+      const l = document.createElement('span'); l.className = 'l'; l.textContent = '“' + b.opening_line + '”';
+      const m = document.createElement('span'); m.className = 'm';
+      m.textContent = [b.hook_form && ('HOOK: ' + b.hook_form), b.hook_source && ('via ' + b.hook_source),
+                       b.product, b.audience].filter(Boolean).join(' · ');
+      [t, l, m].forEach((n) => { n.style.display = 'block'; body.append(n); });
+      btn.append(body);
+      btn.addEventListener('click', () => {
+        const on = btn.getAttribute('aria-pressed') === 'true';
+        conceptsEl.querySelectorAll('.concept').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', on ? 'false' : 'true');
+        chosenConcept = on ? null : b;
+        renderQueue();
+      });
+      conceptsEl.append(btn);
+    });
+  })
+  .catch(() => { conceptsEmpty.textContent = 'Could not load locked concepts.'; });
+
+/* Reject before queueing, and say which rule was broken — a file silently
+   missing from the queue is worse than a refusal that explains itself. */
+function check(file) {
+  const typeOk = OK_TYPES.includes(file.type) || OK_EXT.test(file.name);
+  if (!typeOk) return 'Not a supported video format';
+  if (file.size > MAX_BYTES) return 'Larger than 2 GB';
+  if (file.size === 0) return 'File is empty';
+  return null;
+}
+
+function add(files) {
+  for (const file of files) {
+    const why = check(file);
+    jobs.push({
+      name: file.name,
+      size: file.size,
+      concept: chosenConcept ? chosenConcept.topic : null,
+      state: why ? 'rejected' : 'blocked',
+      why,
+    });
+  }
+  renderQueue();
+}
+
+function renderQueue() {
+  queueEl.querySelectorAll('.job').forEach((n) => n.remove());
+
+  if (!jobs.length) {
+    queueEmpty.hidden = false;
+    startBtn.disabled = clearBtn.disabled = true;
+    return;
+  }
+  queueEmpty.hidden = true;
+  clearBtn.disabled = false;
+  /* Start stays disabled while there is nothing to send it to. */
+  startBtn.disabled = !PIPELINE_URL || !jobs.some((j) => j.state !== 'rejected');
+
+  jobs.forEach((job, i) => {
+    const row = document.createElement('div');
+    row.className = 'job';
+
+    const left = document.createElement('div');
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = job.name;
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = [
+      bytes(job.size),
+      job.concept ? 'for: ' + job.concept : 'no concept attached',
+      job.why || '',
+    ].filter(Boolean).join(' · ');
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.append(document.createElement('span'));
+    left.append(name, meta, bar);
+
+    const state = document.createElement('span');
+    state.className = 'state ' + (job.state === 'rejected' ? 'rejected' : 'blocked');
+    state.textContent = job.state === 'rejected' ? 'rejected'
+                      : PIPELINE_URL ? 'queued' : 'waiting on pipeline';
+
+    const remove = document.createElement('button');
+    remove.className = 'btn ghost';
+    remove.type = 'button';
+    remove.textContent = 'Remove';
+    remove.setAttribute('aria-label', 'Remove ' + job.name);
+    remove.addEventListener('click', () => { jobs.splice(i, 1); renderQueue(); });
+
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.gap = '.5rem';
+    right.style.alignItems = 'center';
+    right.append(state, remove);
+
+    row.append(document.createElement('span'), left, right);
+    queueEl.append(row);
+  });
+}
+
+document.getElementById('pick').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => { add(fileInput.files); fileInput.value = ''; });
+
+['dragenter', 'dragover'].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => { if (e.dataTransfer?.files?.length) add(e.dataTransfer.files); });
+
+clearBtn.addEventListener('click', () => { jobs = []; renderQueue(); });
+
+if (PIPELINE_URL) document.getElementById('notice').hidden = true;
+
+renderQueue();
+</script>
+</body>
+</html>
