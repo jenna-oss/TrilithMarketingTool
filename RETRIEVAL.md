@@ -1,8 +1,8 @@
 # The corpora, for agents
 
-Two bodies of text live in Postgres, each behind one retrieval function. An
-agent answering a question should query these rather than be handed either
-corpus in a prompt.
+Three bodies of text live in Postgres, each behind one retrieval function. An
+agent answering a question should query these rather than be handed a corpus in
+a prompt.
 
 | Schema    | What it holds                                    | Entry point                  |
 | --------- | ------------------------------------------------ | ---------------------------- |
@@ -85,15 +85,15 @@ Two volume-ish fields, and they are not the same thing:
   hook running every week for two months is a different signal from one that
   spiked once.
 
-| Brand | Category | Patterns | Why it is here |
+| Brand | Category | Searchable | Why it is here |
 | --- | --- | ---: | --- |
-| NerdWallet | Consumer finance | 40 | Money anxiety, comparison, regret framing |
-| Alex Hormozi | Business education | 25 | Operator and broker voice, offer framing |
-| Chime | Consumer finance | 21 | Fast-benefit and challenge openers |
-| LendingTree | Consumer finance | 20 | Rate comparison and refinance structure |
-| Zillow | Real estate | 20 | Property decisions, agent authority |
-| Robert Kiyosaki | Finance education | 7 | Contrarian macro and asset framing |
-| Rocket Money | Consumer finance | 6 | Hidden-cost and confession openers |
+| Alex Hormozi | Business education | 87 | Operator and broker voice, offer framing |
+| NerdWallet | Consumer finance | 67 | Money anxiety, comparison, regret framing |
+| Zillow | Real estate | 52 | Property decisions, agent authority |
+| Chime | Consumer finance | 48 | Fast-benefit and challenge openers |
+| LendingTree | Consumer finance | 27 | Rate comparison and refinance structure |
+| Robert Kiyosaki | Finance education | 22 | Contrarian macro and asset framing |
+| Rocket Money | Consumer finance | 14 | Hidden-cost and confession openers |
 
 ```sql
 select * from adspy.search_hook_patterns(
