@@ -58,6 +58,37 @@ if (totals.wrote) {
   console.log(`Totals: ${ads.length} ads from ${advertiserCount} advertisers.`);
 }
 
+/* The date the page speaks as of. A briefing without one invites the reader to
+ * assume it is current, which is the failure mode worth designing against. */
+const asOf = new Date(corpus.updatedAt);
+const asOfText = asOf.toLocaleDateString('en-GB', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+});
+const stamp = replaceRegion(html, 'ASOF', asOfText);
+html = stamp.html;
+if (stamp.wrote) console.log(`As of: ${asOfText}`);
+
+/* Board cells carry data-ads="<advertiser>" and are filled from the corpus, so
+ * the table cannot drift from the long-tail table on the same page. Matching is
+ * prefix-based because our corpus records legal names — 'Lima One Capital, LLC'
+ * against a column that reads 'Lima One Capital'. */
+let filled = 0;
+html = html.replace(
+  /<(td|span)([^>]*?)data-ads="([^"]+)"([^>]*)>[\s\S]*?<\/\1>/g,
+  (_, tag, before, brand, after) => {
+    const needle = brand.toLowerCase();
+    const n = ads.filter((x) => String(x.advertiser).toLowerCase().startsWith(needle)).length;
+    filled += 1;
+    /* A table cell carries the whole phrase; an inline span sits inside a
+     * sentence that already supplies the words, so it gets the bare number. */
+    const body = tag === 'span'
+      ? String(n)
+      : (n === 0 ? '<span class="absent">no paid ads</span>' : `${n} live ${n === 1 ? 'ad' : 'ads'}`);
+    return `<${tag}${before}data-ads="${brand}"${after}>${body}</${tag}>`;
+  }
+);
+if (filled) console.log(`Filled ${filled} figures from the corpus.`);
+
 const a = html.indexOf(START);
 const b = html.indexOf(END);
 
@@ -65,9 +96,9 @@ const b = html.indexOf(END);
  * decision, not a failure — write whatever else changed and exit cleanly rather
  * than going red every morning. */
 if (a === -1 || b === -1 || b < a) {
-  if (totals.wrote) {
+  if (totals.wrote || stamp.wrote || filled) {
     await writeFile(PAGE, html);
-    console.log('Wrote the totals region. No AUTO:FEED region — skipping the feed.');
+    console.log('Wrote the automated regions. No AUTO:FEED region — skipping the feed.');
   } else {
     console.log('No AUTO regions in index.html — nothing to render.');
   }

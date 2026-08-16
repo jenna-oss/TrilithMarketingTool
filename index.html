@@ -205,6 +205,12 @@
     margin: var(--s4) 0 0;
   }
 
+  .as-of {
+    margin: var(--s4) 0 0;
+    font-size: .8125rem;
+    color: var(--sage);
+  }
+
   .ask-link {
     display: inline-block;
     font-size: .875rem;
@@ -846,6 +852,10 @@
         A read of the live advertising and organic output of the lenders Trilith
         competes with for the same borrower.
       </p>
+      <p class="as-of">
+        Ad data as of <!-- AUTO:ASOF:START -->16 August 2026<!-- AUTO:ASOF:END -->,
+        refreshed daily. The strategy conclusions are dated analysis and are not.
+      </p>
       <p style="margin:var(--s4) 0 0">
         <a class="ask-link" href="./ideas.html">Ask &amp; brainstorm &rarr;</a>
       </p>
@@ -866,7 +876,7 @@
         <thead>
           <tr>
             <th scope="col">Lender</th>
-            <th scope="col">Paid presence</th>
+            <th scope="col">Live Meta ads</th>
             <th scope="col">Landing pages</th>
             <th scope="col">Social reach</th>
             <th scope="col">Position they are buying</th>
@@ -875,63 +885,63 @@
         <tbody>
           <tr>
             <td class="brand">Kiavi</td>
-            <td class="num">123 creatives<br><span style="color:var(--ink-quiet)">66 img · 43 vid · 14 carousel</span></td>
+            <td class="num" data-ads="Kiavi">33 live ads</td>
             <td class="num">8</td>
             <td class="num">33.1K FB · 11.9K IG</td>
             <td class="claim">“You Find It, Kiavi will Fund It”</td>
           </tr>
           <tr>
             <td class="brand">Lima One Capital</td>
-            <td class="num">8 concepts<br><span style="color:var(--ink-quiet)">video only</span></td>
+            <td class="num" data-ads="Lima One Capital">26 live ads</td>
             <td class="num">4</td>
             <td class="num">15.5K FB · 8.2K IG</td>
             <td class="claim">“High leverage. Speed to close.”</td>
           </tr>
           <tr>
             <td class="brand">Visio Lending</td>
-            <td class="num">DSCR only</td>
+            <td class="num" data-ads="Visio Lending">21 live ads</td>
             <td class="num">4 <span style="color:var(--ink-quiet)">(2 broker)</span></td>
             <td class="num">1.7K FB · 1.6K IG</td>
             <td class="claim">“5-star host, meet the #1 DSCR lender”</td>
           </tr>
           <tr>
             <td class="brand">Anchor Loans</td>
-            <td class="num">organic only</td>
+            <td class="num" data-ads="Anchor Loans"><span class="absent">no paid ads</span></td>
             <td class="num">—</td>
             <td class="num">4.7K FB · <b>41.6K CEO IG</b></td>
             <td class="claim">“We focused on the opportunity”</td>
           </tr>
           <tr>
             <td class="brand">New Silver</td>
-            <td class="num">zero paid</td>
+            <td class="num" data-ads="New Silver">1 live ad</td>
             <td class="num">—</td>
             <td class="num">2.6K FB · 1.5K IG</td>
             <td class="claim">“Your lender should be your first call”</td>
           </tr>
-          <tr class="offbook">
-            <td class="brand">RCN Capital <span class="src">via Ad Library</span></td>
-            <td class="num">~15 active ads<br><span style="color:var(--ink-quiet)">100% broker-targeted</span></td>
+          <tr>
+            <td class="brand">RCN Capital</td>
+            <td class="num" data-ads="RCN Capital">10 live ads</td>
             <td class="num">broker referral</td>
             <td class="num">1.7K FB · 166 IG</td>
             <td class="claim">“Skip the Bank’s Red Tape”</td>
           </tr>
-          <tr class="offbook">
-            <td class="brand">LendingOne <span class="src">via Ad Library</span></td>
-            <td class="num">~10 active ads<br><span style="color:var(--ink-quiet)">launched Aug 3</span></td>
+          <tr>
+            <td class="brand">LendingOne</td>
+            <td class="num" data-ads="LendingOne">10 live ads</td>
             <td class="num">direct</td>
             <td class="num">3.3K FB · 8.1K IG</td>
             <td class="claim">“Your next deal should not stall waiting on your lender”</td>
           </tr>
-          <tr class="offbook">
-            <td class="brand">Renovo Financial <span class="src">via Ad Library</span></td>
-            <td class="num">2 ads</td>
+          <tr>
+            <td class="brand">Renovo Financial</td>
+            <td class="num" data-ads="Renovo Financial">2 live ads</td>
             <td class="num">direct</td>
             <td class="num">1.6K FB · 4.5K IG</td>
             <td class="claim">“National lending power. Local lending love.”</td>
           </tr>
-          <tr class="offbook">
-            <td class="brand">Temple View Capital <span class="src">via Ad Library</span></td>
-            <td class="num">2 ads</td>
+          <tr>
+            <td class="brand">Temple View Capital</td>
+            <td class="num" data-ads="Temple View Capital">2 live ads</td>
             <td class="num">direct</td>
             <td class="num">812 FB · 1.4K IG</td>
             <td class="claim">“Pain points we’ve experienced ourselves”</td>
@@ -943,7 +953,8 @@
     <div class="method" style="margin-top:var(--s4)">
       <h3>Spend and audience are not the same thing</h3>
       <p>
-        <strong>RCN Capital runs about fifteen live ads to an Instagram audience of 166.</strong>
+        <strong>RCN Capital runs <span data-ads="RCN Capital">10</span> live ads to an
+        Instagram audience of 166.</strong>
         It is buying reach outright rather than building it — which fits a strategy
         aimed at brokers, a few hundred of whom are worth more than a large consumer
         following. LendingOne is the mirror image: a comparable ad count on top of
