@@ -80,13 +80,20 @@ function line(c) {
 
 const cards = [];
 const failures = [];
+let loggedShape = false;
 
 for (const brand of BRANDS) {
   try {
     const body = await media(brand.id);
-    const list = Array.isArray(body) ? body : (body?.creatives ?? body?.rows);
+    /* REST calls it `media`; the MCP surface called it `creatives`. Accept both
+     * rather than assume, and report the shape when it is neither. */
+    const list = Array.isArray(body) ? body : (body?.media ?? body?.creatives ?? body?.rows);
     if (!Array.isArray(list)) {
       throw new Error(`unexpected shape: ${JSON.stringify(body).slice(0, 250)}`);
+    }
+    if (!loggedShape && list.length) {
+      console.log(`  creative fields: ${Object.keys(list[0]).join(', ')}`);
+      loggedShape = true;
     }
 
     const paid = list
