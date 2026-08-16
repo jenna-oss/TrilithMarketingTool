@@ -8,7 +8,7 @@ corpus in a prompt.
 | --------- | ------------------------------------------------ | ---------------------------- |
 | `adspy`   | 781 competitor ads, 256 advertisers               | `adspy.search_ads`           |
 | `content` | 37 Trilith pages, 254 passages                    | `content.search_content`     |
-| `adspy`   | 94 hook/USP patterns from adjacent advertisers    | `adspy.search_hook_patterns` |
+| `adspy`   | 139 hook/USP patterns from 7 outside advertisers   | `adspy.search_hook_patterns` |
 
 The first two answer *what to say*: what competitors are saying, and what
 Trilith has already said. The third answers *what shape to say it in*, and is
@@ -71,9 +71,19 @@ running 33. The Ad Library reports creatives, never budget.
 
 # Hook patterns — `adspy.hook_patterns`
 
-94 creative structures from five adjacent finance advertisers — Chime,
-LendingTree, NerdWallet, Rocket Money, Robert Kiyosaki — via the Spyglass
-corpus. `HOOK` is how a piece opens; `USP` is the claim it leads with.
+139 creative structures from seven advertisers outside the lending category, via
+the Spyglass corpus. `HOOK` is how a piece opens; `USP` is the claim it leads
+with.
+
+| Brand | Category | Patterns | Why it is here |
+| --- | --- | ---: | --- |
+| NerdWallet | Consumer finance | 40 | Money anxiety, comparison, regret framing |
+| Alex Hormozi | Business education | 25 | Operator and broker voice, offer framing |
+| Chime | Consumer finance | 21 | Fast-benefit and challenge openers |
+| LendingTree | Consumer finance | 20 | Rate comparison and refinance structure |
+| Zillow | Real estate | 20 | Property decisions, agent authority |
+| Robert Kiyosaki | Finance education | 7 | Contrarian macro and asset framing |
+| Rocket Money | Consumer finance | 6 | Hidden-cost and confession openers |
 
 ```sql
 select * from adspy.search_hook_patterns(
@@ -106,10 +116,23 @@ Ask and it can be re-pulled and extended to more brands in minutes. If Spyglass
 ever exposes a remote MCP endpoint or REST API with a token, this becomes a
 scheduled step like the other two.
 
-One documented judgement call: NerdWallet returned 50 patterns and 12 were
-artifacts of its influencer content — song lyrics, nature imagery, a Game Boy
-reaction — with no bearing on financial creative. Those were dropped; 38 kept.
-Every other brand was loaded whole.
+Documented judgement calls. Three brands were filtered on load, because their
+creator content carries patterns with no bearing on financial advertising:
+
+- **NerdWallet** — 50 returned, 12 dropped (song lyrics, nature imagery, a Game
+  Boy reaction).
+- **Zillow** — 37 returned, 17 dropped (astrology aesthetics, a Santa persona,
+  a Fantastic Four reference, music-career talk).
+- **Alex Hormozi** — 77 returned and truncated by the API, 25 kept. Most of the
+  remainder were near-duplicate revenue-reveal phrasings, plus AI-clone hooks
+  specific to his own product.
+
+Chime, LendingTree, Rocket Money and Robert Kiyosaki were loaded whole.
+
+Brands considered and skipped: Airbnb (traveller-facing, not host-facing),
+Robinhood and Acorns (retail-trading psychology, further from the audience than
+what is already loaded). Kiavi, Lima One and every other investor lender return
+empty and cannot be added.
 
 ---
 

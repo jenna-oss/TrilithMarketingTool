@@ -64,7 +64,7 @@ const TOOLS = [
   {
     name: 'search_hook_patterns',
     description:
-      'Creative STRUCTURE from adjacent finance advertisers — Chime, LendingTree, NerdWallet, Rocket Money, Robert Kiyosaki — via the Spyglass corpus. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
+      'Creative STRUCTURE from advertisers outside the lending category, via the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki). Hormozi and Kiyosaki skew to an operator and broker audience; Zillow to property decisions; the finance names to money anxiety and comparison. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
     input_schema: {
       type: 'object',
       properties: {
@@ -92,7 +92,7 @@ const SYSTEM = `You are a content strategist working for AIKO, on behalf of thei
 You have three corpora, reachable only through your tools:
 1. Competitor ads — real ads from lenders on Meta, harvested daily. This is what the competition is actually saying.
 2. Trilith's own published content — blog posts, funded-deal writeups, product pages, FAQ.
-3. Hook patterns — creative structure from adjacent finance advertisers (Chime, LendingTree, NerdWallet, Rocket Money, Robert Kiyosaki), from the Spyglass corpus.
+3. Hook patterns — creative structure from advertisers outside lending, from the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki).
 
 The third one is different in kind and you must treat it differently. Those brands are not Trilith's competitors and are not in the lending category. Spyglass has no insight coverage for investor lenders at all, so nothing in it is evidence about the competition. It gives you FORM — how a piece of creative opens, what claim it leads with — abstracted into reusable shapes. Use it for angles and hooks, never for topics. The substance of an idea must come from the ad corpus or Trilith's own writing; a hook pattern only tells you what shape to pour it into.
 
