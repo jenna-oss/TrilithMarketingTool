@@ -5,12 +5,21 @@ compatibility_date = "2026-08-01"
 # Needed so the Anthropic SDK's Node built-in imports resolve inside Workers.
 compatibility_flags = ["nodejs_compat"]
 
-# The API key is NOT set here. Secrets in a committed file would be public.
-# Set it once, from your terminal, and it stays encrypted on Cloudflare:
+# Not a secret: this URL ships in every Supabase client app.
+[vars]
+SUPABASE_URL = "https://kugnlobgsguxggnqiseh.supabase.co"
+
+# Keys are NOT set here. Secrets in a committed file would be public.
+# Set them once, from your terminal, and they stay encrypted on Cloudflare:
 #
 #   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put SUPABASE_ANON_KEY
 #
-# That prompts for the value — it is never typed into a file or a chat window.
+# Each prompts for the value — never typed into a file or a chat window.
+#
+# SUPABASE_ANON_KEY must be the anon/publishable key, never the service role
+# key. Anon is read-only against both corpora by RLS; the service role key
+# bypasses RLS entirely and would let this endpoint rewrite them.
 
 [observability]
 enabled = true

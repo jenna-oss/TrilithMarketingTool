@@ -144,6 +144,39 @@ Both push steps need `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as
 repository secrets and skip themselves, without failing, when those are absent.
 The service key bypasses RLS — it belongs in secrets and nowhere else.
 
+## The ideation agent
+
+`ideas.html` is the page a strategist actually uses. It talks to the `/ideas`
+route on the Worker, which gives the model three tools rather than a corpus:
+
+| Tool                     | Backed by                |
+| ------------------------ | ------------------------ |
+| `search_competitor_ads`  | `public.adspy_search_ads` |
+| `search_trilith_content` | `public.content_search`   |
+| `trilith_coverage`       | `public.content_coverage` |
+
+It runs up to six rounds of searching before answering, and streams every
+search it makes to the page as it goes — an idea claiming a gap in the market
+is only worth anything if you can see the query behind it.
+
+The Worker reads Supabase with the **anon** key, so this route physically
+cannot write to either corpus. The system prompt carries the same caveats
+recorded here: ad count is not spend, `started` is not `first_seen`, absence
+from the corpus is not absence from the market, and a `sitemap-lastmod` date is
+not a publication date.
+
+Deploy:
+
+```
+cd worker && npm install
+npx wrangler secret put ANTHROPIC_API_KEY
+npx wrangler secret put SUPABASE_ANON_KEY
+npx wrangler deploy
+```
+
+Then set `WORKER_URL` at the top of the script in `ideas.html` and `ask.html`.
+Both pages show setup instructions and disable their input until it is set.
+
 ## Security
 
 Neither `adspy` nor `content` is exposed over PostgREST. Four wrappers in

@@ -13,6 +13,7 @@
  * ------------------------------------------------------------------------ */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { handleIdeas } from './ideas.js';
 
 const CORPUS_URL = 'https://jenna-oss.github.io/TrilithMarketingTool/data/ads.json';
 
@@ -99,6 +100,13 @@ export default {
       return new Response(JSON.stringify({ error: 'origin not allowed' }), {
         status: 403, headers: { ...headers, 'content-type': 'application/json' },
       });
+    }
+
+    /* Two routes, one Worker, so there is one deploy and one API key to
+     * manage. Anything that is not /ideas stays the ask-the-corpus endpoint,
+     * which ask.html calls at the bare Worker URL. */
+    if (new URL(request.url).pathname.replace(/\/+$/, '') === '/ideas') {
+      return handleIdeas(request, env, headers);
     }
 
     let body;
