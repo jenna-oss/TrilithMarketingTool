@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Competitive Intelligence — Private Real Estate Lending</title>
 
+<script src="./assets/theme.js"></script>
 <link rel="stylesheet" href="./assets/nav.css">
 <link rel="stylesheet" href="./assets/chat.css">
 <style>
@@ -225,60 +226,6 @@
   }
   .ask-link:hover { border-bottom-color: var(--sage); }
   .ask-link:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
-
-  /* ============================================================
-     Persistent nav
-
-     The briefing runs long, and the only route to the tools was
-     scrolling back to the masthead. This bar carries the same two
-     links and slides in once the masthead has left the screen.
-
-     Fixed, not sticky: a sticky bar occupies space in flow, so
-     translating it out of view would leave a gap at the top. Hidden
-     by default, which also means the page degrades honestly without
-     JS — the masthead links are still there and still work.
-     ============================================================ */
-
-  .topbar {
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 50;
-    background: var(--panel);
-    border-bottom: 1px solid #ffffff14;
-    transform: translateY(-100%);
-    opacity: 0;
-    transition: transform .22s ease, opacity .22s ease;
-  }
-  .topbar.is-shown { transform: none; opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { .topbar { transition: none; } }
-
-  .topbar-inner {
-    display: flex;
-    align-items: center;
-    gap: var(--s4);
-    padding: .5625rem 0;
-  }
-  .topbar .who {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    font-size: .75rem;
-    font-weight: 600;
-    letter-spacing: .02em;
-    color: var(--sage);
-    text-decoration: none;
-    min-width: 0;
-  }
-  .topbar .who span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .topbar .who:hover { color: var(--cream-text); }
-  .topbar nav { margin-left: auto; display: flex; gap: .375rem; flex: none; }
-  .topbar .ask-link { font-size: .8125rem; }
-
-  /* ============================================================
      Ask panel — the agent, available from anywhere in the document
 
      Floating rather than a section at the end: a question about the
@@ -348,14 +295,6 @@
     .ask-panel {
       right: 0; bottom: 0; width: 100vw; height: 100dvh; border-radius: 0; border: none;
     }
-  }
-
-  /* On a phone the label is the first thing worth dropping — the links
-     are the reason the bar exists. */
-  @media (max-width: 560px) {
-    .topbar .who span { display: none; }
-    .topbar nav { gap: var(--s3); }
-    .topbar .ask-link { font-size: .75rem; }
   }
 
   /* ============================================================
@@ -887,26 +826,39 @@
 
 <p class="sr-only">Competitive intelligence briefing on private real estate lending, prepared by AIKO for Trilith Funding. Covers nine named competitors and a long tail of roughly 249 advertisers, the creative each is running, the hooks and borrower pains the category works, how it converts, and five strategic conclusions.</p>
 
-<!-- ================= PERSISTENT NAV ================= -->
-<div class="topbar" id="topbar" hidden>
-  <div class="wrap topbar-inner">
-    <a class="who" href="#top">
-      <svg width="20" height="20" viewBox="0 0 30 30" aria-hidden="true">
-        <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.5"/>
-        <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
-              font-family="Poppins, Century Gothic, sans-serif"
-              font-size="7.5" font-weight="700" letter-spacing="0.5">AIKO</text>
-      </svg>
-      <span>Competitive Intelligence</span>
-    </a>
-    <nav class="site-nav" aria-label="Sections">
-    <a class="nav-link" href="./">Brainstorm &amp; plan</a>
-    <a class="nav-link" href="./edit.html">Video editing</a>
-    <a class="nav-link" href="./output.html">Output</a>
-    <a class="nav-link" href="./briefing.html" aria-current="page">Briefing</a>
-    </nav>
-  </div>
+
 </div>
+
+<header class="site-head">
+  <a class="site-brand" href="./">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+    <span>
+      <span class="name">Trilith marketing tool</span><br>
+      <span class="who">aikogroup.io — internal</span>
+    </span>
+  </a>
+
+  <nav class="site-nav" aria-label="Sections">
+    <span class="nav-group">
+      <span class="nav-group-label">Intelligence</span>
+      <a class="nav-link" href="./briefing.html" aria-current="page">Briefing</a>
+    </span>
+    <span class="nav-group">
+      <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./">Plan</a>
+      <a class="nav-link" href="./edit.html">Edit</a>
+      <a class="nav-link" href="./output.html">Output</a>
+    </span>
+    <button class="theme-toggle" id="theme-toggle" type="button"
+            aria-label="Toggle light and dark theme" aria-pressed="false">
+      <span data-theme-label>Dark</span>
+    </button>
+  </nav>
+</header>
 
 <!-- ================= MASTHEAD ================= -->
 <header class="masthead" id="top">
@@ -1905,28 +1857,6 @@
     });
   })();
 
-  /* Persistent nav. The bar ships with the hidden attribute so a page without
-     JS shows nothing at all rather than a bar stuck at the top; the masthead
-     links remain the fallback there. Revealed only once the masthead — which
-     carries the same two links — has scrolled out of view. */
-  (function () {
-    var bar = document.getElementById('topbar');
-    var masthead = document.getElementById('top');
-    if (!bar || !masthead) return;
-
-    bar.hidden = false;
-
-    /* Reveal once the masthead is all but gone. Measured rather than a fixed
-       number, because the masthead's height changes with the viewport. */
-    var threshold = 0;
-    function measure() { threshold = Math.max(masthead.offsetHeight - 64, 0); }
-    function update() { bar.classList.toggle('is-shown', window.scrollY > threshold); }
-
-    measure();
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', function () { measure(); update(); }, { passive: true });
-  })();
 
   /* Ask panel. Same agent as the planner page, mounted in a floating panel so a
      question about the board can be asked while looking at the board. */
@@ -1971,6 +1901,9 @@
       if (e.key === 'Escape' && !panel.hidden) shut();
     });
   })();
+
+
+if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
 </script>
 </body>
 </html>

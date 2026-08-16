@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Video editing — Private Real Estate Lending</title>
+<script src="./assets/theme.js"></script>
 <link rel="stylesheet" href="./assets/nav.css">
 <style>
   :root {
@@ -116,22 +117,33 @@
 <body>
 
 <header class="site-head">
-  <span class="mark">
-    <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
+  <a class="site-brand" href="./">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
       <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
       <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
             font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
     </svg>
-  </span>
-  <span>
-    <h1>Video editing</h1>
-    <p class="sub">Raw footage in, short-form vertical out</p>
-  </span>
+    <span>
+      <span class="name">Trilith marketing tool</span><br>
+      <span class="who">aikogroup.io — internal</span>
+    </span>
+  </a>
+
   <nav class="site-nav" aria-label="Sections">
-    <a class="nav-link" href="./">Brainstorm &amp; plan</a>
-    <a class="nav-link" href="./edit.html" aria-current="page">Video editing</a>
-    <a class="nav-link" href="./output.html">Output</a>
-    <a class="nav-link" href="./briefing.html">Briefing</a>
+    <span class="nav-group">
+      <span class="nav-group-label">Intelligence</span>
+      <a class="nav-link" href="./briefing.html">Briefing</a>
+    </span>
+    <span class="nav-group">
+      <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./">Plan</a>
+      <a class="nav-link" href="./edit.html" aria-current="page">Edit</a>
+      <a class="nav-link" href="./output.html">Output</a>
+    </span>
+    <button class="theme-toggle" id="theme-toggle" type="button"
+            aria-label="Toggle light and dark theme" aria-pressed="false">
+      <span data-theme-label>Dark</span>
+    </button>
   </nav>
 </header>
 
@@ -355,6 +367,9 @@ clearBtn.addEventListener('click', () => { jobs = []; renderQueue(); });
 if (PIPELINE_URL) document.getElementById('notice').hidden = true;
 
 renderQueue();
+
+
+if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
 </script>
 </body>
 </html>

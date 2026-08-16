@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Brainstorm &amp; plan — Private Real Estate Lending</title>
+<script src="./assets/theme.js"></script>
 <link rel="stylesheet" href="./assets/nav.css">
 <link rel="stylesheet" href="./assets/chat.css">
 <style>
@@ -41,15 +42,7 @@
     margin:0; background:var(--ground); color:var(--ink-body);
     font-family:var(--sans); font-size:16px; line-height:1.6;
     display:flex; flex-direction:column; -webkit-font-smoothing:antialiased;
-  }
-
-  header {
-    background:var(--panel); color:var(--cream-text);
-    padding:1.25rem 1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
-  }
-  header .mark { display:inline-flex; align-items:center; gap:.625rem; }
-  header h1 { margin:0; font-size:1.0625rem; font-weight:700; color:var(--cream-text); letter-spacing:-.01em; }
-  header .sub { margin:0; font-size:.8125rem; color:var(--sage); }
+  }
 
   main { flex:1; overflow-y:auto; }
   .wrap { max-width:860px; margin:0 auto; padding:1.5rem; }
@@ -136,22 +129,33 @@
 <body class="chat">
 
 <header class="site-head">
-  <span class="mark">
-    <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
+  <a class="site-brand" href="./">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
       <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
       <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
             font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
     </svg>
-  </span>
-  <span>
-    <h1>Brainstorm &amp; plan</h1>
-    <p class="sub">Hooks from outside the category, topics from inside it</p>
-  </span>
+    <span>
+      <span class="name">Trilith marketing tool</span><br>
+      <span class="who">aikogroup.io — internal</span>
+    </span>
+  </a>
+
   <nav class="site-nav" aria-label="Sections">
-    <a class="nav-link" href="./" aria-current="page">Brainstorm &amp; plan</a>
-    <a class="nav-link" href="./edit.html">Video editing</a>
-    <a class="nav-link" href="./output.html">Output</a>
-    <a class="nav-link" href="./briefing.html">Briefing</a>
+    <span class="nav-group">
+      <span class="nav-group-label">Intelligence</span>
+      <a class="nav-link" href="./briefing.html">Briefing</a>
+    </span>
+    <span class="nav-group">
+      <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./" aria-current="page">Plan</a>
+      <a class="nav-link" href="./edit.html">Edit</a>
+      <a class="nav-link" href="./output.html">Output</a>
+    </span>
+    <button class="theme-toggle" id="theme-toggle" type="button"
+            aria-label="Toggle light and dark theme" aria-pressed="false">
+      <span data-theme-label>Dark</span>
+    </button>
   </nav>
 </header>
 
@@ -402,6 +406,9 @@ function renderPlan(wrapper, data) {
   wrapper.append(list, bar);
   list.scrollIntoView({ block: 'nearest' });
 }
+
+
+if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
 </script>
 </body>
 </html>
