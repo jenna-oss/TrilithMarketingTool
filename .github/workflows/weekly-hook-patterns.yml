@@ -1,0 +1,75 @@
+name: Weekly hook patterns
+
+# Refreshes the Spyglass hook/USP corpus.
+#
+# Weekly, not daily, and separate from the ad pull: Spyglass bills credits per
+# row returned, and creative structure moves far more slowly than ad inventory.
+# Seven brands x two insight types is fourteen calls a week.
+#
+# No browser here, so this job is small and fast — the ad pull's Chromium
+# install is the slow part and is not needed to call an API.
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'   # Mondays 12:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-hook-patterns
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Both scripts skip themselves with a note when their secret is absent,
+      # so this job stays green until the keys are wired up.
+      - name: Pull from Spyglass
+        env:
+          SPYGLASS_API_KEY: ${{ secrets.SPYGLASS_API_KEY }}
+        run: node tools/pull-spyglass.mjs
+
+      # Commit before pushing to the database, for the same reason the ad pull
+      # does: the harvest is the thing that costs money and cannot be repeated
+      # for free, so it lands in git before anything else can fail.
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/hook-patterns.json
+          if git diff --staged --quiet; then
+            echo "No change in hook patterns this week."
+            exit 0
+          fi
+          git commit -m "Weekly hook patterns: $(date -u +%Y-%m-%d)"
+
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected — rebasing onto origin/main and retrying."
+            git pull --rebase --autostash origin main || {
+              echo "::error::Rebase failed; leaving the branch untouched."
+              exit 1
+            }
+          done
+          echo "::error::Could not push after 3 attempts."
+          exit 1
+
+      - name: Push to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node tools/push-hook-patterns.mjs

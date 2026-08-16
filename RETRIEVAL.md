@@ -109,12 +109,43 @@ Negative means the brand is leaning on that pattern less than it was.
 
 ## Refreshing it
 
-**This one does not refresh itself.** Spyglass is an MCP connector, not an HTTP
-API with credentials the CI job could use, so `hook_patterns` is loaded by hand
-and every row carries `captured_at` so staleness is visible rather than assumed.
-Ask and it can be re-pulled and extended to more brands in minutes. If Spyglass
-ever exposes a remote MCP endpoint or REST API with a token, this becomes a
-scheduled step like the other two.
+`.github/workflows/weekly-hook-patterns.yml`, Mondays 12:00 UTC.
+`tools/pull-spyglass.mjs` calls `GET /brands/{id}/insights` on
+`https://app.spyglass.so/api/v1` for a pinned brand list;
+`tools/push-hook-patterns.mjs` sends the result through `hook_patterns_upsert`.
+Needs `SPYGLASS_API_KEY` as a repository secret, alongside the two Supabase
+ones. Both scripts skip themselves, without failing, when their secret is
+absent.
+
+Three deliberate choices, all driven by Spyglass billing **credits per row
+returned**:
+
+- **Weekly, not daily.** Creative structure moves far more slowly than ad
+  inventory. Seven brands x two insight types is fourteen calls a week.
+- **Not a live agent tool.** Wiring Spyglass into the agent directly would spend
+  credits on every question anyone asks, with no ceiling. The agent reads the
+  Postgres copy instead.
+- **Brand ids are pinned, not re-searched.** Re-resolving names each run would
+  spend credits rediscovering ids that never change, and risks latching onto a
+  different brand when a name is ambiguous.
+
+Only `HOOK` and `USP` are pulled. `TARGET_PERSONA` and `MEDIA_MIX` exist and
+answer a different question; add them to `TYPES` in the harvester if you want
+them, and expect the credit cost to rise accordingly.
+
+### Muting instead of deleting
+
+The scheduled refresh loads whatever the API returns, which will include the
+creator-content noise that was filtered by hand on the first load. Rather than
+re-delete those rows every week, set `muted = true`:
+
+```sql
+update adspy.hook_patterns set muted = true
+where brand_id = '7129388593' and label ilike '%astrology%';
+```
+
+Muted rows are excluded from search and the refresh never clears the flag, so
+the judgement survives and stays visible instead of being reapplied by hand.
 
 Documented judgement calls. Three brands were filtered on load, because their
 creator content carries patterns with no bearing on financial advertising:
