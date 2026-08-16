@@ -64,14 +64,17 @@ const TOOLS = [
   {
     name: 'search_hook_patterns',
     description:
-      'Creative STRUCTURE from advertisers outside the lending category, via the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki). Hormozi and Kiyosaki skew to an operator and broker audience; Zillow to property decisions; the finance names to money anxiety and comparison. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
+      'Creative STRUCTURE from advertisers outside the lending category, via the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki). Hormozi and Kiyosaki skew to an operator and broker audience; Zillow to property decisions; the finance names to money anxiety and comparison. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. Each result carries weeks_running — how many weeks the pattern kept appearing, present on every row and the better signal for whether a form is working — and times_used, a raw count that is null on most rows because the source does not report one. Null there means unknown, not unused, so never describe a pattern as unused on the strength of it. `change` is Spyglass's own percentage change for that pattern against the previous window — it is not a share of the brand's mix, and it says nothing about whether the pattern performed; a negative number means the brand is using the form less than it was, and the reason is not in this data. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
     input_schema: {
       type: 'object',
       properties: {
         query: { type: 'string', description: 'Words describing the kind of angle you want.' },
         insight_type: { type: 'string', enum: ['HOOK', 'USP'] },
         brand: { type: 'string', description: 'Partial brand name.' },
-        min_total: { type: 'integer', description: 'Only patterns used at least this many times.' },
+        min_total: {
+          type: 'integer',
+          description: 'Only patterns with a known usage count of at least this. Most patterns have no count, and those are returned regardless rather than dropped — so this narrows rather than filters. Prefer sorting on weeks_running.',
+        },
         limit: { type: 'integer', description: 'Default 15, max 40.' },
       },
     },
@@ -210,7 +213,13 @@ async function runTool(env, name, input) {
       brand: r.brand_name,
       type: r.type_tag,
       pattern: r.label,
+      /* Null on most rows: the REST endpoint reports no usage count, so only
+       * patterns seeded from the MCP surface carry one. Null means unknown,
+       * never zero — say so rather than reporting a pattern as unused. */
       times_used: r.total,
+      /* Weeks the pattern kept appearing. The signal that is present on
+       * everything, and the better one for "is this working". */
+      weeks_running: r.weeks_active,
       /* Spyglass's own change figure against the previous window. Negative
        * means the brand is leaning on the pattern less than it was. */
       change: r.percent_delta,
