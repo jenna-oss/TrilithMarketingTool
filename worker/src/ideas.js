@@ -64,7 +64,7 @@ const TOOLS = [
   {
     name: 'search_hook_patterns',
     description:
-      'Creative STRUCTURE from advertisers outside the lending category, via the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki). Hormozi and Kiyosaki skew to an operator and broker audience; Zillow to property decisions; the finance names to money anxiety and comparison. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. Each result carries weeks_running — how many weeks the pattern kept appearing, present on every row and the better signal for whether a form is working — and times_used, a raw count that is null on most rows because the source does not report one. Null there means unknown, not unused, so never describe a pattern as unused on the strength of it. `change` is Spyglass's own percentage change for that pattern against the previous window — it is not a share of the brand's mix, and it says nothing about whether the pattern performed; a negative number means the brand is using the form less than it was, and the reason is not in this data. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
+      'Creative STRUCTURE from advertisers outside the lending category, via the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki). Hormozi and Kiyosaki skew to an operator and broker audience; Zillow to property decisions; the finance names to money anxiety and comparison. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. Each result carries weeks_running — how many weeks the pattern kept appearing, present on every row and the better signal for whether a form is working — and times_used, a raw count that is null on most rows because the source does not report one. Null there means unknown, not unused, so never describe a pattern as unused on the strength of it. `change` is the percentage change Spyglass reports for that pattern against the previous window — it is not a share of the overall mix for that brand, and it says nothing about whether the pattern performed; a negative number means the brand is using the form less than it was, and the reason is not in this data. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
     input_schema: {
       type: 'object',
       properties: {
@@ -151,6 +151,11 @@ export function explain(err, fallback) {
   const text = String(err?.message || '');
   if (status === 401 || status === 403 || /authentication|api[- ]?key/i.test(text)) {
     return 'The API key is missing or invalid on the server.';
+  }
+  /* Arrives as a plain 400, which reads as "your request was malformed" when
+   * the request was fine and the account simply has no credit. */
+  if (/credit balance/i.test(text)) {
+    return 'The Anthropic account is out of credits. Top up under Plans & Billing at console.anthropic.com.';
   }
   if (status === 429) return 'Rate limited — wait a moment and try again.';
   if (status >= 500) return `Model error (${status}).`;
