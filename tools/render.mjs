@@ -97,13 +97,58 @@ try {
   creatives = JSON.parse(await readFile(join(ROOT, 'data', 'creatives.json'), 'utf8'));
 } catch { /* not harvested yet */ }
 
-if (creatives?.cards?.length) {
-  const cards = creatives.cards;
+/* The board lenders, in wall order, with the prefix that matches our corpus. */
+const WALL_BRANDS = [
+  { slug: 'kiavi',  label: 'Kiavi',        corpus: 'kiavi' },
+  { slug: 'lima',   label: 'Lima One',     corpus: 'lima one' },
+  { slug: 'visio',  label: 'Visio',        corpus: 'visio lending' },
+  { slug: 'anchor', label: 'Anchor',       corpus: 'anchor loans' },
+  { slug: 'silver', label: 'New Silver',   corpus: 'new silver' },
+  { slug: 'rcn',    label: 'RCN',          corpus: 'rcn capital' },
+  { slug: 'l1',     label: 'LendingOne',   corpus: 'lendingone' },
+  { slug: 'renovo', label: 'Renovo',       corpus: 'renovo financial' },
+  { slug: 'temple', label: 'Temple View',  corpus: 'temple view capital' },
+];
 
-  const order = ['kiavi', 'lima', 'visio', 'anchor', 'silver', 'rcn', 'l1', 'renovo', 'temple'];
+const TOP_UP_TO = 3;
+
+if (creatives?.cards?.length) {
+  const cards = [...creatives.cards];
+
+  /* Spyglass only carries paid creative for some of these lenders — three of
+   * nine on the first run — but our own Ad Library sweep has copy for the rest.
+   * Top those up with text-only cards so the wall covers everyone who is
+   * actually in market, rather than only whoever Spyglass indexes. Same design
+   * the hand-built wall had, which mixed both sources. */
+  for (const b of WALL_BRANDS) {
+    const have = cards.filter((c) => c.slug === b.slug).length;
+    if (have >= TOP_UP_TO) continue;
+
+    const mine = ads
+      .filter((x) => String(x.advertiser).toLowerCase().startsWith(b.corpus))
+      .sort((x, y) => Date.parse(y.started || 0) - Date.parse(x.started || 0))
+      .slice(0, TOP_UP_TO - have);
+
+    for (const ad of mine) {
+      cards.push({
+        slug: b.slug,
+        brand: b.label,
+        category: null,
+        line: ad.copy.replace(/\s+/g, ' ').trim().slice(0, 150),
+        mediaType: 'AD LIBRARY',
+        mediaUrl: `https://www.facebook.com/ads/library/?id=${ad.libraryId}`,
+        thumbnailUrl: null,
+        daysRun: null,
+        started: ad.started || null,
+      });
+    }
+  }
+
+  const order = WALL_BRANDS.map((b) => b.slug);
+  cards.sort((x, y) => order.indexOf(x.slug) - order.indexOf(y.slug));
   const present = order.filter((slug) => cards.some((c) => c.slug === slug));
 
-  const labels = new Map();
+  const labels = new Map(WALL_BRANDS.map((b) => [b.slug, b.label]));
   for (const c of cards) if (!labels.has(c.slug)) labels.set(c.slug, c.brand);
 
   const buttons = [
@@ -118,9 +163,17 @@ if (creatives?.cards?.length) {
      * has not checked. Omit it rather than print a zero. */
     const age = c.daysRun ? ` ${c.daysRun}d` : '';
     const who = c.category ? `${c.brand} · ${c.category}` : c.brand;
+
+    /* Ad Library cards have no artwork — Meta does not hand it over. Use the
+     * launch date in the thumbnail slot, as the removed live-feed section did,
+     * rather than a broken image. */
+    const thumb = c.thumbnailUrl
+      ? `<img class="thumb" loading="lazy" decoding="async" alt="${esc(c.brand)} ad still" src="${esc(c.thumbnailUrl)}">`
+      : `<span class="thumb-none">${esc(String(c.started || '').replace(/,.*/, '').toUpperCase())}</span>`;
+
     return `
       <a class="creative" data-b="${esc(c.slug)}" href="${esc(c.mediaUrl)}">
-        <img class="thumb" loading="lazy" decoding="async" alt="${esc(c.brand)} ad still" src="${esc(c.thumbnailUrl)}">
+        ${thumb}
         <span class="body">
           <span class="who">${esc(who)}</span>
           <span class="line">${esc(c.line)}</span>
