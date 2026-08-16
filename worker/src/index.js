@@ -13,7 +13,7 @@
  * ------------------------------------------------------------------------ */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { handleIdeas } from './ideas.js';
+import { handleIdeas, explain } from './ideas.js';
 
 const CORPUS_URL = 'https://jenna-oss.github.io/TrilithMarketingTool/data/ads.json';
 
@@ -88,7 +88,7 @@ function cors(origin) {
 const sse = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get('Origin') || '';
     const headers = cors(origin);
 
@@ -106,7 +106,7 @@ export default {
      * manage. Anything that is not /ideas stays the ask-the-corpus endpoint,
      * which ask.html calls at the bare Worker URL. */
     if (new URL(request.url).pathname.replace(/\/+$/, '') === '/ideas') {
-      return handleIdeas(request, env, headers);
+      return handleIdeas(request, env, headers, ctx);
     }
 
     let body;
@@ -133,11 +133,15 @@ export default {
 
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        const enc = new TextEncoder();
-        const send = (e, d) => controller.enqueue(enc.encode(sse(e, d)));
+    /* See the note in ideas.js: work driven from ReadableStream.start() is torn
+     * down as soon as this handler returns, so the answer never streamed. The
+     * TransformStream is kept alive by ctx.waitUntil instead. */
+    const enc = new TextEncoder();
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    const send = (e, d) => writer.write(enc.encode(sse(e, d)));
 
+    const work = (async () => {
         try {
           send('meta', {
             ads: corpus.count,
@@ -192,20 +196,19 @@ export default {
             },
           });
         } catch (err) {
-          /* Distinguish what the user can act on from what they can't. */
-          let message = 'Something went wrong answering that.';
-          if (err instanceof Anthropic.RateLimitError) message = 'Rate limited — wait a moment and ask again.';
-          else if (err instanceof Anthropic.AuthenticationError) message = 'The API key is missing or invalid on the server.';
-          else if (err instanceof Anthropic.APIConnectionError) message = 'Could not reach the model. Try again.';
-          else if (err instanceof Anthropic.APIStatusError) message = `Model error (${err.status}).`;
-          send('error', { message });
+          /* Distinguish what the user can act on from what they can't. See the
+           * note on explain() — the instanceof form threw inside this very
+           * catch block, swallowing every error the route produced. */
+          console.error('ask route failed:', err?.name, err?.message);
+          send('error', { message: explain(err, 'Something went wrong answering that.') });
         } finally {
-          controller.close();
+          await writer.close();
         }
-      },
-    });
+    })();
 
-    return new Response(stream, {
+    ctx.waitUntil(work);
+
+    return new Response(readable, {
       headers: {
         ...headers,
         'content-type': 'text/event-stream; charset=utf-8',

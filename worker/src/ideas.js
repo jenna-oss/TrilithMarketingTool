@@ -116,6 +116,28 @@ async function rpc(env, fn, args) {
 
 const clamp = (n, def, max) => Math.min(Math.max(Number(n) || def, 1), max);
 
+/* Turn an SDK error into something the page can act on.
+ *
+ * Deliberately not `err instanceof Anthropic.RateLimitError`: those classes are
+ * not defined on the bundled default export, so the comparison threw
+ * "Right-hand side of 'instanceof' is not an object" *inside the catch block* —
+ * which meant no error ever reached the client and the stream just ended. Match
+ * on status and name instead, which survive any bundling. */
+export function explain(err, fallback) {
+  const status = Number(err?.status);
+  const text = String(err?.message || '');
+  if (status === 401 || status === 403 || /authentication|api[- ]?key/i.test(text)) {
+    return 'The API key is missing or invalid on the server.';
+  }
+  if (status === 429) return 'Rate limited — wait a moment and try again.';
+  if (status >= 500) return `Model error (${status}).`;
+  if (status >= 400) return `Request rejected by the model (${status}).`;
+  if (/connection|network|fetch failed|timeout/i.test(text) || err?.name === 'APIConnectionError') {
+    return 'Could not reach the model. Try again.';
+  }
+  return fallback;
+}
+
 async function runTool(env, name, input) {
   if (name === 'search_competitor_ads') {
     const rows = await rpc(env, 'adspy_search_ads', {
@@ -183,9 +205,16 @@ function describe(name, input) {
   return { label, detail: bits.join(' · ') || 'everything' };
 }
 
-export async function handleIdeas(request, env, headers) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
-    return json({ error: 'SUPABASE_URL / SUPABASE_ANON_KEY are not configured on the Worker.' }, 503, headers);
+export async function handleIdeas(request, env, headers, ctx) {
+  /* Name the missing binding rather than both. A secret created with an empty
+   * value looks present to `wrangler secret list` and to the version metadata,
+   * so "one of these two is unset" sends you looking in the wrong place. */
+  const missing = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'].filter((k) => !env[k]);
+  if (missing.length) {
+    return json({
+      error: `Not configured on the Worker: ${missing.join(', ')}.`,
+      hint: 'SUPABASE_URL comes from [vars] in wrangler.toml; SUPABASE_ANON_KEY from `npx wrangler secret put SUPABASE_ANON_KEY`.',
+    }, 503, headers);
   }
 
   let body;
@@ -207,13 +236,25 @@ export async function handleIdeas(request, env, headers) {
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const enc = new TextEncoder();
-      const send = (e, d) => controller.enqueue(enc.encode(`event: ${e}\ndata: ${JSON.stringify(d)}\n\n`));
+  /* Write through a TransformStream kept alive by ctx.waitUntil, rather than
+   * doing the work inside ReadableStream.start(). Workers tears down pending
+   * async work once the handler returns, so the start() form delivered the
+   * first event and then closed the connection the moment it awaited the
+   * model — a 200 with a truncated body and no exception anywhere. */
+  const enc = new TextEncoder();
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const send = (e, d) => writer.write(enc.encode(`event: ${e}\ndata: ${JSON.stringify(d)}\n\n`));
 
+  const work = (async () => {
       const messages = [...history, { role: 'user', content: brief }];
       let totals = { input: 0, output: 0, cacheRead: 0, searches: 0 };
+
+      /* Emit immediately. The first round is usually thinking followed by tool
+       * calls, which produce no text, so without this the page sits silent for
+       * a long time and looks broken — and a silent stream is impossible to
+       * tell apart from a stalled one when debugging. */
+      send('start', { model: MODEL });
 
       try {
         for (let round = 0; round < MAX_ROUNDS; round++) {
@@ -295,19 +336,18 @@ export async function handleIdeas(request, env, headers) {
 
         send('done', { model: MODEL, usage: totals });
       } catch (err) {
-        let message = 'Something went wrong generating ideas.';
-        if (err instanceof Anthropic.RateLimitError) message = 'Rate limited — wait a moment and try again.';
-        else if (err instanceof Anthropic.AuthenticationError) message = 'The API key is missing or invalid on the server.';
-        else if (err instanceof Anthropic.APIConnectionError) message = 'Could not reach the model. Try again.';
-        else if (err instanceof Anthropic.APIStatusError) message = `Model error (${err.status}).`;
-        send('error', { message });
+        /* Surfaces in `wrangler tail`. The page gets a sanitised message; the
+         * operator needs the real one. */
+        console.error('ideas route failed:', err?.name, err?.message);
+        send('error', { message: explain(err, 'Something went wrong generating ideas.') });
       } finally {
-        controller.close();
+        await writer.close();
       }
-    },
-  });
+  })();
 
-  return new Response(stream, {
+  ctx.waitUntil(work);
+
+  return new Response(readable, {
     headers: {
       ...headers,
       'content-type': 'text/event-stream; charset=utf-8',
