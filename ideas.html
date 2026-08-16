@@ -69,6 +69,68 @@
                   font-weight:700; color:var(--accent); }
   .source .stat { font-family:var(--mono); font-size:.75rem; color:var(--ink-quiet); }
 
+  /* Planner — proposing a batch, reviewing it, locking it. */
+  .planner {
+    background:var(--card); border:1px solid var(--rule);
+    border-left:3px solid var(--clay); border-radius:4px;
+    padding:.875rem 1.25rem; margin-bottom:1.25rem;
+  }
+  .plan-form { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; font-size:.875rem; }
+  .plan-form label { color:var(--ink); font-weight:600; }
+  .plan-form input[type="number"] {
+    width:4rem; font-family:var(--sans); font-size:.875rem; color:var(--ink);
+    background:var(--card-sunk); border:1px solid var(--rule-strong);
+    border-radius:4px; padding:.375rem .5rem;
+  }
+  .plan-form input[type="text"] {
+    flex:1 1 16rem; font-family:var(--sans); font-size:.875rem; color:var(--ink);
+    background:var(--card-sunk); border:1px solid var(--rule-strong);
+    border-radius:4px; padding:.375rem .625rem;
+  }
+  .plan-form input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .plan-form button {
+    font-family:var(--sans); font-size:.8125rem; font-weight:600; color:#F4F2E7;
+    background:var(--clay); border:none; border-radius:4px;
+    padding:.4375rem 1rem; cursor:pointer;
+  }
+  .plan-form button:disabled { opacity:.5; cursor:not-allowed; }
+  .plan-note { margin:.625rem 0 0; font-size:.75rem; color:var(--ink-quiet); }
+
+  .briefs { display:flex; flex-direction:column; gap:.625rem; margin:.75rem 0 0; }
+  .brief {
+    display:flex; gap:.75rem; align-items:flex-start;
+    background:var(--card); border:1px solid var(--rule);
+    border-radius:4px; padding:.75rem .875rem;
+  }
+  .brief.dropped { opacity:.45; }
+  .brief input[type="checkbox"] { margin-top:.25rem; width:1rem; height:1rem; accent-color:var(--accent); flex:none; }
+  .brief .b-body { min-width:0; }
+  .brief .b-topic { font-weight:700; color:var(--ink); font-size:.9375rem; }
+  .brief .b-line {
+    font-style:italic; color:var(--ink); margin:.3125rem 0;
+    border-left:2px solid var(--emerald-bar); padding-left:.625rem;
+  }
+  .brief .b-meta { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
+  .brief .b-ev { font-size:.8125rem; margin-top:.3125rem; }
+
+  .lockbar {
+    display:flex; flex-wrap:wrap; gap:.625rem; align-items:center;
+    margin-top:.875rem; padding-top:.75rem; border-top:1px solid var(--rule);
+  }
+  .lockbar .count { font-size:.8125rem; color:var(--ink-body); margin-right:auto; }
+  .lockbar button {
+    font-family:var(--sans); font-size:.8125rem; font-weight:600;
+    border-radius:4px; padding:.4375rem 1rem; cursor:pointer; border:none;
+  }
+  .lockbar .lock { background:var(--emerald); color:#F4F2E7; }
+  .lockbar .copy { background:transparent; color:var(--ink-body); border:1px solid var(--rule-strong); }
+  .lockbar button:disabled { opacity:.5; cursor:not-allowed; }
+  .locked-note {
+    margin-top:.625rem; font-size:.8125rem; color:var(--ink-body);
+    background:var(--card-sunk); border-radius:4px; padding:.625rem .75rem;
+  }
+  .locked-note code { font-family:var(--mono); font-size:.75rem; }
+
   .starter-label {
     margin:0 0 .5rem; font-size:.625rem; letter-spacing:.14em;
     text-transform:uppercase; font-weight:700; color:var(--ink-quiet);
@@ -197,6 +259,21 @@
       </div>
     </div>
 
+    <div class="planner" id="planner">
+      <form class="plan-form" id="plan-form">
+        <label for="plan-count">Plan a batch of</label>
+        <input type="number" id="plan-count" min="1" max="12" value="5" aria-label="Number of videos">
+        <label for="plan-count">videos</label>
+        <input type="text" id="plan-focus" placeholder="Optional focus — e.g. brokers, DSCR, this month's news"
+               aria-label="Optional focus for the batch">
+        <button type="submit" id="plan-go">Propose</button>
+      </form>
+      <p class="plan-note">
+        Hooks come from the Spyglass patterns; topics from competitor ads and Trilith's
+        own writing. Nothing is locked until you confirm the selection.
+      </p>
+    </div>
+
     <p class="starter-label">Ask about the category</p>
     <div class="starters" id="starters">
       <button type="button">Which advertisers mention tax returns, and how do they phrase it?</button>
@@ -255,6 +332,10 @@ const composer = document.getElementById('composer');
 const input = document.getElementById('q');
 const sendBtn = document.getElementById('send');
 const setupNote = document.getElementById('setup');
+const planForm = document.getElementById('plan-form');
+const planCount = document.getElementById('plan-count');
+const planFocus = document.getElementById('plan-focus');
+const planGo = document.getElementById('plan-go');
 
 const history = [];
 let busy = false;
@@ -263,7 +344,8 @@ if (!WORKER_URL) {
   setupNote.hidden = false;
   input.disabled = sendBtn.disabled = true;
   input.placeholder = 'Backend not configured — see the note above';
-  document.querySelectorAll('#starters button').forEach((b) => { b.disabled = true; });
+  document.querySelectorAll('.starters button').forEach((b) => { b.disabled = true; });
+  planGo.disabled = planCount.disabled = planFocus.disabled = true;
 }
 
 /* Corpus sizes come from the committed data files, so the header is honest even
@@ -340,19 +422,17 @@ function addMessage(kind, who, text) {
   return { wrapper: el, bubble: b };
 }
 
-composer.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const brief = input.value.trim();
-  if (!brief || busy || !WORKER_URL) return;
-
+/* One streaming runner for both modes. Asking and planning hit the same
+   endpoint and differ only in the payload and in what they do with a `plan`
+   event, so the SSE handling lives in one place. */
+async function run(payload, userLabel, botLabel) {
   busy = true;
   sendBtn.disabled = true;
-  input.value = '';
-  input.style.height = 'auto';
+  planGo.disabled = true;
 
-  addMessage('user', 'You', brief);
+  addMessage('user', userLabel, payload.brief);
 
-  const { wrapper, bubble } = addMessage('bot', 'Answer', '');
+  const { wrapper, bubble } = addMessage('bot', botLabel, '');
   const searches = document.createElement('div');
   searches.className = 'searches';
   wrapper.insertBefore(searches, bubble);
@@ -363,7 +443,7 @@ composer.addEventListener('submit', async (e) => {
     const res = await fetch(`${WORKER_URL.replace(/\/+$/, '')}/ideas`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ brief, history }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok || !res.body) {
@@ -411,6 +491,13 @@ composer.addEventListener('submit', async (e) => {
           row.append(tag, detail, n);
           searches.append(row);
           row.scrollIntoView({ block: 'end' });
+        } else if (event === 'plan') {
+          renderPlan(wrapper, data);
+        } else if (event === 'note') {
+          const nte = document.createElement('div');
+          nte.className = 'usage';
+          nte.textContent = data.message;
+          wrapper.append(nte);
         } else if (event === 'error') {
           bubble.classList.remove('cursor');
           addMessage('error', 'Problem', data.message);
@@ -430,12 +517,166 @@ composer.addEventListener('submit', async (e) => {
     addMessage('error', 'Problem', err.message);
   } finally {
     bubble.classList.remove('cursor');
-    if (answer) history.push({ role: 'user', content: brief }, { role: 'assistant', content: answer });
+    if (answer) {
+      history.push({ role: 'user', content: payload.brief },
+                   { role: 'assistant', content: answer });
+    }
     busy = false;
     sendBtn.disabled = false;
+    planGo.disabled = false;
     input.focus();
   }
+}
+
+composer.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const brief = input.value.trim();
+  if (!brief || busy || !WORKER_URL) return;
+  input.value = '';
+  input.style.height = 'auto';
+  run({ brief, history }, 'You', 'Answer');
 });
+
+planForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (busy || !WORKER_URL) return;
+  const count = Math.min(Math.max(parseInt(planCount.value, 10) || 5, 1), 12);
+  planCount.value = count;
+  const focus = planFocus.value.trim();
+  const brief = focus
+    ? `Plan ${count} videos. Focus: ${focus}`
+    : `Plan ${count} videos.`;
+  /* No history: a batch should be planned against the corpora, not against
+     whatever was being discussed a moment ago. */
+  run({ mode: 'plan', count, brief, history: [] }, 'Plan request', 'Proposed batch');
+});
+
+/* Renders the proposed batch as a reviewable list. Nothing is committed here —
+   the reviewer drops what they do not want, then confirms the rest. */
+function renderPlan(wrapper, data) {
+  const briefs = data.briefs || [];
+  if (!briefs.length) return;
+
+  const list = document.createElement('div');
+  list.className = 'briefs';
+
+  briefs.forEach((b, i) => {
+    const row = document.createElement('div');
+    row.className = 'brief';
+
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = true;
+    box.setAttribute('aria-label', `Include: ${b.topic}`);
+    box.addEventListener('change', () => {
+      row.classList.toggle('dropped', !box.checked);
+      updateCount();
+    });
+
+    const body = document.createElement('div');
+    body.className = 'b-body';
+
+    const topic = document.createElement('div');
+    topic.className = 'b-topic';
+    topic.textContent = `${i + 1}. ${b.topic}`;
+
+    const line = document.createElement('div');
+    line.className = 'b-line';
+    line.textContent = `“${b.opening_line}”`;
+
+    const meta = document.createElement('div');
+    meta.className = 'b-meta';
+    meta.textContent = [
+      b.hook_form && `HOOK: ${b.hook_form}`,
+      b.hook_source && `via ${b.hook_source}`,
+      b.product,
+      b.audience,
+    ].filter(Boolean).join(' · ');
+
+    const ev = document.createElement('div');
+    ev.className = 'b-ev';
+    ev.innerHTML = render(b.evidence);
+
+    body.append(topic, line, meta, ev);
+    row.append(box, body);
+    row._brief = b;
+    row._box = box;
+    list.append(row);
+  });
+
+  const bar = document.createElement('div');
+  bar.className = 'lockbar';
+  const count = document.createElement('span');
+  count.className = 'count';
+  const lock = document.createElement('button');
+  lock.className = 'lock';
+  lock.type = 'button';
+  const copy = document.createElement('button');
+  copy.className = 'copy';
+  copy.type = 'button';
+  copy.textContent = 'Copy JSON';
+
+  function selected() {
+    return [...list.querySelectorAll('.brief')].filter((r) => r._box.checked).map((r) => r._brief);
+  }
+  function updateCount() {
+    const n = selected().length;
+    count.textContent = `${n} of ${briefs.length} selected`;
+    lock.textContent = n ? `Lock in ${n}` : 'Nothing selected';
+    lock.disabled = n === 0;
+    copy.disabled = n === 0;
+  }
+
+  function payload() {
+    return {
+      lockedAt: new Date().toISOString(),
+      requested: data.requested,
+      briefs: selected(),
+    };
+  }
+
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload(), null, 2));
+      copy.textContent = 'Copied';
+      setTimeout(() => { copy.textContent = 'Copy JSON'; }, 1600);
+    } catch {
+      copy.textContent = 'Copy failed';
+    }
+  });
+
+  lock.addEventListener('click', () => {
+    const body = payload();
+    const stamp = body.lockedAt.slice(0, 10);
+    const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `video-briefs-${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    /* Freeze the list once locked, so the file on disk and what is on screen
+       cannot drift apart. */
+    list.querySelectorAll('input[type="checkbox"]').forEach((c) => { c.disabled = true; });
+    lock.disabled = true;
+    copy.disabled = false;
+    lock.textContent = `Locked ${body.briefs.length}`;
+
+    const note = document.createElement('div');
+    note.className = 'locked-note';
+    note.innerHTML =
+      `<strong>${body.briefs.length} locked</strong> and downloaded as ` +
+      `<code>video-briefs-${stamp}.json</code>. To add it to the repo:<br>` +
+      `<code>node tools/add-briefs.mjs &lt;path to the file&gt;</code>`;
+    bar.after(note);
+  });
+
+  bar.append(count, copy, lock);
+  updateCount();
+  wrapper.append(list, bar);
+  list.scrollIntoView({ block: 'nearest' });
+}
 </script>
 </body>
 </html>

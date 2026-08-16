@@ -110,6 +110,70 @@ const TOOLS = [
   },
 ];
 
+/* Planning mode returns structure, not prose. Forcing it through a tool call
+ * means the shape is validated by the API rather than parsed out of markdown,
+ * so the page can render selectable cards instead of guessing at headings. */
+const PLAN_TOOL = {
+  name: 'submit_plan',
+  description:
+    'Call this exactly once, at the very end, with the finished set of video concepts. Do not call it before you have searched. Everything you propose must be traceable to something a search returned.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      briefs: {
+        type: 'array',
+        description: 'One entry per video requested, in the order you would shoot them.',
+        items: {
+          type: 'object',
+          properties: {
+            topic: {
+              type: 'string',
+              description: 'What the video is about, in one line. Comes from the ad corpus or Trilith content, never from a hook pattern.',
+            },
+            hook_form: {
+              type: 'string',
+              description: 'The hook structure being borrowed, named as a form — e.g. "first-person refusal narrative".',
+            },
+            hook_source: {
+              type: 'string',
+              description: 'Which outside brand the form came from, or "original" if it is not borrowed.',
+            },
+            opening_line: {
+              type: 'string',
+              description: 'The actual first line as it would be spoken or shown. Written, not described.',
+            },
+            evidence: {
+              type: 'string',
+              description: 'Why this is worth making, citing what a search returned — an advertiser and their phrasing, or a Trilith post and its gap.',
+            },
+            product: { type: 'string', enum: PRODUCTS },
+            audience: { type: 'string', enum: ['broker', 'borrower'] },
+          },
+          required: ['topic', 'hook_form', 'hook_source', 'opening_line', 'evidence'],
+        },
+      },
+    },
+    required: ['briefs'],
+  },
+};
+
+const PLAN_SYSTEM = `
+
+You are in PLANNING MODE. The brief names a number of videos. Produce exactly that many concepts and submit them with the submit_plan tool.
+
+Work in this order and do not skip it:
+1. Search the ad corpus and Trilith's own content for what is worth saying — the topics. Use count_ads if a claim about how common something is would sharpen the choice.
+2. Search hook patterns for the forms worth borrowing.
+3. Pair them. A concept is a topic carried by a hook form, and the two come from different places: substance from the lending corpora, shape from the outside brands.
+
+Rules for the set as a whole:
+- No two concepts may lean on the same hook form, and no two may cover the same topic. A batch of ten that is really one idea ten ways is a failure.
+- Prefer topics where the evidence shows a gap — something competitors are not saying, or something Trilith has argued in prose but never led with.
+- Every opening_line must be written out as it would actually be delivered. Not "a line about speed" but the line.
+- evidence must name a source. An advertiser and their words, or a Trilith URL. If you cannot cite it, do not propose it.
+
+Write a short paragraph before you submit, saying what you searched and how you split the set. Then call submit_plan once. Do not list the concepts in prose as well — the tool call is the deliverable.`;
+
 const SYSTEM = `You are a content strategist working for AIKO, on behalf of their client Trilith Funding — a private real estate lender that finances investors (fix-and-flip, bridge, DSCR, ground-up, BRRRR, multifamily).
 
 You have three corpora, reachable only through your tools:
@@ -356,7 +420,18 @@ export async function handleIdeas(request, env, headers, ctx) {
   try { body = await request.json(); }
   catch { return json({ error: 'body must be JSON' }, 400, headers); }
 
-  const brief = String(body.brief ?? '').trim();
+  /* Planning mode asks for a fixed number of concepts and returns them as
+   * structure. Capped at 12: past that the batch stops being reviewable, which
+   * defeats the point of confirming before locking. */
+  const planning = body.mode === 'plan';
+  const count = planning
+    ? Math.min(Math.max(parseInt(body.count, 10) || 5, 1), 12)
+    : 0;
+
+  /* In planning mode the count is the instruction; a free-text focus is
+   * optional, so synthesise a brief rather than rejecting an empty one. */
+  const brief = String(body.brief ?? '').trim()
+    || (planning ? `Plan ${count} videos.` : '');
   if (!brief) return json({ error: 'brief is required' }, 400, headers);
   if (brief.length > MAX_BRIEF_CHARS) {
     return json({ error: `brief must be under ${MAX_BRIEF_CHARS} characters` }, 400, headers);
@@ -408,8 +483,13 @@ export async function handleIdeas(request, env, headers, ctx) {
                  * bursty — a planning session, then nothing for hours. */
                 cache_control: { type: 'ephemeral', ttl: '1h' },
               },
+              /* After the cache breakpoint, so switching modes does not
+               * invalidate the cached prefix. */
+              ...(planning
+                ? [{ type: 'text', text: `${PLAN_SYSTEM}\n\nProduce exactly ${count} concepts.` }]
+                : []),
             ],
-            tools: TOOLS,
+            tools: planning ? [...TOOLS, PLAN_TOOL] : TOOLS,
             messages,
           });
 
@@ -434,6 +514,36 @@ export async function handleIdeas(request, env, headers, ctx) {
 
           const calls = final.content.filter((b) => b.type === 'tool_use');
           if (!calls.length) break;
+
+          /* submit_plan ends the run: it is the deliverable, not a search whose
+           * result feeds another round. The API has already validated the shape
+           * against the schema, so the page can render it directly. */
+          const submitted = calls.find((c) => c.name === 'submit_plan');
+          if (submitted) {
+            const briefs = Array.isArray(submitted.input?.briefs) ? submitted.input.briefs : [];
+            if (!briefs.length) {
+              send('error', { message: 'The planner returned no concepts. Try again, or ask for fewer.' });
+            } else {
+              send('plan', {
+                requested: count,
+                briefs: briefs.slice(0, count).map((b) => ({
+                  topic: String(b.topic || '').trim(),
+                  hook_form: String(b.hook_form || '').trim(),
+                  hook_source: String(b.hook_source || '').trim(),
+                  opening_line: String(b.opening_line || '').trim(),
+                  evidence: String(b.evidence || '').trim(),
+                  product: b.product || null,
+                  audience: b.audience || null,
+                })),
+              });
+              /* Say so rather than silently trimming — asking for ten and
+               * getting eight is something the reviewer should see. */
+              if (briefs.length < count) {
+                send('note', { message: `Returned ${briefs.length} of ${count} requested.` });
+              }
+            }
+            break;
+          }
 
           messages.push({ role: 'assistant', content: toApiBlocks(final.content) });
 
