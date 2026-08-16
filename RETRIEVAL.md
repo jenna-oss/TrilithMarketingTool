@@ -255,7 +255,7 @@ The service key bypasses RLS — it belongs in secrets and nowhere else.
 
 ## The agent
 
-`ideas.html` is the single page. It answers questions about the category and
+`index.html` is the front page — Ask & brainstorm. It answers questions about the category and
 proposes content, talking to the `/ideas` route on the Worker, which gives the
 model five tools rather than a corpus:
 
@@ -299,7 +299,7 @@ npx wrangler secret put SUPABASE_ANON_KEY
 npx wrangler deploy
 ```
 
-Then set `WORKER_URL` at the top of the script in `ideas.html`. The page shows
+Then set `WORKER_URL` at the top of the script in `index.html`. The page shows
 setup instructions and disables its input until it is set.
 
 ## Security

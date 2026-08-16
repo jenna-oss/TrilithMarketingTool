@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
- * Stage 3 of 3 — write the automated regions of index.html.
+ * Stage 3 of 3 — write the automated regions of briefing.html.
  *
  * The briefing is hand-written analysis and stays that way. Only the regions
  * between AUTO markers are touched:
@@ -17,7 +17,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PAGE = join(ROOT, 'index.html');
+const PAGE = join(ROOT, 'briefing.html');
 const START = '<!-- AUTO:FEED:START -->';
 const END = '<!-- AUTO:FEED:END -->';
 
@@ -207,7 +207,7 @@ if (a === -1 || b === -1 || b < a) {
     await writeFile(PAGE, html);
     console.log('Wrote the automated regions. No AUTO:FEED region — skipping the feed.');
   } else {
-    console.log('No AUTO regions in index.html — nothing to render.');
+    console.log('No AUTO regions in briefing.html — nothing to render.');
   }
   process.exit(0);
 }

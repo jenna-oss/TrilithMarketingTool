@@ -4,1804 +4,652 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Competitive Intelligence — Private Real Estate Lending</title>
-
+<title>Ask &amp; brainstorm — Private Real Estate Lending</title>
 <style>
-  /* ============================================================
-     AIKO design tokens
-     Brand: aikogroup.io
-     Light ground = cream, dark ground = forest. Both are native
-     to the brand, so the theme flip is a token swap, not an invert.
-     ============================================================ */
-
   :root {
-    /* brand constants — identical in both themes */
-    --forest:        #0B3529;
-    --forest-deep:   #072A1F;
-    --cream:         #ECE9D8;
-    --cream-text:    #EAE9D5;
-    --emerald:       #2C785E;
-    --emerald-bar:   #407C62;
-    --sage:          #6E9C86;
-
-    /* competitive-pressure ramp — deliberately off-accent
-       so brand green never reads as data */
-    --clay:          #A65A3C;
-    --ochre:         #B5823F;
-
-    /* themed surfaces */
-    --ground:        #ECE9D8;
-    --panel:         #0B3529;
-    --panel-deep:    #072A1F;
-    --card:          #F4F2E7;
-    --card-sunk:     #E3DFCB;
-
-    /* themed ink */
-    --ink:           #103224;
-    --ink-body:      #3B5850;
-    --ink-quiet:     #6F8279;
-    --ink-on-panel:  #EAE9D5;
-    --ink-on-panel-quiet: #6E9C86;
-
-    /* warm green-biased neutrals, derived off the cream —
-       never a pure grey */
-    --rule:          #D2CDB6;
-    --rule-strong:   #B8B29A;
-    --rule-on-panel: #1C4A3A;
-
-    --accent-on-ground: #2C785E;
-    --accent-on-panel:  #6E9C86;
-
-    /* type */
-    --sans: "Poppins", "Century Gothic", "Avenir Next", "Futura",
-            system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: ui-monospace, "Cascadia Mono", "Cascadia Code",
-            "SF Mono", Consolas, monospace;
-    --quote: "Iowan Old Style", "Palatino Linotype", Palatino,
-             Georgia, serif;
-
-    /* scale */
-    --s1: .5rem;  --s2: .75rem; --s3: 1rem;   --s4: 1.5rem;
-    --s5: 2rem;   --s6: 3rem;   --s7: 4.5rem; --s8: 6.5rem;
+    --forest:#0B3529; --forest-deep:#072A1F; --cream:#ECE9D8; --cream-text:#EAE9D5;
+    --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
+    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
+    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
   }
-
   @media (prefers-color-scheme: dark) {
     :root {
-      --ground:        #072A1F;
-      --panel:         #0B3529;
-      --panel-deep:    #04201760;
-      --card:          #0E3B2C;
-      --card-sunk:     #0A3125;
-
-      --ink:           #EAE9D5;
-      --ink-body:      #B9C9C0;
-      --ink-quiet:     #7E9A8D;
-      --ink-on-panel:  #EAE9D5;
-      --ink-on-panel-quiet: #6E9C86;
-
-      --rule:          #1C4A3A;
-      --rule-strong:   #2A5D4A;
-      --rule-on-panel: #1C4A3A;
-
-      --accent-on-ground: #6E9C86;
-      --accent-on-panel:  #6E9C86;
-
-      --clay:          #C87A57;
-      --ochre:         #D0A05C;
+      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
     }
   }
-
-  /* the viewer's toggle must win over the media query, both ways */
   :root[data-theme="light"] {
-    --ground: #ECE9D8;  --panel: #0B3529;  --panel-deep: #072A1F;
-    --card: #F4F2E7;    --card-sunk: #E3DFCB;
-    --ink: #103224;     --ink-body: #3B5850;  --ink-quiet: #6F8279;
-    --rule: #D2CDB6;    --rule-strong: #B8B29A;
-    --accent-on-ground: #2C785E;
-    --clay: #A65A3C;    --ochre: #B5823F;
+    --ground:#ECE9D8; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
   }
   :root[data-theme="dark"] {
-    --ground: #072A1F;  --panel: #0B3529;  --panel-deep: #04201760;
-    --card: #0E3B2C;    --card-sunk: #0A3125;
-    --ink: #EAE9D5;     --ink-body: #B9C9C0;  --ink-quiet: #7E9A8D;
-    --rule: #1C4A3A;    --rule-strong: #2A5D4A;
-    --accent-on-ground: #6E9C86;
-    --clay: #C87A57;    --ochre: #D0A05C;
+    --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+    --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+    --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
   }
 
   * { box-sizing: border-box; }
-
+  html, body { height: 100%; }
   body {
-    margin: 0;
-    background: var(--ground);
-    color: var(--ink-body);
-    font-family: var(--sans);
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
+    margin:0; background:var(--ground); color:var(--ink-body);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    display:flex; flex-direction:column; -webkit-font-smoothing:antialiased;
   }
 
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 var(--s4); }
-  .narrow { max-width: 68ch; }
+  header {
+    background:var(--panel); color:var(--cream-text);
+    padding:1.25rem 1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  }
+  header .mark { display:inline-flex; align-items:center; gap:.625rem; }
+  header h1 { margin:0; font-size:1.0625rem; font-weight:700; color:var(--cream-text); letter-spacing:-.01em; }
+  header .sub { margin:0; font-size:.8125rem; color:var(--sage); }
+  header nav { margin-left:auto; display:flex; gap:.375rem; }
+  header nav a {
+    color:var(--sage); font-size:.8125rem; font-weight:600; text-decoration:none;
+    padding:.3125rem .75rem; border-radius:999px; border:1px solid transparent;
+  }
+  header nav a:hover { color:var(--cream-text); border-color:var(--sage); }
+  /* The current section reads as selected rather than as another destination. */
+  header nav a[aria-current="page"] {
+    color:var(--cream-text); background:#ffffff14; border-color:#ffffff26;
+  }
+  header nav a:focus-visible { outline:2px solid var(--sage); outline-offset:2px; }
 
-  h1, h2, h3, h4 {
-    color: var(--ink);
-    font-weight: 700;
-    line-height: 1.12;
-    text-wrap: balance;
-    margin: 0;
-  }
+  main { flex:1; overflow-y:auto; }
+  .wrap { max-width:860px; margin:0 auto; padding:1.5rem; }
 
-  /* ---- eyebrow: AIKO's small-caps emerald section label ---- */
-  .eyebrow {
-    font-size: .688rem;
-    font-weight: 700;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--accent-on-ground);
-    margin: 0 0 var(--s2);
-  }
-  .eyebrow.on-panel { color: var(--accent-on-panel); }
+  .intro { background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--emerald-bar);
+           border-radius:4px; padding:1rem 1.25rem; margin-bottom:1.25rem; }
+  .intro h2 { margin:0 0 .5rem; font-size:.9375rem; color:var(--ink); }
+  .intro p { margin:0 0 .5rem; font-size:.875rem; }
+  .intro p:last-child { margin-bottom:0; }
 
-  /* ============================================================
-     Masthead — split panel, the AIKO deck's signature layout
-     ============================================================ */
+  /* Planner — proposing a batch, reviewing it, locking it. */
+  .planner {
+    background:var(--card); border:1px solid var(--rule);
+    border-left:3px solid var(--clay); border-radius:4px;
+    padding:.875rem 1.25rem; margin-bottom:1.25rem;
+  }
+  .plan-form { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; font-size:.875rem; }
+  .plan-form label { color:var(--ink); font-weight:600; }
+  .plan-form input[type="number"] {
+    width:4rem; font-family:var(--sans); font-size:.875rem; color:var(--ink);
+    background:var(--card-sunk); border:1px solid var(--rule-strong);
+    border-radius:4px; padding:.375rem .5rem;
+  }
+  .plan-form input[type="text"] {
+    flex:1 1 16rem; font-family:var(--sans); font-size:.875rem; color:var(--ink);
+    background:var(--card-sunk); border:1px solid var(--rule-strong);
+    border-radius:4px; padding:.375rem .625rem;
+  }
+  .plan-form input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .plan-form button {
+    font-family:var(--sans); font-size:.8125rem; font-weight:600; color:#F4F2E7;
+    background:var(--clay); border:none; border-radius:4px;
+    padding:.4375rem 1rem; cursor:pointer;
+  }
+  .plan-form button:disabled { opacity:.5; cursor:not-allowed; }
+  .plan-note { margin:.625rem 0 0; font-size:.75rem; color:var(--ink-quiet); }
 
-  .masthead {
-    background: var(--panel);
-    color: var(--ink-on-panel);
-    position: relative;
-    overflow: hidden;
+  .briefs { display:flex; flex-direction:column; gap:.625rem; margin:.75rem 0 0; }
+  .brief {
+    display:flex; gap:.75rem; align-items:flex-start;
+    background:var(--card); border:1px solid var(--rule);
+    border-radius:4px; padding:.75rem .875rem;
   }
-  /* big translucent circles — AIKO motif, kept faint */
-  .masthead::before,
-  .masthead::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    background: #ffffff08;
-    pointer-events: none;
+  .brief.dropped { opacity:.45; }
+  .brief input[type="checkbox"] { margin-top:.25rem; width:1rem; height:1rem; accent-color:var(--accent); flex:none; }
+  .brief .b-body { min-width:0; }
+  .brief .b-topic { font-weight:700; color:var(--ink); font-size:.9375rem; }
+  .brief .b-line {
+    font-style:italic; color:var(--ink); margin:.3125rem 0;
+    border-left:2px solid var(--emerald-bar); padding-left:.625rem;
   }
-  .masthead::before { width: 460px; height: 460px; right: -140px; top: -180px; }
-  .masthead::after  { width: 300px; height: 300px; right: 120px;  bottom: -190px; }
+  .brief .b-meta { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
+  .brief .b-ev { font-size:.8125rem; margin-top:.3125rem; }
 
-  .masthead-inner {
-    max-width: 62ch;
-    padding: var(--s6) 0 var(--s7);
-    position: relative;
-    z-index: 1;
+  .lockbar {
+    display:flex; flex-wrap:wrap; gap:.625rem; align-items:center;
+    margin-top:.875rem; padding-top:.75rem; border-top:1px solid var(--rule);
   }
+  .lockbar .count { font-size:.8125rem; color:var(--ink-body); margin-right:auto; }
+  .lockbar button {
+    font-family:var(--sans); font-size:.8125rem; font-weight:600;
+    border-radius:4px; padding:.4375rem 1rem; cursor:pointer; border:none;
+  }
+  .lockbar .lock { background:var(--emerald); color:#F4F2E7; }
+  .lockbar .copy { background:transparent; color:var(--ink-body); border:1px solid var(--rule-strong); }
+  .lockbar button:disabled { opacity:.5; cursor:not-allowed; }
+  .locked-note {
+    margin-top:.625rem; font-size:.8125rem; color:var(--ink-body);
+    background:var(--card-sunk); border-radius:4px; padding:.625rem .75rem;
+  }
+  .locked-note code { font-family:var(--mono); font-size:.75rem; }
 
-  .mark {
-    display: inline-flex;
-    align-items: center;
-    gap: .625rem;
-    margin-bottom: var(--s6);
+  .starter-label {
+    margin:0 0 .5rem; font-size:.625rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--ink-quiet);
   }
-  .mark svg { display: block; }
-  .mark span {
-    font-size: .688rem;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: var(--ink-on-panel-quiet);
-    font-weight: 600;
+  .starters { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.25rem; }
+  .starters:last-of-type { margin-bottom:1.5rem; }
+  .starters button {
+    font-family:var(--sans); font-size:.8125rem; color:var(--ink-body);
+    background:transparent; border:1px solid var(--rule-strong); border-radius:999px;
+    padding:.4375rem .875rem; cursor:pointer; text-align:left;
+    transition:border-color .15s ease, color .15s ease;
   }
+  .starters button:hover { border-color:var(--accent); color:var(--ink); }
+  .starters button:disabled { opacity:.5; cursor:not-allowed; }
 
-  .masthead h1 {
-    color: var(--cream-text);
-    font-size: clamp(2rem, 4.4vw, 3.25rem);
-    letter-spacing: -.02em;
-    margin-bottom: var(--s3);
+  .msg { margin-bottom:1.5rem; }
+  .msg .who {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin-bottom:.375rem;
   }
-  .masthead .standfirst {
-    color: var(--sage);
-    font-size: 1.0625rem;
-    max-width: 46ch;
-    margin: 0;
+  .msg.user .bubble {
+    background:var(--card-sunk); border:1px solid var(--rule);
+    border-radius:4px; padding:.75rem 1rem; color:var(--ink);
   }
-  .rule-under {
-    width: 64px; height: 3px;
-    background: var(--emerald-bar);
-    margin: var(--s4) 0 0;
-  }
-
-  .as-of {
-    margin: var(--s4) 0 0;
-    font-size: .8125rem;
-    color: var(--sage);
-  }
-
-  .ask-link {
-    display: inline-block;
-    font-size: .875rem;
-    font-weight: 600;
-    letter-spacing: .02em;
-    color: var(--cream-text);
-    text-decoration: none;
-    border-bottom: 1px solid var(--emerald-bar);
-    padding-bottom: 2px;
-  }
-  .ask-link:hover { border-bottom-color: var(--sage); }
-  .ask-link:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
-
-  /* ============================================================
-     Persistent nav
-
-     The briefing runs long, and the only route to the tools was
-     scrolling back to the masthead. This bar carries the same two
-     links and slides in once the masthead has left the screen.
-
-     Fixed, not sticky: a sticky bar occupies space in flow, so
-     translating it out of view would leave a gap at the top. Hidden
-     by default, which also means the page degrades honestly without
-     JS — the masthead links are still there and still work.
-     ============================================================ */
-
-  .topbar {
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 50;
-    background: var(--panel);
-    border-bottom: 1px solid #ffffff14;
-    transform: translateY(-100%);
-    opacity: 0;
-    transition: transform .22s ease, opacity .22s ease;
-  }
-  .topbar.is-shown { transform: none; opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { .topbar { transition: none; } }
-
-  .topbar-inner {
-    display: flex;
-    align-items: center;
-    gap: var(--s4);
-    padding: .5625rem 0;
-  }
-  .topbar .who {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    font-size: .75rem;
-    font-weight: 600;
-    letter-spacing: .02em;
-    color: var(--sage);
-    text-decoration: none;
-    min-width: 0;
-  }
-  .topbar .who span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .topbar .who:hover { color: var(--cream-text); }
-  .topbar nav { margin-left: auto; display: flex; gap: var(--s4); flex: none; }
-  .topbar .ask-link { font-size: .8125rem; }
-
-  /* On a phone the label is the first thing worth dropping — the links
-     are the reason the bar exists. */
-  @media (max-width: 560px) {
-    .topbar .who span { display: none; }
-    .topbar nav { gap: var(--s3); }
-    .topbar .ask-link { font-size: .75rem; }
+  .msg.bot .bubble { white-space:pre-wrap; }
+  .msg.bot .bubble strong { color:var(--ink); }
+  .msg.bot .bubble h3 { font-size:1rem; color:var(--ink); margin:1.25rem 0 .375rem; }
+  .msg.bot .bubble h4 { font-size:.9375rem; color:var(--ink); margin:1rem 0 .25rem; }
+  .msg.bot .bubble a { color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+  .msg.bot .bubble code { font-family:var(--mono); font-size:.8125rem;
+                          background:var(--card-sunk); padding:.0625rem .3125rem; border-radius:2px; }
+  .msg.error .bubble {
+    border:1px solid var(--clay); border-left:3px solid var(--clay);
+    border-radius:4px; padding:.75rem 1rem; color:var(--clay); font-size:.875rem;
   }
 
-  /* ============================================================
-     Sections
-     ============================================================ */
+  /* What the agent actually searched. An idea claiming a gap in the market is
+     only worth anything if you can see the query behind it. */
+  .searches { margin-bottom:.625rem; display:flex; flex-direction:column; gap:.25rem; }
+  .search {
+    font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet);
+    display:flex; gap:.5rem; align-items:baseline; flex-wrap:wrap;
+  }
+  .search .tag { color:var(--accent); font-weight:700; }
+  .search .n { color:var(--ink-quiet); }
+  .search.failed .tag { color:var(--clay); }
 
-  section { padding: var(--s7) 0; }
-  section + section { border-top: 1px solid var(--rule); }
+  .usage { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); margin-top:.75rem; }
 
-  .sec-head { margin-bottom: var(--s5); }
-  .sec-head h2 {
-    font-size: clamp(1.5rem, 2.6vw, 2rem);
-    letter-spacing: -.015em;
-  }
-  .sec-head p {
-    margin: var(--s2) 0 0;
-    max-width: 66ch;
-    color: var(--ink-body);
-  }
+  .cursor::after { content:"▍"; color:var(--accent); animation:blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .cursor::after { animation:none; } }
 
-  /* ============================================================
-     The board — landscape at a glance
-     ============================================================ */
+  footer { border-top:1px solid var(--rule); background:var(--ground); padding:1rem 1.5rem 1.25rem; }
+  .composer { max-width:860px; margin:0 auto; display:flex; gap:.625rem; align-items:flex-end; }
+  .composer textarea {
+    flex:1; font-family:var(--sans); font-size:.9375rem; color:var(--ink);
+    background:var(--card); border:1px solid var(--rule-strong); border-radius:4px;
+    padding:.6875rem .875rem; resize:none; min-height:44px; max-height:160px; line-height:1.5;
+  }
+  .composer textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .composer button {
+    font-family:var(--sans); font-size:.875rem; font-weight:600; color:#F4F2E7;
+    background:var(--emerald); border:none; border-radius:4px;
+    padding:.6875rem 1.25rem; cursor:pointer; min-height:44px;
+  }
+  .composer button:disabled { opacity:.5; cursor:not-allowed; }
+  .composer button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .hint { max-width:860px; margin:.5rem auto 0; font-size:.6875rem; color:var(--ink-quiet); }
 
-  .board { overflow-x: auto; }
-  table.board-t {
-    width: 100%;
-    min-width: 720px;
-    border-collapse: collapse;
-    font-size: .875rem;
+  .setup {
+    max-width:860px; margin:1.5rem auto; background:var(--card);
+    border:1px dashed var(--clay); border-radius:4px; padding:1rem 1.25rem;
   }
-  .board-t th {
-    text-align: left;
-    font-size: .625rem;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--ink-quiet);
-    font-weight: 700;
-    padding: 0 var(--s3) var(--s2) 0;
-    border-bottom: 1px solid var(--rule-strong);
-    white-space: nowrap;
-  }
-  .board-t td {
-    padding: var(--s3) var(--s3) var(--s3) 0;
-    border-bottom: 1px solid var(--rule);
-    vertical-align: top;
-  }
-  .board-t .brand {
-    color: var(--ink);
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  .board-t .num {
-    font-family: var(--mono);
-    font-variant-numeric: tabular-nums;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-  .board-t .claim {
-    font-family: var(--quote);
-    font-style: italic;
-    color: var(--ink-body);
-  }
-  /* Scoped to beat `.board-t .num`, which is more specific than a bare
-     `.absent` and was silently winning the color. */
-  .absent,
-  .board-t .absent {
-    font-family: var(--mono);
-    font-size: .75rem;
-    color: var(--clay);
-    letter-spacing: .04em;
-  }
-  /* Row sourced from outside the primary corpus — marked so the
-     provenance difference is visible, not silently blended in. */
-  tr.offbook td:first-child { box-shadow: inset 3px 0 0 var(--ochre); padding-left: var(--s3); }
-  .src {
-    display: block;
-    font-family: var(--mono);
-    font-size: .625rem;
-    font-weight: 400;
-    letter-spacing: .06em;
-    color: var(--ochre);
-    text-transform: uppercase;
-  }
-
-  /* ============================================================
-     Creator benchmark — the reach gulf, shown as bars
-     ============================================================ */
-
-  .bench { display: grid; gap: .375rem; margin-top: var(--s4); }
-  .bench-row {
-    display: grid;
-    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 4.5rem;
-    gap: var(--s3);
-    align-items: center;
-    padding: .3125rem 0;
-  }
-  .bench-row .who {
-    font-size: .8125rem;
-    color: var(--ink);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .bench-row .who i { font-style: normal; color: var(--ink-quiet); }
-  /* Both are spans, so they must be blockified explicitly — percentage
-     width and height:100% do not apply to inline boxes. */
-  .bench-track {
-    display: block;
-    background: var(--card-sunk);
-    border-radius: 2px;
-    height: 14px;
-    overflow: hidden;
-  }
-  .bench-fill { display: block; height: 100%; border-radius: 2px; min-width: 3px; }
-  .bench-row[data-kind="creator"] .bench-fill { background: var(--emerald-bar); }
-  .bench-row[data-kind="lender"]  .bench-fill { background: var(--clay); }
-  .bench-row .v {
-    font-family: var(--mono);
-    font-size: .8125rem;
-    text-align: right;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
-  @media (max-width: 640px) {
-    .bench-row { grid-template-columns: minmax(0, 1fr) 4rem; }
-    .bench-track { grid-column: 1 / -1; }
-  }
-
-  /* ============================================================
-     Creative wall
-     ============================================================ */
-
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s1);
-    margin-bottom: var(--s4);
-  }
-  .filters button {
-    font-family: var(--sans);
-    font-size: .75rem;
-    font-weight: 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--ink-body);
-    background: transparent;
-    border: 1px solid var(--rule-strong);
-    border-radius: 999px;
-    padding: .4375rem .875rem;
-    cursor: pointer;
-    transition: background .15s ease, color .15s ease, border-color .15s ease;
-  }
-  .filters button:hover { border-color: var(--accent-on-ground); color: var(--ink); }
-  .filters button[aria-pressed="true"] {
-    background: var(--emerald);
-    border-color: var(--emerald);
-    color: #F4F2E7;
-  }
-  .filters button:focus-visible,
-  a:focus-visible {
-    outline: 2px solid var(--accent-on-ground);
-    outline-offset: 3px;
-  }
-
-  .wall {
-    display: grid;
-    /* min() guards the narrow-phone case — a fixed 288px min would
-       overflow a 320px viewport once page padding is taken out */
-    grid-template-columns: repeat(auto-fill, minmax(min(288px, 100%), 1fr));
-    gap: var(--s3);
-  }
-
-  .creative {
-    background: var(--card);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: var(--s3) var(--s3) var(--s3) calc(var(--s3) - 3px);
-    border-left: 3px solid var(--rule-strong);
-    display: grid;
-    grid-template-columns: 84px minmax(0, 1fr);
-    gap: var(--s3);
-    align-items: start;
-    text-decoration: none;
-    transition: border-left-color .15s ease, transform .15s ease;
-  }
-  .creative .body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--s2);
-    min-height: 148px;
-  }
-  /* Ad stills are 9:16. Held at a fixed ratio so a row of cards lines up
-     regardless of what the CDN returns. */
-  .thumb {
-    display: block;
-    width: 84px;
-    aspect-ratio: 9 / 16;
-    object-fit: cover;
-    border-radius: 3px;
-    background: var(--card-sunk);
-    border: 1px solid var(--rule);
-  }
-  /* Meta serves Ad Library creative on signed, expiring URLs, so these cards
-     link out to the ad itself rather than embedding a copy that would rot.
-     Styled as an affordance, not as a missing image. */
-  .thumb-none {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 84px;
-    aspect-ratio: 9 / 16;
-    border-radius: 3px;
-    background: var(--card-sunk);
-    border: 1px solid var(--emerald-bar);
-    font-family: var(--mono);
-    font-size: .5625rem;
-    line-height: 1.4;
-    letter-spacing: .08em;
-    color: var(--accent-on-ground);
-    padding: .25rem;
-    transition: background .15s ease;
-  }
-  .creative:hover .thumb-none { background: var(--card); }
-  @media (prefers-reduced-motion: reduce) { .thumb-none { transition: none; } }
-  /* If the image host is blocked (the artifact sandbox does block it),
-     collapse the column instead of showing a broken-image box. */
-  .creative.no-thumb { grid-template-columns: minmax(0, 1fr); }
-  .creative.no-thumb .thumb { display: none; }
-  .creative:hover {
-    border-left-color: var(--emerald-bar);
-    transform: translateY(-2px);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .creative, .creative:hover { transition: none; transform: none; }
-  }
-
-  .creative .who {
-    font-size: .625rem;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: var(--accent-on-ground);
-  }
-  .creative .line {
-    font-family: var(--quote);
-    font-style: italic;
-    font-size: 1.0625rem;
-    line-height: 1.35;
-    color: var(--ink);
-  }
-  .creative .meta {
-    margin-top: auto;
-    padding-top: var(--s2);
-    border-top: 1px solid var(--rule);
-    display: flex;
-    flex-wrap: wrap;
-    gap: .375rem .625rem;
-    align-items: center;
-    font-family: var(--mono);
-    font-size: .6875rem;
-    color: var(--ink-quiet);
-    font-variant-numeric: tabular-nums;
-  }
-  .chip {
-    border: 1px solid var(--rule-strong);
-    border-radius: 2px;
-    padding: .0625rem .3125rem;
-    letter-spacing: .06em;
-  }
-  .creative .view {
-    margin-left: auto;
-    color: var(--accent-on-ground);
-    font-weight: 600;
-    letter-spacing: .04em;
-  }
-  .creative:hover .view { text-decoration: underline; }
-
-  /* ============================================================
-     Hook taxonomy
-     ============================================================ */
-
-  .hooks { display: grid; gap: 0; }
-  .hook {
-    display: grid;
-    grid-template-columns: 3.25rem minmax(0, 15rem) minmax(0, 1fr);
-    gap: var(--s3);
-    padding: var(--s3) 0;
-    border-bottom: 1px solid var(--rule);
-    align-items: baseline;
-  }
-  .hook:first-child { border-top: 1px solid var(--rule-strong); }
-  .hook .rank {
-    font-family: var(--mono);
-    font-size: .8125rem;
-    color: var(--ink-quiet);
-    font-variant-numeric: tabular-nums;
-  }
-  .hook h3 { font-size: .9375rem; }
-  .hook .ex {
-    font-family: var(--quote);
-    font-style: italic;
-    color: var(--ink-body);
-    font-size: .9375rem;
-  }
-  .hook .ex b { font-style: normal; font-family: var(--sans); font-size: .75rem; color: var(--ink-quiet); font-weight: 600; }
-
-  /* ============================================================
-     Pain map — pressure encoded in form, not just number
-     ============================================================ */
-
-  .pains { display: grid; gap: var(--s2); }
-  .pain {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    background: var(--card);
-    border: 1px solid var(--rule);
-    border-left: 3px solid var(--rule-strong);
-    border-radius: 3px;
-    padding: var(--s3);
-  }
-
-  .pain .what { color: var(--ink); font-weight: 600; font-size: .9375rem; }
-  .pain .who  { color: var(--ink-quiet); font-size: .8125rem; margin-top: .125rem; }
-
-
-  .legend {
-    display: flex; flex-wrap: wrap; gap: var(--s4);
-    margin-bottom: var(--s4);
-    font-size: .75rem; color: var(--ink-quiet);
-  }
-  .legend span { display: inline-flex; align-items: center; gap: .5rem; }
-  .legend i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
-
-  /* ============================================================
-     CTA table
-     ============================================================ */
-
-  .cta-wrap { overflow-x: auto; }
-  table.cta-t {
-    width: 100%; min-width: 620px;
-    border-collapse: collapse; font-size: .875rem;
-  }
-  .cta-t th {
-    text-align: left;
-    font-size: .625rem; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--ink-quiet); font-weight: 700;
-    padding: 0 var(--s3) var(--s2) 0;
-    border-bottom: 1px solid var(--rule-strong);
-  }
-  .cta-t td {
-    padding: var(--s2) var(--s3) var(--s2) 0;
-    border-bottom: 1px solid var(--rule);
-    vertical-align: top;
-  }
-  .cta-t code {
-    font-family: var(--mono); font-size: .8125rem;
-    color: var(--ink); font-variant-numeric: tabular-nums;
-  }
-  .cta-t .n { font-family: var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
-
-  /* ============================================================
-     Opportunities — dark panel, numbered because rank is real
-     ============================================================ */
-
-  .room {
-    background: var(--panel);
-    color: var(--ink-on-panel);
-    position: relative;
-    overflow: hidden;
-    border-top: none;
-  }
-  .room::before {
-    content: ""; position: absolute; border-radius: 50%;
-    width: 520px; height: 520px; left: -220px; bottom: -260px;
-    background: #ffffff07; pointer-events: none;
-  }
-  .room .wrap { position: relative; z-index: 1; }
-  .room h2 { color: var(--cream-text); }
-  .room .sec-head p { color: var(--sage); }
-
-  .ops { display: grid; gap: 0; margin-top: var(--s5); }
-  .op {
-    display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    gap: var(--s3);
-    padding: var(--s4) 0;
-    border-top: 1px solid var(--rule-on-panel);
-  }
-  .op:last-child { border-bottom: 1px solid var(--rule-on-panel); }
-  .op .n {
-    font-family: var(--mono);
-    font-size: 1.5rem;
-    color: var(--emerald-bar);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-  .op h3 { color: var(--cream-text); font-size: 1.125rem; margin-bottom: var(--s2); }
-  .op p { margin: 0; color: var(--sage); max-width: 68ch; font-size: .9375rem; }
-  .op .proof {
-    margin-top: var(--s2);
-    font-family: var(--mono);
-    font-size: .75rem;
-    color: var(--ink-on-panel-quiet);
-    border-left: 2px solid var(--emerald-bar);
-    padding-left: var(--s2);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ============================================================
-     Method + footer
-     ============================================================ */
-
-  .method {
-    background: var(--card-sunk);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: var(--s4);
-  }
-  .method h3 { font-size: .9375rem; margin-bottom: var(--s2); }
-  .method p { margin: 0 0 var(--s2); font-size: .875rem; color: var(--ink-body); }
-  .method p:last-child { margin-bottom: 0; }
-  .method strong { color: var(--ink); }
-  /* Used both inside .method and standalone in the long-tail section,
-     so it is deliberately not scoped to a parent. */
-  .dark-list {
-    font-family: var(--mono);
-    font-size: .8125rem;
-    color: var(--ink-quiet);
-    border-left: 2px solid var(--rule-strong);
-    padding-left: var(--s3);
-    line-height: 1.8;
-  }
-  .dark-list i { font-style: normal; opacity: .75; }
-
-  /* ============================================================
-     Strategy — the closing argument. Dark ground so it reads as a
-     conclusion rather than another evidence section.
-     ============================================================ */
-
-  .strategy {
-    background: var(--panel);
-    color: var(--ink-on-panel);
-    position: relative;
-    overflow: hidden;
-    border-top: none;
-  }
-  .strategy::before {
-    content: ""; position: absolute; border-radius: 50%;
-    width: 520px; height: 520px; left: -220px; bottom: -260px;
-    background: #ffffff07; pointer-events: none;
-  }
-  .strategy .wrap { position: relative; z-index: 1; }
-  .strategy h2 { color: var(--cream-text); }
-  .strategy .sec-head p { color: var(--sage); }
-
-  .concl { display: grid; gap: 0; margin-top: var(--s5); }
-  .concl-item {
-    display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    gap: var(--s3);
-    padding: var(--s4) 0;
-    border-top: 1px solid var(--rule-on-panel);
-  }
-  .concl-item:last-child { border-bottom: 1px solid var(--rule-on-panel); }
-  .concl-item .n {
-    font-family: var(--mono);
-    font-size: 1.5rem;
-    color: var(--emerald-bar);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-  .concl-item h3 { color: var(--cream-text); font-size: 1.125rem; margin-bottom: var(--s2); }
-  .concl-item p { margin: 0 0 var(--s2); color: var(--sage); max-width: 68ch; font-size: .9375rem; }
-  .concl-item p:last-child { margin-bottom: 0; }
-  .concl-item .proof {
-    font-family: var(--mono);
-    font-size: .75rem;
-    color: var(--ink-on-panel-quiet);
-    border-left: 2px solid var(--emerald-bar);
-    padding-left: var(--s2);
-    font-variant-numeric: tabular-nums;
-  }
-  .concl-item strong { color: var(--cream-text); }
-
-  .verdict {
-    margin-top: var(--s6);
-    border: 1px solid var(--rule-on-panel);
-    border-left: 3px solid var(--emerald-bar);
-    border-radius: 4px;
-    padding: var(--s4);
-    background: #ffffff05;
-  }
-  .verdict h3 { color: var(--cream-text); font-size: 1rem; margin-bottom: var(--s2); }
-  .verdict p { margin: 0 0 var(--s3); color: var(--sage); max-width: 68ch; font-size: .9375rem; }
-  .verdict p:last-child { margin-bottom: 0; }
-  .verdict strong { color: var(--cream-text); }
-
-  @media (max-width: 760px) {
-    .concl-item { grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--s2); }
-  }
-
-  footer {
-    background: var(--panel-deep);
-    color: var(--ink-on-panel-quiet);
-    padding: var(--s4) 0;
-    font-size: .75rem;
-  }
-  footer .wrap { display: flex; flex-wrap: wrap; gap: var(--s3); justify-content: space-between; align-items: center; }
-  footer a { color: var(--sage); text-decoration: none; font-weight: 600; letter-spacing: .04em; }
-  footer a:hover { text-decoration: underline; }
-
-  .sr-only {
-    position: absolute; width: 1px; height: 1px;
-    padding: 0; margin: -1px; overflow: hidden;
-    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-  }
-
-  @media (max-width: 760px) {
-    .masthead-inner { padding-bottom: var(--s6); }
-    .hook { grid-template-columns: 2.5rem 1fr; }
-    .hook .ex { grid-column: 2; }
-    section { padding: var(--s6) 0; }
-  }
+  .setup h2 { margin:0 0 .5rem; font-size:.9375rem; color:var(--clay); }
+  .setup code { font-family:var(--mono); font-size:.8125rem; background:var(--card-sunk);
+                padding:.125rem .375rem; border-radius:2px; }
+  .setup ol { margin:.5rem 0 0; padding-left:1.25rem; font-size:.875rem; }
+  .setup li { margin-bottom:.375rem; }
 </style>
 </head>
 <body>
 
-<p class="sr-only">Competitive intelligence briefing on private real estate lending, prepared by AIKO for Trilith Funding. Covers nine named competitors and a long tail of roughly 249 advertisers, the creative each is running, the hooks and borrower pains the category works, how it converts, and five strategic conclusions.</p>
-
-<!-- ================= PERSISTENT NAV ================= -->
-<div class="topbar" id="topbar" hidden>
-  <div class="wrap topbar-inner">
-    <a class="who" href="#top">
-      <svg width="20" height="20" viewBox="0 0 30 30" aria-hidden="true">
-        <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.5"/>
-        <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
-              font-family="Poppins, Century Gothic, sans-serif"
-              font-size="7.5" font-weight="700" letter-spacing="0.5">AIKO</text>
-      </svg>
-      <span>Competitive Intelligence</span>
-    </a>
-    <nav aria-label="Tools">
-      <a class="ask-link" href="./ideas.html">Ask &amp; brainstorm &rarr;</a>
-    </nav>
-  </div>
-</div>
-
-<!-- ================= MASTHEAD ================= -->
-<header class="masthead" id="top">
-  <div class="wrap masthead-inner">
-    <div>
-      <div class="mark">
-        <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
-          <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
-          <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
-                font-family="Poppins, Century Gothic, sans-serif"
-                font-size="7.5" font-weight="700" letter-spacing="0.5">AIKO</text>
-        </svg>
-        <span>aikogroup.io</span>
-      </div>
-
-      <p class="eyebrow on-panel">Competitive Intelligence</p>
-      <h1>What every other investor lender is saying — and where the room is.</h1>
-      <div class="rule-under"></div>
-      <p class="standfirst" style="margin-top:var(--s4)">
-        A read of the live advertising and organic output of the lenders Trilith
-        competes with for the same borrower.
-      </p>
-      <p class="as-of">
-        Ad data as of <!-- AUTO:ASOF:START -->16 August 2026<!-- AUTO:ASOF:END -->,
-        refreshed daily. The strategy conclusions are dated analysis and are not.
-      </p>
-      <p style="margin:var(--s4) 0 0">
-        <a class="ask-link" href="./ideas.html">Ask &amp; brainstorm &rarr;</a>
-      </p>
-    </div>
-  </div>
+<header>
+  <span class="mark">
+    <svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+  </span>
+  <span>
+    <h1>Ask &amp; brainstorm</h1>
+    <p class="sub">Every tracked ad, Trilith's own writing, and how the category hooks</p>
+  </span>
+  <nav aria-label="Sections">
+    <a href="./" aria-current="page">Ask &amp; brainstorm</a>
+    <a href="./briefing.html">Briefing</a>
+  </nav>
 </header>
 
-<!-- ================= THE BOARD ================= -->
-<section>
+<main>
   <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">The board</p>
-      <h2>Who is actually in market</h2>
-    </div>
-
-    <div class="board">
-      <table class="board-t">
-        <thead>
-          <tr>
-            <th scope="col">Lender</th>
-            <th scope="col">Live Meta ads</th>
-            <th scope="col">Landing pages</th>
-            <th scope="col">Social reach</th>
-            <th scope="col">Position they are buying</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="brand">Kiavi</td>
-            <td class="num" data-ads="Kiavi">33 live ads</td>
-            <td class="num">8</td>
-            <td class="num">33.1K FB · 11.9K IG</td>
-            <td class="claim">“You Find It, Kiavi will Fund It”</td>
-          </tr>
-          <tr>
-            <td class="brand">Lima One Capital</td>
-            <td class="num" data-ads="Lima One Capital">26 live ads</td>
-            <td class="num">4</td>
-            <td class="num">15.5K FB · 8.2K IG</td>
-            <td class="claim">“High leverage. Speed to close.”</td>
-          </tr>
-          <tr>
-            <td class="brand">Visio Lending</td>
-            <td class="num" data-ads="Visio Lending">21 live ads</td>
-            <td class="num">4 <span style="color:var(--ink-quiet)">(2 broker)</span></td>
-            <td class="num">1.7K FB · 1.6K IG</td>
-            <td class="claim">“5-star host, meet the #1 DSCR lender”</td>
-          </tr>
-          <tr>
-            <td class="brand">Anchor Loans</td>
-            <td class="num" data-ads="Anchor Loans"><span class="absent">no paid ads</span></td>
-            <td class="num">—</td>
-            <td class="num">4.7K FB · <b>41.6K CEO IG</b></td>
-            <td class="claim">“We focused on the opportunity”</td>
-          </tr>
-          <tr>
-            <td class="brand">New Silver</td>
-            <td class="num" data-ads="New Silver">1 live ad</td>
-            <td class="num">—</td>
-            <td class="num">2.6K FB · 1.5K IG</td>
-            <td class="claim">“Your lender should be your first call”</td>
-          </tr>
-          <tr>
-            <td class="brand">RCN Capital</td>
-            <td class="num" data-ads="RCN Capital">10 live ads</td>
-            <td class="num">broker referral</td>
-            <td class="num">1.7K FB · 166 IG</td>
-            <td class="claim">“Skip the Bank’s Red Tape”</td>
-          </tr>
-          <tr>
-            <td class="brand">LendingOne</td>
-            <td class="num" data-ads="LendingOne">10 live ads</td>
-            <td class="num">direct</td>
-            <td class="num">3.3K FB · 8.1K IG</td>
-            <td class="claim">“Your next deal should not stall waiting on your lender”</td>
-          </tr>
-          <tr>
-            <td class="brand">Renovo Financial</td>
-            <td class="num" data-ads="Renovo Financial">2 live ads</td>
-            <td class="num">direct</td>
-            <td class="num">1.6K FB · 4.5K IG</td>
-            <td class="claim">“National lending power. Local lending love.”</td>
-          </tr>
-          <tr>
-            <td class="brand">Temple View Capital</td>
-            <td class="num" data-ads="Temple View Capital">2 live ads</td>
-            <td class="num">direct</td>
-            <td class="num">812 FB · 1.4K IG</td>
-            <td class="claim">“Pain points we’ve experienced ourselves”</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="method" style="margin-top:var(--s4)">
-      <h3>Spend and audience are not the same thing</h3>
+    <div class="intro">
+      <h2>How this works</h2>
       <p>
-        <strong>RCN Capital runs <span data-ads="RCN Capital">10</span> live ads to an
-        Instagram audience of 166.</strong>
-        It is buying reach outright rather than building it — which fits a strategy
-        aimed at brokers, a few hundred of whom are worth more than a large consumer
-        following. LendingOne is the mirror image: a comparable ad count on top of
-        8,100 followers.
+        Ask a question about the category — who is running what, how a claim is
+        phrased, how many advertisers use it. The agent searches before it
+        answers and shows you every search it ran. Counts come from the whole
+        corpus rather than a sample, so "how many" and "who does it most" are
+        exact.
+      </p>
+      <p>
+        <strong>Planning a batch</strong> is the other half. Say how many
+        short-form videos you want and the agent proposes that many concepts,
+        each pairing a hook form borrowed from outside the category with a topic
+        drawn from competitor ads and Trilith's own writing. No two share a hook
+        or a topic. You drop whatever you do not want, and nothing is locked
+        until you confirm the set.
       </p>
     </div>
 
-    <div class="method" style="margin-top:var(--s4)">
-      <h3>And six that spend nothing at all</h3>
-      <p>
-        Every lender below was checked against Meta’s Ad Library by numeric page ID,
-        across all ad statuses and all time. Each returned <strong>zero ads, ever</strong>:
+    <div class="planner" id="planner">
+      <form class="plan-form" id="plan-form">
+        <label for="plan-count">Plan a batch of</label>
+        <input type="number" id="plan-count" min="1" max="12" value="5" aria-label="Number of short-form videos">
+        <label for="plan-count">short-form videos</label>
+        <input type="text" id="plan-focus" placeholder="Optional focus — e.g. brokers, DSCR, this month's news"
+               aria-label="Optional focus for the batch">
+        <button type="submit" id="plan-go">Propose</button>
+      </form>
+      <p class="plan-note">
+        Each concept is a hook and a topic for one vertical video, with the opening
+        line written out. Review the set, drop what you do not want, then lock it
+        for production.
       </p>
-      <p class="dark-list">
-        CoreVest · Easy Street Capital · Roc360 · Upright <i>(formerly Fund That Flip)</i>
-        · Velocity Mortgage Capital · Longhorn Investments
+    </div>
+
+    <p class="starter-label">Ask about the category</p>
+    <div class="starters" id="starters">
+      <button type="button">Which advertisers mention tax returns, and how do they phrase it?</button>
+      <button type="button">How many advertisers are running DSCR, and who runs the most?</button>
+      <button type="button">Compare how Kiavi and Capital Fund 1 talk about speed.</button>
+      <button type="button">Show me every ad aimed at brokers rather than borrowers.</button>
+    </div>
+
+    <p class="starter-label">Or explore video angles</p>
+    <div class="starters" id="starters-make">
+      <button type="button">What are competitors saying that we have never covered?</button>
+      <button type="button">Which hook forms would suit a broker-facing video?</button>
+      <button type="button">Our DSCR angles feel stale — what is the new one?</button>
+      <button type="button">Borrow a hook structure from outside the category for a bridge video.</button>
+      <button type="button">Which competitor claim could we answer with a funded deal?</button>
+    </div>
+
+    <div id="transcript"></div>
+
+    <div class="setup" id="setup" hidden>
+      <h2>Backend not configured yet</h2>
+      <p style="font-size:.875rem;margin:0">
+        This page needs the Worker deployed and its URL set in <code>index.html</code>.
       </p>
-      <p>
-        Anchor Loans belongs on that list too — it posts organically but has never
-        bought a paid ad. Among the <em>named national</em> lenders, silence is normal.
-        But that is not the whole market, and the next section is the correction.
-      </p>
+      <ol>
+        <li><code>cd worker &amp;&amp; npm install</code></li>
+        <li><code>npx wrangler secret put ANTHROPIC_API_KEY</code></li>
+        <li><code>npx wrangler secret put SUPABASE_ANON_KEY</code> — the anon key, never the service role key</li>
+        <li><code>npx wrangler deploy</code></li>
+        <li>Put the deployed URL into <code>WORKER_URL</code> at the top of the script in
+            <code>index.html</code>, then commit</li>
+      </ol>
     </div>
   </div>
-</section>
-
-<!-- ================= LONG TAIL ================= -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">The long tail</p>
-      <h2>The majors are quiet. The category is not.</h2>
-      <p>
-        Searching Meta’s Ad Library by keyword rather than by company changes the
-        picture completely. A single sweep of four product keywords plus eighteen
-        named lenders returns <strong><!-- AUTO:TOTALS:START -->781 live ads from 249 advertisers<!-- AUTO:TOTALS:END --></strong>.
-        Almost none come from the national platforms. They come from regional shops,
-        brokers and individual loan officers — and their copy is sharper than
-        anything the big lenders are running.
-      </p>
-    </div>
-
-    <div class="sec-head" style="margin-top:var(--s5)">
-      <h2 style="font-size:1.125rem">Size and spend are different leagues</h2>
-      <p>
-        The largest originators are not the largest advertisers, and it is not
-        close. Volume figures are lifetime or annual originations; ad counts are
-        live Meta ads measured the same day.
-      </p>
-    </div>
-
-    <div class="board">
-      <table class="board-t">
-        <thead>
-          <tr>
-            <th scope="col">Lender</th>
-            <th scope="col">Origination volume</th>
-            <th scope="col">Live Meta ads</th>
-            <th scope="col">Read</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="offbook">
-            <td class="brand">Capital Fund 1</td>
-            <td class="num">regional · Scottsdale AZ</td>
-            <td class="num" style="color:var(--clay);font-weight:700">114</td>
-            <td class="claim">Outspends the national leader more than three to one</td>
-          </tr>
-          <tr class="offbook">
-            <td class="brand">Griffin Funding</td>
-            <td class="num">regional · San Diego CA</td>
-            <td class="num" style="color:var(--clay);font-weight:700">44</td>
-            <td class="claim">Also outspends Kiavi</td>
-          </tr>
-          <tr>
-            <td class="brand">Kiavi</td>
-            <td class="num">≈$8B / yr — #1 in the US</td>
-            <td class="num">33</td>
-            <td class="claim">Biggest book, third on ad presence</td>
-          </tr>
-          <tr>
-            <td class="brand">Lima One Capital</td>
-            <td class="num">$2B+ funded</td>
-            <td class="num">26</td>
-            <td class="claim">Proportionate</td>
-          </tr>
-          <tr>
-            <td class="brand">Visio Lending</td>
-            <td class="num">$1.5B in STR alone</td>
-            <td class="num">21</td>
-            <td class="claim">Narrow product, steady spend</td>
-          </tr>
-          <tr>
-            <td class="brand">Civic Financial Services</td>
-            <td class="num">institutional</td>
-            <td class="num">10</td>
-            <td class="claim">Back in market</td>
-          </tr>
-          <tr>
-            <td class="brand">RCN Capital</td>
-            <td class="num">top-10 RTL originator</td>
-            <td class="num">10</td>
-            <td class="claim">All of it aimed at brokers</td>
-          </tr>
-          <tr>
-            <td class="brand">Anchor Loans</td>
-            <td class="num">top-10 RTL originator</td>
-            <td class="num absent">0</td>
-            <td class="claim">Organic only — has never bought an ad</td>
-          </tr>
-          <tr>
-            <td class="brand">CoreVest</td>
-            <td class="num">$7.8B funded · 35,000 projects</td>
-            <td class="num absent">0</td>
-            <td class="claim">Never advertised, at any scale</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="method" style="margin-top:var(--s4)">
-      <h3>Why this is the most useful table here</h3>
-      <p>
-        On Meta, Trilith is not competing with the giants. It is competing with
-        <strong>Capital Fund 1, Griffin Funding and a few hundred regional shops</strong> —
-        while CoreVest has funded $7.8 billion and never run a single ad, and Anchor
-        has never bought one either.
-      </p>
-      <p>
-        A balance sheet does not win attention here. That is a fight a founder-led
-        lender with real deal math can actually win, and it is the strongest
-        argument on this page for moving now.
-      </p>
-    </div>
-
-    <div class="tail-grid" style="margin-top:var(--s5)">
-      <div>
-        <p class="eyebrow">A sample of the 249 advertisers now tracked</p>
-        <p class="dark-list">
-          Bayport Funding · Black Label Capital · Pacific Equity and Loan · Investmark
-          Mortgage · Loan Mountain Capital · National Private Lending · REI Capital Fund
-          · Stackd Capital · Lennox Lending · Mako Loans · IEO Loan Group · Stone Bridge
-          Mortgage · Upperhand Solutions · Griffin Funding · Launch Financial Group ·
-          Springboard To Wealth · Strong Home Mortgage · The DSCR Shop · NewKey Lending ·
-          Red Heart Capital · Pulpos Capital Group · Levine Capital · LendingWise ·
-          Investment Property Brothers · KisonTeam · West Capital Lending · My Lending
-          Genie · plus creators <i>Grant Cardone</i> and <i>Brandon Turner</i>
-        </p>
-      </div>
-    </div>
-
-
-    <div class="method" style="margin-top:var(--s5)">
-      <h3>What this changes</h3>
-      <p>
-        The competitive picture is not an empty field. It is
-        <strong>dozens of small operators fighting over four pain points</strong> —
-        tax returns, DTI, speed, and the hard-money-to-DSCR refinance — while the
-        large national lenders sit it out.
-      </p>
-      <p>
-        Two of those angles are the sharpest writing anywhere in this research, and
-        neither is on the board above. <strong>The refi trap</strong> — you won the deal
-        with hard money and are now bleeding on the rate — is a live pain that maps
-        exactly onto Trilith’s bridge-to-DSCR product, and only one small shop is
-        naming it. <strong>Arithmetic as the hook</strong> — “take your rate, subtract
-        5.375%, multiply by your balance” — is the creator-format finding from earlier
-        in this document, already being run as a paid ad by a competitor.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ================= CREATIVE WALL ================= -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">The creative wall</p>
-      <h2>What they are running right now</h2>
-      <p>
-        Paid creative currently in market, verbatim, refreshed weekly. Every card
-        opens the asset as it ran. Organic posts are excluded — this is what these
-        lenders are buying, not what they are posting. The longest-running ad here
-        has been in market <!-- AUTO:LONGEST:START -->30<!-- AUTO:LONGEST:END --> days;
-        in paid social, longevity is the closest thing to a public performance signal.
-      </p>
-    </div>
-
-    <div class="filters" role="group" aria-label="Filter creative by lender">
-      <!-- AUTO:FILTERS:START -->
-      <button type="button" data-f="all" aria-pressed="true">All</button>
-      <button type="button" data-f="kiavi" aria-pressed="false">Kiavi</button>
-      <button type="button" data-f="lima" aria-pressed="false">Lima One</button>
-      <button type="button" data-f="visio" aria-pressed="false">Visio</button>
-      <button type="button" data-f="silver" aria-pressed="false">New Silver</button>
-      <button type="button" data-f="rcn" aria-pressed="false">RCN</button>
-      <button type="button" data-f="l1" aria-pressed="false">LendingOne</button>
-      <button type="button" data-f="renovo" aria-pressed="false">Renovo</button>
-      <button type="button" data-f="temple" aria-pressed="false">Temple View</button>
-    <!-- AUTO:FILTERS:END -->
-    </div>
-
-    <div class="wall" id="wall">
-      <!-- AUTO:WALL:START -->
-      <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/f35473eafb8d9ee469e1f765ec9a001b.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/f35473eafb8d9ee469e1f765ec9a001b.webp">
-        <span class="body">
-          <span class="who">Kiavi · Text Overlay</span>
-          <span class="line">Your builds are modern, so why is your financing stuck in the past?</span>
-          <span class="meta"><span class="chip">VIDEO</span> 12d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="kiavi" href="https://cdn.generalcontext.com/adspy/media/02e32a55d04e4f07c54ef11e12396249.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Kiavi ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/02e32a55d04e4f07c54ef11e12396249.webp">
-        <span class="body">
-          <span class="who">Kiavi · Explainer</span>
-          <span class="line">Building new construction projects is complex.</span>
-          <span class="meta"><span class="chip">VIDEO</span> 1d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="kiavi" href="https://www.facebook.com/ads/library/?id=1068536425633138">
-        <span class="thumb-none">AUG 11</span>
-        <span class="body">
-          <span class="who">Kiavi</span>
-          <span class="line">Get High Leverage Up to 100% LTC* WWW.KIAVI.COM Compete With Cash &amp; Close In As Fast as 7 Days Speed and cash give you edge in competitive markets. Ki</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/53a5c74ae05451671eaf935299c84531.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/53a5c74ae05451671eaf935299c84531.webp">
-        <span class="body">
-          <span class="who">Lima One · Announcement</span>
-          <span class="line">Reno to rent faster</span>
-          <span class="meta"><span class="chip">VIDEO</span> 28d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/7ffce8b89d7180e717be842332931f77.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/7ffce8b89d7180e717be842332931f77.webp">
-        <span class="body">
-          <span class="who">Lima One · Text Overlay</span>
-          <span class="line">Scale your flip investments</span>
-          <span class="meta"><span class="chip">VIDEO</span> 27d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/27f4ce55c218637afdbdc3bf4db48efb.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/27f4ce55c218637afdbdc3bf4db48efb.webp">
-        <span class="body">
-          <span class="who">Lima One · Announcement</span>
-          <span class="line">Scaling your fix and flip business means having a capital partner that maximizes leverage</span>
-          <span class="meta"><span class="chip">VIDEO</span> 27d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/bc0094295f04d9a44300140c369d4449.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/bc0094295f04d9a44300140c369d4449.webp">
-        <span class="body">
-          <span class="who">Lima One · Announcement</span>
-          <span class="line">Reno to rent faster</span>
-          <span class="meta"><span class="chip">VIDEO</span> 25d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="lima" href="https://cdn.generalcontext.com/adspy/media/bc0094295f04d9a44300140c369d4449.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Lima One ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/bc0094295f04d9a44300140c369d4449.webp">
-        <span class="body">
-          <span class="who">Lima One · Announcement</span>
-          <span class="line">Reno to rent faster</span>
-          <span class="meta"><span class="chip">VIDEO</span> 25d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="visio" href="https://cdn.generalcontext.com/adspy/media/6988ccd87aba4414b2282109009c0b6d.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Visio Lending ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/6988ccd87aba4414b2282109009c0b6d.webp">
-        <span class="body">
-          <span class="who">Visio Lending · Announcement</span>
-          <span class="line">Visio Lending</span>
-          <span class="meta"><span class="chip">VIDEO</span> 30d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="visio" href="https://cdn.generalcontext.com/adspy/media/8e3b266c35f87b78f184e6a02505ee3b.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Visio Lending ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/8e3b266c35f87b78f184e6a02505ee3b.webp">
-        <span class="body">
-          <span class="who">Visio Lending · Text Overlay</span>
-          <span class="line">Built for Real Estate Investors.</span>
-          <span class="meta"><span class="chip">VIDEO</span> 24d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="visio" href="https://cdn.generalcontext.com/adspy/media/bae7c8f7275bd22e32dc50d3745066a5.mp4">
-        <img class="thumb" loading="lazy" decoding="async" alt="Visio Lending ad still" src="https://cdn.generalcontext.com/adspy/thumbnails/bae7c8f7275bd22e32dc50d3745066a5.webp">
-        <span class="body">
-          <span class="who">Visio Lending · Announcement</span>
-          <span class="line">DSCR Loans Designed for Long-Term Rentals</span>
-          <span class="meta"><span class="chip">VIDEO</span> 24d <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="silver" href="https://www.facebook.com/ads/library/?id=1579160443855126">
-        <span class="thumb-none">AUG 11</span>
-        <span class="body">
-          <span class="who">New Silver</span>
-          <span class="line">With fast approvals, flexible terms, and outstanding support, New Silver makes investment property financing simple. NEWSILVER.COM/A-LENDER-YOU-CAN-TR</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="rcn" href="https://www.facebook.com/ads/library/?id=3596381123863415">
-        <span class="thumb-none">AUG 5</span>
-        <span class="body">
-          <span class="who">RCN</span>
-          <span class="line">Give your investor clients the options they need to scale. From flexible DSCR loans to Fix &amp; Flip financing, partner with RCN Capital to fund more dea</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="rcn" href="https://www.facebook.com/ads/library/?id=2152838492244274">
-        <span class="thumb-none">AUG 3</span>
-        <span class="body">
-          <span class="who">RCN</span>
-          <span class="line">Give your investor clients the options they need to scale. From flexible DSCR loans to Fix &amp; Flip financing, partner with RCN Capital to fund more dea</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="rcn" href="https://www.facebook.com/ads/library/?id=1723504305459679">
-        <span class="thumb-none">JUN 26</span>
-        <span class="body">
-          <span class="who">RCN</span>
-          <span class="line">Don't let a slow lender cost your client the deal—or your commission. Partner with RCN Capital for dependable underwriting and a smooth path to closin</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="l1" href="https://www.facebook.com/ads/library/?id=1278112652047419">
-        <span class="thumb-none">AUG 3</span>
-        <span class="body">
-          <span class="who">LendingOne</span>
-          <span class="line">Your next deal should not stall waiting on your lender. LendingOne is a direct private lender for real estate investors, funding rental, fix and flip,</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="l1" href="https://www.facebook.com/ads/library/?id=1567728734693253">
-        <span class="thumb-none">AUG 3</span>
-        <span class="body">
-          <span class="who">LendingOne</span>
-          <span class="line">Quick approvals, flexible terms, and closings in weeks. Build your portfolio with us. Max Leverage, Low Rates, Fast Closing Learn More ​ Active</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="l1" href="https://www.facebook.com/ads/library/?id=1038404478599417">
-        <span class="thumb-none">AUG 3</span>
-        <span class="body">
-          <span class="who">LendingOne</span>
-          <span class="line">Quick approvals, flexible terms, and closings in weeks. Build your portfolio with us. Max Leverage, Low Rates, Fast Closing Learn More ​ Active</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="renovo" href="https://www.facebook.com/ads/library/?id=1047967134255807">
-        <span class="thumb-none">JUL 22</span>
-        <span class="body">
-          <span class="who">Renovo</span>
-          <span class="line">Scaling a rental portfolio takes more than funding, it takes the right financing strategy. Whether you're purchasing your next investment property or </span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="renovo" href="https://www.facebook.com/ads/library/?id=27630156729985503">
-        <span class="thumb-none">JUL 15</span>
-        <span class="body">
-          <span class="who">Renovo</span>
-          <span class="line">National lending power. Local lending love. Renovo is your trusted lender with hyperlocal experts in your market. Discover the Renovo difference today</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="temple" href="https://www.facebook.com/ads/library/?id=2087565515303534">
-        <span class="thumb-none">JUL 9</span>
-        <span class="body">
-          <span class="who">Temple View</span>
-          <span class="line">At Temple View Capital, we've designed our investment programs to address the investor pain points we've experienced ourselves. Learn how Temple View </span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-
-      <a class="creative" data-b="temple" href="https://www.facebook.com/ads/library/?id=1327480112926362">
-        <span class="thumb-none">JUL 8</span>
-        <span class="body">
-          <span class="who">Temple View</span>
-          <span class="line">What's the potential outlook for the residential real estate market? How can serious investors capitalize? Hear from our experts at Temple View Capita</span>
-          <span class="meta"><span class="chip">AD LIBRARY</span> <span class="view">View →</span></span>
-        </span>
-      </a>
-    <!-- AUTO:WALL:END -->
-    </div>
-  </div>
-</section>
-
-<!-- ================= CREATOR BENCHMARK ================= -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">The reach gulf</p>
-      <h2>Who this audience actually watches</h2>
-      <p>
-        Best-performing organic post, creators against lenders, same audience and
-        same platform. Every lender in the category combined does not reach what
-        one creator reaches with a single video about their own deal.
-      </p>
-    </div>
-
-    <div class="legend">
-      <span><i style="background:var(--emerald-bar)"></i> Real estate creators</span>
-      <span><i style="background:var(--clay)"></i> Lenders</span>
-    </div>
-
-    <div class="bench">
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Erick Brice <i>· 111K</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:100%"></span></span>
-        <span class="v">98.1K</span>
-      </div>
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Sean Pan <i>· 4plex line-item P&amp;L</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:61%"></span></span>
-        <span class="v">59.8K</span>
-      </div>
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Logan Fullmer <i>· a lender’s $25M loss</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:41%"></span></span>
-        <span class="v">39.9K</span>
-      </div>
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Michael Llanas <i>· “subject-to isn’t illegal”</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:33%"></span></span>
-        <span class="v">32K</span>
-      </div>
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Jerry Norton <i>· raw seller phone call</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:27%"></span></span>
-        <span class="v">26K</span>
-      </div>
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Sean Pan <i>· selling 16 units</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:22%"></span></span>
-        <span class="v">22K</span>
-      </div>
-      <div class="bench-row" data-kind="creator">
-        <span class="who">Sean Pan <i>· BRRRR w/ private money</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:17%"></span></span>
-        <span class="v">16.3K</span>
-      </div>
-      <div class="bench-row" data-kind="lender">
-        <span class="who">Kiavi <i>· best post (BiggerPockets)</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:6%"></span></span>
-        <span class="v">5.7K</span>
-      </div>
-      <div class="bench-row" data-kind="lender">
-        <span class="who">Anchor Loans <i>· best post</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:2%"></span></span>
-        <span class="v">996</span>
-      </div>
-      <div class="bench-row" data-kind="lender">
-        <span class="who">Lima One <i>· best post</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
-        <span class="v">770</span>
-      </div>
-      <div class="bench-row" data-kind="lender">
-        <span class="who">Kiavi <i>· typical post</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
-        <span class="v">222</span>
-      </div>
-      <div class="bench-row" data-kind="lender">
-        <span class="who">New Silver <i>· best post</i></span>
-        <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
-        <span class="v">196</span>
-      </div>
-    </div>
-
-    <div class="method" style="margin-top:var(--s5)">
-      <h3>The format that separates them</h3>
-      <p>
-        Creators post <strong>arithmetic</strong>. Lenders post <strong>claims</strong>.
-        Sean Pan’s top video is a line-item P&amp;L: $4,750 rent, minus $475 management,
-        $410 landscaping, $1,021 mortgage, $953 escrow — $1,890 a month. That is the
-        whole video.
-      </p>
-      <p>
-        His BRRRR post is more pointed still. He narrates taking a private money loan
-        for the rehab, refinancing at 75% of a $330,000 appraisal, recovering every
-        dollar he put in plus $30,000 tax-free, and keeping a cash-flowing property.
-        <strong>That is Trilith’s product, told end to end, by someone who does not sell it.</strong>
-      </p>
-      <p>
-        And every top performer closes the same way — a comment keyword.
-        CALCULATOR, MARKETS, MASTERCLASS, WAITLIST, PODCAST, “free leads”, KIAVI.
-        Trilith’s four funded case studies contain exactly this kind of arithmetic —
-        $370,900, 7.875%, 70% LTV — published as static pages with no narration and
-        no way to capture the reader.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ================= HOOKS ================= -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Hook taxonomy</p>
-      <h2>The eleven angles the category runs on</h2>
-      <p>Ordered by how heavily the category leans on each one. The last two came from outside the primary corpus.</p>
-    </div>
-
-    <div class="hooks">
-      <div class="hook"><span class="rank">01</span><h3>Deal-loss urgency</h3>
-        <p class="ex">“Close before others even get approved” · “Compete like a cash buyer” <b>KIAVI, LIMA ONE</b></p></div>
-      <div class="hook"><span class="rank">02</span><h3>First-person financing confession</h3>
-        <p class="ex">Admit the fear, name financing as the villain, resolve with the brand. <b>KIAVI — 4 variants live</b></p></div>
-      <div class="hook"><span class="rank">03</span><h3>Volume flex as proof</h3>
-        <p class="ex">“I had 3 closings in one month and Kiavi funded all of them.” <b>KIAVI</b></p></div>
-      <div class="hook"><span class="rank">04</span><h3>Myth-bust / contrarian correction</h3>
-        <p class="ex">“Stop comparing lenders on rate alone.” <b>NEW SILVER</b></p></div>
-      <div class="hook"><span class="rank">05</span><h3>Stage transition — you did X, now do Y</h3>
-        <p class="ex">“You fixed it. Now rent it.” <b>LIMA ONE — 4 ads on one grammar</b></p></div>
-      <div class="hook"><span class="rank">06</span><h3>Legacy-system callout</h3>
-        <p class="ex">“Your builds are modern. So why is your financing stuck in the past?” <b>KIAVI</b></p></div>
-      <div class="hook"><span class="rank">07</span><h3>Betrayal / bait-and-switch</h3>
-        <p class="ex">The most aggressive line anyone is running. <b>VISIO</b></p></div>
-      <div class="hook"><span class="rank">08</span><h3>Identity mirroring</h3>
-        <p class="ex">Flatter the operator’s craft, then indict their financing for not matching it. <b>VISIO</b></p></div>
-      <div class="hook"><span class="rank">09</span><h3>Cost-of-error education</h3>
-        <p class="ex">“Small comp mistakes cost big money — $40K swings.” <b>KIAVI, NEW SILVER — organic</b></p></div>
-      <div class="hook"><span class="rank">10</span><h3>The broker’s commission, not the borrower’s deal</h3>
-        <p class="ex">“Don’t let a slow lender cost your client the deal — or your commission.” <b>RCN — PAID, INVISIBLE TO SPYGLASS</b></p></div>
-      <div class="hook"><span class="rank">11</span><h3>Show the arithmetic</h3>
-        <p class="ex">Line-item deal math, no claim attached. The single best-performing format in this audience — and no lender uses it. <b>CREATORS ONLY</b></p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= PAIN MAP ================= -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Pain map</p>
-      <h2>What borrowers are being sold against</h2>
-      <p>
-        Eleven pains the category works, scored by how much competitive pressure
-        sits on each. The dashed ones are where Trilith can speak without
-        shouting over someone with a larger budget.
-      </p>
-    </div>
-
-
-    <div class="pains">
-      <div class="pain">
-        <span><span class="what">Losing the deal to a cash buyer</span><br><span class="who">Kiavi and Lima One both buying it hard</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Financing is the scary part, not the rehab</span><br><span class="who">Kiavi’s entire testimonial engine</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Capital tied up caps deal count</span><br><span class="who">Lima One — 95% leverage push</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Income docs as a wall — no W-2, no returns</span><br><span class="who">Visio and Kiavi</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">The broker’s own commission is at risk</span><br><span class="who">RCN Capital — sustained paid spend since June, aimed at brokers not borrowers</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Rate bait-and-switch and hidden terms</span><br><span class="who">Visio only, organic</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">The BRRRR handoff — short-term to refi friction</span><br><span class="who">Kiavi and Lima One, product-led</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Process opacity — what does a lender actually check?</span><br><span class="who">Organic only, never funded</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Lender gets cold feet mid-project</span><br><span class="who">Anchor told it once, organically — 89 views. Nobody has funded it.</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Being ticket #40,000 in a portal</span><br><span class="who">New Silver gestures at it; no paid spend anywhere</span></span>
-      </div>
-      <div class="pain">
-        <span><span class="what">Prepayment penalties locking you in</span><br><span class="who">Visio is the only lender who has ever mentioned it</span></span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= CTAs ================= -->
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Conversion</p>
-      <h2>What they ask for, and where they send it</h2>
-    </div>
-
-    <div class="cta-wrap">
-      <table class="cta-t">
-        <thead>
-          <tr>
-            <th scope="col">Button</th>
-            <th scope="col">Sends to</th>
-            <th scope="col">Ads</th>
-            <th scope="col">What it tells you</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><code>Learn More</code></td><td>evergreen bridge page</td><td class="n">27</td><td>Their default, highest-volume ask</td></tr>
-          <tr><td><code>Get Offer</code></td><td>real-estate-agent page</td><td class="n">15</td><td>A whole referral channel aimed at agents</td></tr>
-          <tr><td><code>Get Estimate</code></td><td>new construction page</td><td class="n">12</td><td>Calculator as the lead magnet</td></tr>
-          <tr><td><code>See My Rate</code></td><td>Arizona state page</td><td class="n">4</td><td>State-by-state landing pages</td></tr>
-          <tr><td><code>Comment “KIAVI”</code></td><td>DM, then discount link</td><td class="n">organic</td><td><strong>Their single best asset — 5.7K views vs a 150–300 norm</strong></td></tr>
-          <tr><td><code>Book a meeting</code></td><td>broker-specific page</td><td class="n">Visio</td><td>Half of Visio’s landing pages are broker-facing</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-  </div>
-</section>
-
-<!-- ================= STRATEGY ================= -->
-<section class="strategy">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow on-panel">The conclusion</p>
-      <h2>What the evidence adds up to</h2>
-      <p>
-        Five conclusions, ordered by how much each one should change what Trilith
-        does. Every number below is on this page.
-      </p>
-    </div>
-
-    <div class="concl">
-
-      <div class="concl-item">
-        <span class="n">01</span>
-        <div>
-          <h3>Nobody owns attention in this category</h3>
-          <p>
-            Balance-sheet share and share of voice have come apart completely.
-            <strong>CoreVest has funded $7.8 billion across 35,000 projects and has
-            never run a single ad. Anchor Loans is a top-ten originator and has never
-            bought one either.</strong> Kiavi originates about $8B a year — the largest
-            private lender in the country — and runs 33 live ads. A regional shop in
-            Scottsdale runs 114.
-          </p>
-          <p>
-            There is no incumbent in attention to displace, because the firms with the
-            capital to dominate it have declined to show up. Trilith is not trying to
-            out-shout a giant; it is walking into a room the giants left.
-          </p>
-        </div>
-      </div>
-
-      <div class="concl-item">
-        <span class="n">02</span>
-        <div>
-          <h3>Almost everyone rents attention. Almost nobody builds it</h3>
-          <p>
-            RCN Capital runs roughly fifteen live ads to an Instagram audience of
-            <strong>166 people</strong>. That is not incompetence, it is a strategy —
-            buying reach monthly rather than accumulating it. The category default is
-            an audience that resets to zero the day the budget stops.
-          </p>
-          <p class="proof">
-            The counter-example: Anchor’s brand page has 4,700 followers. Their CEO’s
-            personal Instagram has 41,600. Nine to one, same company — the person
-            outperforms the institution.
-          </p>
-        </div>
-      </div>
-
-      <div class="concl-item">
-        <span class="n">03</span>
-        <div>
-          <h3>The format that wins is not the format lenders use</h3>
-          <p>
-            Creators out-reach lenders by ten to a hundred times, and the winning
-            content is not clever. Sean Pan’s top video is a profit-and-loss statement
-            read aloud: rent, minus management, minus landscaping, minus mortgage,
-            minus escrow, equals $1,890.
-            <strong>Lenders publish claims. Creators publish arithmetic.</strong>
-          </p>
-          <p>
-            Trilith’s four funded deals carry exactly that arithmetic — $370,900,
-            7.875%, 70% LTV — published as static spec sheets. Creators have to borrow
-            or reconstruct deals like these. Trilith funded them. It owns the format
-            that wins, with authority nobody in the comparison has, in the one shape
-            guaranteed not to travel.
-          </p>
-        </div>
-      </div>
-
-      <div class="concl-item">
-        <span class="n">04</span>
-        <div>
-          <h3>Four pains are saturated. Two are open, and they are Trilith’s</h3>
-          <p>
-            Tax returns, DTI, speed, income documentation — every lender says the same
-            four things, often in the same words. Two pains nobody is funding:
-            <strong>the refi trap</strong> (“you took the hard money loan to win the
-            deal; now the rate is still running and the property has stabilized”), which
-            maps onto bridge-to-DSCR, and <strong>mid-project abandonment</strong> — the
-            lender who gets cold feet at the draw, not at the close.
-          </p>
-          <p class="proof">
-            Anchor told the mid-project story once, organically. It reached 89 people.
-          </p>
-        </div>
-      </div>
-
-      <div class="concl-item">
-        <span class="n">05</span>
-        <div>
-          <h3>Every call to action is an ask for a conversation</h3>
-          <p>
-            Nobody runs “Apply.” The literal button text is Learn More, Get Offer, Get
-            Estimate, See My Rate. The category has concluded the ad’s job is to earn a
-            phone call — which means <strong>“the team that answers the phone” is not a
-            differentiator, it is the category’s business model.</strong> Everyone is
-            competing for the same call.
-          </p>
-          <p>
-            The gap is that Trilith asks for the call without earning it. Every
-            competitor has a capture mechanic; Kiavi’s best asset in ninety days was a
-            comment-to-DM offer. Trilith has 23 blog posts, four case studies, and no
-            way to turn a reader into a contact.
-          </p>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="verdict">
-      <h3>The position</h3>
-      <p>
-        <strong>Trilith is not competing with Kiavi. It is competing with Capital Fund 1
-        and a few hundred regional shops</strong> — and it can win, because it has two
-        things they do not: founders worth putting on camera, and real funded deals with
-        real numbers.
-      </p>
-      <p>
-        The sequence the evidence supports is narrow. Publish the deal math already
-        owned. Put a named human behind it. Aim it at the two unclaimed pains rather
-        than the four saturated ones. Give people a way to raise their hand.
-      </p>
-      <p>
-        None of that requires outspending anyone. It requires publishing what already
-        exists, in the format the data says works.
-      </p>
-    </div>
-
-    <div class="verdict" style="border-left-color:var(--clay)">
-      <h3>What this evidence cannot tell you</h3>
-      <p>
-        <strong>This is Meta only.</strong> A lender running Google Search, LinkedIn,
-        direct mail, conference sponsorship or pure broker relationships shows as silent
-        here. The six lenders that have never advertised may be spending heavily where
-        this cannot see — CoreVest’s $7.8 billion did not come from nowhere.
-      </p>
-      <p>
-        <strong>Ad count is not spend, and days-in-market is not performance.</strong>
-        Capital Fund 1 running 114 ads to Kiavi’s 33 does not mean it outspends Kiavi;
-        Meta publishes neither budget nor results. A long-running ad is probably working
-        — it is not proof. And 166 followers may be exactly the 166 brokers RCN wants.
-      </p>
-      <p>
-        The two conclusions that hold regardless of what happens off-platform are the
-        first and the third: the attention vacuum and the format gap. Both are about
-        what <em>is</em> being published, not about what is missing.
-      </p>
-    </div>
-  </div>
-</section>
+</main>
 
 <footer>
-  <div class="wrap">
-    <span>Prepared by AIKO for Trilith Funding · August 2026</span>
-    <a href="https://aikogroup.io">aikogroup.io</a>
-  </div>
+  <form class="composer" id="composer">
+    <textarea id="q" rows="1" placeholder="Ask about the category, or describe what you want to make…"
+              autocomplete="off" aria-label="Your question or brief"></textarea>
+    <button type="submit" id="send">Send</button>
+  </form>
+  <p class="hint">
+    Answers are grounded in the tracked corpora only. Enter sends; Shift+Enter adds a line.
+  </p>
 </footer>
 
 <script>
-  // Ad stills are hotlinked from the Spyglass CDN. Some embedding contexts
-  // block third-party image hosts outright; when that happens collapse the
-  // thumbnail column rather than leaving a broken-image box in every card.
-  (function () {
-    document.addEventListener('error', function (e) {
-      var el = e.target;
-      if (el && el.tagName === 'IMG' && el.classList.contains('thumb')) {
-        var card = el.closest('.creative');
-        if (card) card.classList.add('no-thumb');
-      }
-    }, true);
-  })();
+/* Set this to your deployed Worker URL, e.g.
+   https://trilith-ask.<your-subdomain>.workers.dev
+   The ideation route lives at <WORKER_URL>/ideas. */
+const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
 
-  (function () {
-    var buttons = document.querySelectorAll('.filters button');
-    var cards = document.querySelectorAll('#wall .creative');
+const transcript = document.getElementById('transcript');
+const composer = document.getElementById('composer');
+const input = document.getElementById('q');
+const sendBtn = document.getElementById('send');
+const setupNote = document.getElementById('setup');
+const planForm = document.getElementById('plan-form');
+const planCount = document.getElementById('plan-count');
+const planFocus = document.getElementById('plan-focus');
+const planGo = document.getElementById('plan-go');
 
-    buttons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var f = btn.dataset.f;
-        buttons.forEach(function (b) {
-          b.setAttribute('aria-pressed', String(b === btn));
-        });
-        cards.forEach(function (c) {
-          c.style.display = (f === 'all' || c.dataset.b === f) ? '' : 'none';
-        });
-      });
+const history = [];
+let busy = false;
+
+if (!WORKER_URL) {
+  setupNote.hidden = false;
+  input.disabled = sendBtn.disabled = true;
+  input.placeholder = 'Backend not configured — see the note above';
+  document.querySelectorAll('.starters button').forEach((b) => { b.disabled = true; });
+  planGo.disabled = planCount.disabled = planFocus.disabled = true;
+}
+
+/* Escape first, then add the small amount of markup the model actually emits.
+   Order matters: markdown links are converted before bare URLs, and the bare-URL
+   pattern requires whitespace or '(' before the scheme so it cannot match a URL
+   already sitting inside an href. */
+function render(md) {
+  const esc = String(md)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return esc
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/^#{3}\s+(.+)$/gm, '<h4>$1</h4>')
+    .replace(/^#{1,2}\s+(.+)$/gm, '<h3>$1</h3>')
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g,
+             '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,
+             '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+}
+
+/* Two starter groups — asking and making — so bind the listener to each. */
+document.querySelectorAll('.starters').forEach((group) => {
+  group.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || busy || !WORKER_URL) return;
+    input.value = btn.textContent.trim();
+    composer.requestSubmit();
+  });
+});
+
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); composer.requestSubmit(); }
+});
+
+function addMessage(kind, who, text) {
+  const el = document.createElement('div');
+  el.className = `msg ${kind}`;
+  const w = document.createElement('div');
+  w.className = 'who';
+  w.textContent = who;
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = text || '';
+  el.append(w, b);
+  transcript.append(el);
+  el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  return { wrapper: el, bubble: b };
+}
+
+/* One streaming runner for both modes. Asking and planning hit the same
+   endpoint and differ only in the payload and in what they do with a `plan`
+   event, so the SSE handling lives in one place. */
+async function run(payload, userLabel, botLabel) {
+  busy = true;
+  sendBtn.disabled = true;
+  planGo.disabled = true;
+
+  addMessage('user', userLabel, payload.brief);
+
+  const { wrapper, bubble } = addMessage('bot', botLabel, '');
+  const searches = document.createElement('div');
+  searches.className = 'searches';
+  wrapper.insertBefore(searches, bubble);
+  bubble.classList.add('cursor');
+
+  let answer = '';
+  try {
+    const res = await fetch(`${WORKER_URL.replace(/\/+$/, '')}/ideas`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
     });
-  })();
 
-  /* Persistent nav. The bar ships with the hidden attribute so a page without
-     JS shows nothing at all rather than a bar stuck at the top; the masthead
-     links remain the fallback there. Revealed only once the masthead — which
-     carries the same two links — has scrolled out of view. */
-  (function () {
-    var bar = document.getElementById('topbar');
-    var masthead = document.getElementById('top');
-    if (!bar || !masthead) return;
+    if (!res.ok || !res.body) {
+      const detail = await res.json().catch(() => ({}));
+      throw new Error(detail.error || `request failed (${res.status})`);
+    }
 
-    bar.hidden = false;
+    /* Parse the SSE stream by hand — EventSource cannot POST. Frames can be cut
+       mid-boundary, so keep the trailing partial in the buffer. */
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
 
-    /* Reveal once the masthead is all but gone. Measured rather than a fixed
-       number, because the masthead's height changes with the viewport. */
-    var threshold = 0;
-    function measure() { threshold = Math.max(masthead.offsetHeight - 64, 0); }
-    function update() { bar.classList.toggle('is-shown', window.scrollY > threshold); }
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
 
-    measure();
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', function () { measure(); update(); }, { passive: true });
-  })();
+      const frames = buffer.split('\n\n');
+      buffer = frames.pop() ?? '';
+
+      for (const frame of frames) {
+        const lines = frame.split('\n');
+        const evLine = lines.find((l) => l.startsWith('event: '));
+        const dataLine = lines.find((l) => l.startsWith('data: '));
+        if (!evLine || !dataLine) continue;
+        const event = evLine.slice(7).trim();
+        let data; try { data = JSON.parse(dataLine.slice(6)); } catch { continue; }
+
+        if (event === 'token') {
+          answer += data;
+          bubble.innerHTML = render(answer);
+          bubble.scrollIntoView({ block: 'end' });
+        } else if (event === 'tool') {
+          const row = document.createElement('div');
+          row.className = `search${data.failed ? ' failed' : ''}`;
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          tag.textContent = data.failed ? `${data.label} — search failed` : data.label;
+          const detail = document.createElement('span');
+          detail.textContent = data.detail;
+          const n = document.createElement('span');
+          n.className = 'n';
+          n.textContent = data.failed ? '' : `→ ${data.count}`;
+          row.append(tag, detail, n);
+          searches.append(row);
+          row.scrollIntoView({ block: 'end' });
+        } else if (event === 'plan') {
+          renderPlan(wrapper, data);
+        } else if (event === 'note') {
+          const nte = document.createElement('div');
+          nte.className = 'usage';
+          nte.textContent = data.message;
+          wrapper.append(nte);
+        } else if (event === 'error') {
+          bubble.classList.remove('cursor');
+          addMessage('error', 'Problem', data.message);
+        } else if (event === 'done') {
+          const u = document.createElement('div');
+          u.className = 'usage';
+          const cached = data.usage.cacheRead
+            ? ` · ${data.usage.cacheRead.toLocaleString()} cached` : '';
+          u.textContent =
+            `${data.model} · ${data.usage.searches} searches · ` +
+            `${data.usage.output.toLocaleString()} output tokens${cached}`;
+          wrapper.append(u);
+        }
+      }
+    }
+  } catch (err) {
+    addMessage('error', 'Problem', err.message);
+  } finally {
+    bubble.classList.remove('cursor');
+    if (answer) {
+      history.push({ role: 'user', content: payload.brief },
+                   { role: 'assistant', content: answer });
+    }
+    busy = false;
+    sendBtn.disabled = false;
+    planGo.disabled = false;
+    input.focus();
+  }
+}
+
+composer.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const brief = input.value.trim();
+  if (!brief || busy || !WORKER_URL) return;
+  input.value = '';
+  input.style.height = 'auto';
+  run({ brief, history }, 'You', 'Answer');
+});
+
+planForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (busy || !WORKER_URL) return;
+  const count = Math.min(Math.max(parseInt(planCount.value, 10) || 5, 1), 12);
+  planCount.value = count;
+  const focus = planFocus.value.trim();
+  const brief = focus
+    ? `Plan ${count} videos. Focus: ${focus}`
+    : `Plan ${count} videos.`;
+  /* No history: a batch should be planned against the corpora, not against
+     whatever was being discussed a moment ago. */
+  run({ mode: 'plan', count, brief, history: [] }, 'Plan request', 'Proposed batch');
+});
+
+/* Renders the proposed batch as a reviewable list. Nothing is committed here —
+   the reviewer drops what they do not want, then confirms the rest. */
+function renderPlan(wrapper, data) {
+  const briefs = data.briefs || [];
+  if (!briefs.length) return;
+
+  const list = document.createElement('div');
+  list.className = 'briefs';
+
+  briefs.forEach((b, i) => {
+    const row = document.createElement('div');
+    row.className = 'brief';
+
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = true;
+    box.setAttribute('aria-label', `Include: ${b.topic}`);
+    box.addEventListener('change', () => {
+      row.classList.toggle('dropped', !box.checked);
+      updateCount();
+    });
+
+    const body = document.createElement('div');
+    body.className = 'b-body';
+
+    const topic = document.createElement('div');
+    topic.className = 'b-topic';
+    topic.textContent = `${i + 1}. ${b.topic}`;
+
+    const line = document.createElement('div');
+    line.className = 'b-line';
+    line.textContent = `“${b.opening_line}”`;
+
+    const meta = document.createElement('div');
+    meta.className = 'b-meta';
+    meta.textContent = [
+      b.hook_form && `HOOK: ${b.hook_form}`,
+      b.hook_source && `via ${b.hook_source}`,
+      b.product,
+      b.audience,
+    ].filter(Boolean).join(' · ');
+
+    const ev = document.createElement('div');
+    ev.className = 'b-ev';
+    ev.innerHTML = render(b.evidence);
+
+    body.append(topic, line, meta, ev);
+    row.append(box, body);
+    row._brief = b;
+    row._box = box;
+    list.append(row);
+  });
+
+  const bar = document.createElement('div');
+  bar.className = 'lockbar';
+  const count = document.createElement('span');
+  count.className = 'count';
+  const lock = document.createElement('button');
+  lock.className = 'lock';
+  lock.type = 'button';
+  const copy = document.createElement('button');
+  copy.className = 'copy';
+  copy.type = 'button';
+  copy.textContent = 'Copy JSON';
+
+  function selected() {
+    return [...list.querySelectorAll('.brief')].filter((r) => r._box.checked).map((r) => r._brief);
+  }
+  function updateCount() {
+    const n = selected().length;
+    count.textContent = `${n} of ${briefs.length} selected`;
+    lock.textContent = n ? `Lock in ${n}` : 'Nothing selected';
+    lock.disabled = n === 0;
+    copy.disabled = n === 0;
+  }
+
+  function payload() {
+    return {
+      lockedAt: new Date().toISOString(),
+      requested: data.requested,
+      briefs: selected(),
+    };
+  }
+
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload(), null, 2));
+      copy.textContent = 'Copied';
+      setTimeout(() => { copy.textContent = 'Copy JSON'; }, 1600);
+    } catch {
+      copy.textContent = 'Copy failed';
+    }
+  });
+
+  lock.addEventListener('click', () => {
+    const body = payload();
+    const stamp = body.lockedAt.slice(0, 10);
+    const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `video-briefs-${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    /* Freeze the list once locked, so the file on disk and what is on screen
+       cannot drift apart. */
+    list.querySelectorAll('input[type="checkbox"]').forEach((c) => { c.disabled = true; });
+    lock.disabled = true;
+    copy.disabled = false;
+    lock.textContent = `Locked ${body.briefs.length}`;
+
+    const note = document.createElement('div');
+    note.className = 'locked-note';
+    note.innerHTML =
+      `<strong>${body.briefs.length} locked</strong> and downloaded as ` +
+      `<code>video-briefs-${stamp}.json</code>. To add it to the repo:<br>` +
+      `<code>node tools/add-briefs.mjs &lt;path to the file&gt;</code>`;
+    bar.after(note);
+  });
+
+  bar.append(count, copy, lock);
+  updateCount();
+  wrapper.append(list, bar);
+  list.scrollIntoView({ block: 'nearest' });
+}
 </script>
 </body>
 </html>

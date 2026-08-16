@@ -3,7 +3,7 @@
 Competitive intelligence briefing on the private real estate lending category,
 prepared by [AIKO](https://aikogroup.io) for Trilith Funding.
 
-`index.html` is a self-contained page — no build step, no dependencies. Open it
+`briefing.html` is a self-contained page — no build step, no dependencies. Open it
 directly, or serve the repo root with any static host.
 
 ## What it covers
@@ -85,7 +85,7 @@ triggered by hand from the Actions tab. Three stages:
 |---|---|---|
 | Pull | `tools/pull.mjs` | Drives Chromium over 4 keyword sweeps and 9 lender page IDs, writes `data/raw/<date>.json` |
 | Merge | `tools/merge.mjs` | Folds into `data/ads.json`, stamping a **firstSeen** date per ad |
-| Render | `tools/render.mjs` | Rewrites only the `AUTO:FEED` region of `index.html` |
+| Render | `tools/render.mjs` | Rewrites only the `AUTO:*` regions of `briefing.html` |
 
 Then it commits and pushes; Pages rebuilds itself.
 
@@ -116,7 +116,7 @@ challenge, so expect some failed runs. Failures are safe — they just skip a da
 it fails for several consecutive days, run the job somewhere with a residential IP,
 or use `tools/recency-pull.js` by hand in the meantime.
 
-### Careful: two writers touch index.html
+### Careful: two writers touch briefing.html
 
 `render.mjs` writes the `AUTO:FEED` region. Regenerating the whole page from the
 design source overwrites that region with the placeholder. If you regenerate the

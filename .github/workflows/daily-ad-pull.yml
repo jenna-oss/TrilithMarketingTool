@@ -1,7 +1,7 @@
 name: Daily ad pull
 
 # Sweeps the Meta Ad Library, folds the results into data/ads.json, rewrites the
-# live-feed section of index.html and pushes. GitHub Pages rebuilds on push.
+# automated regions of briefing.html and pushes. GitHub Pages rebuilds on push.
 #
 # Known risk, accepted deliberately: Meta frequently challenges datacenter IPs,
 # and a headless runner cannot clear a challenge. tools/pull.mjs therefore exits
@@ -69,7 +69,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data index.html
+          git add data briefing.html
           if git diff --staged --quiet; then
             echo "Nothing changed today."
             exit 0
