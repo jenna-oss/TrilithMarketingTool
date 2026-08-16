@@ -40,6 +40,19 @@ jobs:
           SPYGLASS_API_KEY: ${{ secrets.SPYGLASS_API_KEY }}
         run: node tools/pull-spyglass.mjs
 
+      # The creative wall: the actual ads the board lenders are running, with
+      # their media and current run lengths. Weekly for the same reason as the
+      # patterns — credits are billed per row.
+      - name: Pull creatives from Spyglass
+        env:
+          SPYGLASS_API_KEY: ${{ secrets.SPYGLASS_API_KEY }}
+        run: node tools/pull-creatives.mjs
+
+      # Rebuilds the wall and the figures on the briefing from whatever has
+      # just been harvested. Safe with no data: every region is optional.
+      - name: Render the briefing
+        run: node tools/render.mjs
+
       # Commit before pushing to the database, for the same reason the ad pull
       # does: the harvest is the thing that costs money and cannot be repeated
       # for free, so it lands in git before anything else can fail.
@@ -47,9 +60,9 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/hook-patterns.json
+          git add data/hook-patterns.json data/creatives.json index.html
           if git diff --staged --quiet; then
-            echo "No change in hook patterns this week."
+            echo "No change in hook patterns or creative this week."
             exit 0
           fi
           git commit -m "Weekly hook patterns: $(date -u +%Y-%m-%d)"

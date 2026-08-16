@@ -89,6 +89,60 @@ html = html.replace(
 );
 if (filled) console.log(`Filled ${filled} figures from the corpus.`);
 
+/* The creative wall. Cards and filter buttons are both generated, so a lender
+ * whose ads all stopped loses its button rather than leaving a filter that
+ * selects nothing. Absent data leaves the hand-built wall in place. */
+let creatives = null;
+try {
+  creatives = JSON.parse(await readFile(join(ROOT, 'data', 'creatives.json'), 'utf8'));
+} catch { /* not harvested yet */ }
+
+if (creatives?.cards?.length) {
+  const cards = creatives.cards;
+
+  const order = ['kiavi', 'lima', 'visio', 'anchor', 'silver', 'rcn', 'l1', 'renovo', 'temple'];
+  const present = order.filter((slug) => cards.some((c) => c.slug === slug));
+
+  const labels = new Map();
+  for (const c of cards) if (!labels.has(c.slug)) labels.set(c.slug, c.brand);
+
+  const buttons = [
+    '      <button type="button" data-f="all" aria-pressed="true">All</button>',
+    ...present.map((slug) =>
+      `      <button type="button" data-f="${slug}" aria-pressed="false">${esc(labels.get(slug))}</button>`),
+  ].join('\n');
+
+  const wall = cards.map((c) => {
+    const chip = esc(c.mediaType || 'AD');
+    /* daysRun is the API's own figure, so the wall cannot claim a duration it
+     * has not checked. Omit it rather than print a zero. */
+    const age = c.daysRun ? ` ${c.daysRun}d` : '';
+    const who = c.category ? `${c.brand} · ${c.category}` : c.brand;
+    return `
+      <a class="creative" data-b="${esc(c.slug)}" href="${esc(c.mediaUrl)}">
+        <img class="thumb" loading="lazy" decoding="async" alt="${esc(c.brand)} ad still" src="${esc(c.thumbnailUrl)}">
+        <span class="body">
+          <span class="who">${esc(who)}</span>
+          <span class="line">${esc(c.line)}</span>
+          <span class="meta"><span class="chip">${chip}</span>${age} <span class="view">View →</span></span>
+        </span>
+      </a>`;
+  }).join('\n');
+
+  const longest = Math.max(0, ...cards.map((c) => c.daysRun || 0));
+
+  const filters = replaceRegion(html, 'FILTERS', `\n${buttons}\n    `);
+  html = filters.html;
+  const wallRegion = replaceRegion(html, 'WALL', `${wall}\n    `);
+  html = wallRegion.html;
+  const longestRegion = replaceRegion(html, 'LONGEST', String(longest));
+  html = longestRegion.html;
+
+  if (wallRegion.wrote) {
+    console.log(`Wall: ${cards.length} creatives, longest running ${longest}d.`);
+  }
+}
+
 const a = html.indexOf(START);
 const b = html.indexOf(END);
 
@@ -96,7 +150,7 @@ const b = html.indexOf(END);
  * decision, not a failure — write whatever else changed and exit cleanly rather
  * than going red every morning. */
 if (a === -1 || b === -1 || b < a) {
-  if (totals.wrote || stamp.wrote || filled) {
+  if (totals.wrote || stamp.wrote || filled || creatives?.cards?.length) {
     await writeFile(PAGE, html);
     console.log('Wrote the automated regions. No AUTO:FEED region — skipping the feed.');
   } else {
