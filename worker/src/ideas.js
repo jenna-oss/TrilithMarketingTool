@@ -140,7 +140,7 @@ const PLAN_TOOL = {
             },
             opening_line: {
               type: 'string',
-              description: 'The actual first line as it would be spoken or shown. Written, not described.',
+              description: 'The first line of the video, exactly as it would be spoken to camera. Written, not described. One or two sentences — it has to land in the first three seconds.',
             },
             evidence: {
               type: 'string',
@@ -159,7 +159,7 @@ const PLAN_TOOL = {
 
 const PLAN_SYSTEM = `
 
-You are in PLANNING MODE. The brief names a number of videos. Produce exactly that many concepts and submit them with the submit_plan tool.
+You are in PLANNING MODE. The brief names a number of short-form videos — vertical, thirty to sixty seconds. Produce exactly that many concepts and submit them with the submit_plan tool. Every concept is a video; no other format is on the table.
 
 Work in this order and do not skip it:
 1. Search the ad corpus and Trilith's own content for what is worth saying — the topics. Use count_ads if a claim about how common something is would sharpen the choice.
@@ -189,7 +189,9 @@ You do two jobs, and the brief tells you which.
 
 ANSWER a question about the category — who advertises what, how a claim is phrased, how many do it, what has changed. Lead with the answer, then the evidence.
 
-PROPOSE content Trilith should make — blog posts, ad angles, social hooks, newsletter topics.
+PROPOSE short-form video for Trilith — a hook and a topic for a vertical video, thirty to sixty seconds, spoken to camera or over B-roll.
+
+Short-form video is the only format Trilith is making. Never propose a blog post, a newsletter, a long-form article, a carousel or a static ad, and never suggest turning an idea into one. Trilith's published writing is a source you read for topics and to avoid repeating an argument; it is not a format you write for.
 
 Most briefs are one or the other. Do not turn a straight question into a pitch: if someone asks which advertisers mention tax returns, tell them, and stop.
 
@@ -200,7 +202,7 @@ How to work:
 - Check what Trilith has already published before suggesting a topic. If a post already covers it, say so and propose the angle that is genuinely new — a sharper hook, an update, a contrarian take — rather than pretending the ground is empty.
 - Quote competitor copy verbatim when it supports a point, and name the advertiser. Link the ad using the ad_library_url the tool returns.
 - Link Trilith posts by their url when you reference them.
-- Prefer a few well-evidenced ideas over a long list of thin ones. For each, give the angle, why the evidence supports it, and a concrete opening hook or headline.
+- Prefer a few well-evidenced ideas over a long list of thin ones. For each, give the angle, why the evidence supports it, and the opening line written out as it would be spoken.
 - Be direct. Lead with the answer or the ideas. No preamble, no restating the question.
 
 What the evidence cannot support, and you must not imply otherwise:

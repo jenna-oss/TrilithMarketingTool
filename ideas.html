@@ -60,14 +60,6 @@
   .intro h2 { margin:0 0 .5rem; font-size:.9375rem; color:var(--ink); }
   .intro p { margin:0 0 .5rem; font-size:.875rem; }
   .intro p:last-child { margin-bottom:0; }
-  .sources { display:flex; flex-wrap:wrap; gap:.75rem; margin-top:.75rem; }
-  .source {
-    flex:1 1 240px; background:var(--card-sunk); border:1px solid var(--rule);
-    border-radius:4px; padding:.625rem .75rem;
-  }
-  .source .name { font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
-                  font-weight:700; color:var(--accent); }
-  .source .stat { font-family:var(--mono); font-size:.75rem; color:var(--ink-quiet); }
 
   /* Planner — proposing a batch, reviewing it, locking it. */
   .planner {
@@ -237,40 +229,34 @@
       <h2>How this works</h2>
       <p>
         Ask a question about the category — who is running what, how a claim is
-        phrased, how many advertisers use it — or describe something you want to
-        make. The agent searches before it answers, and shows you every search
-        it ran.
+        phrased, how many advertisers use it. The agent searches before it
+        answers and shows you every search it ran. Counts come from the whole
+        corpus rather than a sample, so "how many" and "who does it most" are
+        exact.
       </p>
       <p>
-        Counts come from the whole corpus, not from a sample, so "how many" and
-        "who does it most" are exact. For ideas, it checks what Trilith has
-        already published and tells you when a topic is covered and what the
-        genuinely new angle is instead.
+        <strong>Planning a batch</strong> is the other half. Say how many
+        short-form videos you want and the agent proposes that many concepts,
+        each pairing a hook form borrowed from outside the category with a topic
+        drawn from competitor ads and Trilith's own writing. No two share a hook
+        or a topic. You drop whatever you do not want, and nothing is locked
+        until you confirm the set.
       </p>
-      <div class="sources">
-        <div class="source">
-          <div class="name">Competitor ads</div>
-          <div class="stat" id="stat-ads">Loading…</div>
-        </div>
-        <div class="source">
-          <div class="name">Trilith content</div>
-          <div class="stat" id="stat-content">Loading…</div>
-        </div>
-      </div>
     </div>
 
     <div class="planner" id="planner">
       <form class="plan-form" id="plan-form">
         <label for="plan-count">Plan a batch of</label>
-        <input type="number" id="plan-count" min="1" max="12" value="5" aria-label="Number of videos">
-        <label for="plan-count">videos</label>
+        <input type="number" id="plan-count" min="1" max="12" value="5" aria-label="Number of short-form videos">
+        <label for="plan-count">short-form videos</label>
         <input type="text" id="plan-focus" placeholder="Optional focus — e.g. brokers, DSCR, this month's news"
                aria-label="Optional focus for the batch">
         <button type="submit" id="plan-go">Propose</button>
       </form>
       <p class="plan-note">
-        Hooks come from the Spyglass patterns; topics from competitor ads and Trilith's
-        own writing. Nothing is locked until you confirm the selection.
+        Each concept is a hook and a topic for one vertical video, with the opening
+        line written out. Review the set, drop what you do not want, then lock it
+        for production.
       </p>
     </div>
 
@@ -282,13 +268,13 @@
       <button type="button">Show me every ad aimed at brokers rather than borrowers.</button>
     </div>
 
-    <p class="starter-label">Or make something</p>
+    <p class="starter-label">Or explore video angles</p>
     <div class="starters" id="starters-make">
-      <button type="button">What are competitors saying that we have never written about?</button>
-      <button type="button">Give me three blog posts aimed at brokers, with hooks.</button>
-      <button type="button">Our DSCR posts are getting stale — what is the new angle?</button>
-      <button type="button">Borrow a hook structure from outside the category for a bridge ad.</button>
-      <button type="button">Plan a week of social from one existing blog post.</button>
+      <button type="button">What are competitors saying that we have never covered?</button>
+      <button type="button">Which hook forms would suit a broker-facing video?</button>
+      <button type="button">Our DSCR angles feel stale — what is the new one?</button>
+      <button type="button">Borrow a hook structure from outside the category for a bridge video.</button>
+      <button type="button">Which competitor claim could we answer with a funded deal?</button>
     </div>
 
     <div id="transcript"></div>
@@ -347,28 +333,6 @@ if (!WORKER_URL) {
   document.querySelectorAll('.starters button').forEach((b) => { b.disabled = true; });
   planGo.disabled = planCount.disabled = planFocus.disabled = true;
 }
-
-/* Corpus sizes come from the committed data files, so the header is honest even
-   before the Worker exists. */
-fetch('./data/ads.json')
-  .then((r) => r.json())
-  .then((c) => {
-    const ads = Object.values(c.ads);
-    const advertisers = new Set(ads.map((a) => a.advertiser)).size;
-    document.getElementById('stat-ads').textContent =
-      `${ads.length} ads · ${advertisers} advertisers · ${String(c.updatedAt).slice(0, 10)}`;
-  })
-  .catch(() => { document.getElementById('stat-ads').textContent = 'Unavailable.'; });
-
-fetch('./data/content.json')
-  .then((r) => r.json())
-  .then((c) => {
-    const chunks = c.docs.reduce((n, d) => n + d.chunks.length, 0);
-    const blogs = c.docs.filter((d) => d.kind === 'blog').length;
-    document.getElementById('stat-content').textContent =
-      `${c.docs.length} pages · ${blogs} posts · ${chunks} passages`;
-  })
-  .catch(() => { document.getElementById('stat-content').textContent = 'Unavailable.'; });
 
 /* Escape first, then add the small amount of markup the model actually emits.
    Order matters: markdown links are converted before bare URLs, and the bare-URL
