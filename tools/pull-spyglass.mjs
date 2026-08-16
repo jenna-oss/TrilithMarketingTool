@@ -59,19 +59,22 @@ async function insights(brandId, type) {
 }
 
 /* The REST response is bucketed by week — {type, count, buckets:[{year, week,
- * clusters:[{id, label, rawDelta, percentDelta, ...}]}]} — where the MCP
- * surface handed back a flat list. Collapse it: a pattern's total is its
- * volume summed across every week in the window, and its deltas come from the
- * most recent week that reported them.
+ * clusters:[{id, label, rawDelta, percentDelta}]}]} — where the MCP surface
+ * handed back a flat list with a usage count per pattern.
  *
- * The per-cluster volume field is not named in the docs, so try the plausible
- * ones and report the keys we actually saw if none match. Better to fail with
- * the field list than to silently record every pattern as zero. */
+ * REST carries no per-pattern volume: a cluster is only {id, label, rawDelta,
+ * percentDelta}, and the top-level `count` is the number of clusters. So total
+ * is left null rather than guessed, and the upsert coalesces it so a refresh
+ * never overwrites a volume the MCP already established.
+ *
+ * What REST can tell us is persistence: how many weeks of the window a pattern
+ * appeared in. A hook used every week for two months is a different signal from
+ * one that spiked once, and that distinction survives here. */
 const VOLUME_KEYS = ['total', 'count', 'size', 'volume', 'mediaCount', 'adCount'];
 let loggedShape = false;
 
 function flatten(body) {
-  /* Flat form, in case the API ever returns one. */
+  /* Flat form, in case the API ever grows one. */
   if (Array.isArray(body)) return body;
   if (Array.isArray(body?.rows)) return body.rows;
   if (!Array.isArray(body?.buckets)) return null;
@@ -92,20 +95,25 @@ function flatten(body) {
         loggedShape = true;
       }
 
-      const key = VOLUME_KEYS.find((k) => Number.isFinite(Number(c[k])));
-      const volume = key ? Number(c[key]) : 0;
+      const prev = byLabel.get(label)
+        ?? { label, total: null, weeksActive: 0, rawDelta: null, percentDelta: null };
 
-      const prev = byLabel.get(label) ?? { label, total: 0, rawDelta: null, percentDelta: null };
-      prev.total += volume;
-      /* Buckets are in ascending order, so the last non-null wins — the most
-       * recent week that had something to compare against. */
+      prev.weeksActive += 1;
+
+      /* If a volume field ever appears, use it — but never invent a zero. */
+      const key = VOLUME_KEYS.find((k) => Number.isFinite(Number(c[k])));
+      if (key) prev.total = (prev.total ?? 0) + Number(c[key]);
+
+      /* Buckets are ascending, so the last non-null wins: the most recent week
+       * that had something to compare against. */
       if (c.rawDelta !== null && c.rawDelta !== undefined) prev.rawDelta = c.rawDelta;
       if (c.percentDelta !== null && c.percentDelta !== undefined) prev.percentDelta = c.percentDelta;
+
       byLabel.set(label, prev);
     }
   }
 
-  return [...byLabel.values()].sort((a, b) => b.total - a.total);
+  return [...byLabel.values()].sort((a, b) => b.weeksActive - a.weeksActive);
 }
 
 const rows = [];
@@ -128,7 +136,10 @@ for (const brand of BRANDS) {
           category: brand.category,
           insight_type: type,
           label: r.label,
-          total: r.total,
+          /* Null, not zero — the upsert coalesces, so an unknown volume leaves
+           * an established one alone. */
+          total: r.total ?? null,
+          weeks_active: r.weeksActive ?? null,
           raw_delta: r.rawDelta ?? null,
           percent_delta: r.percentDelta ?? null,
         });
@@ -156,14 +167,9 @@ await writeFile(
   JSON.stringify({ fetchedAt: new Date().toISOString(), rows, failures }, null, 2)
 );
 
-/* If every pattern came back with volume zero the field-name guess missed, and
- * loading them would flatten min_total filtering and the ordering to nothing.
- * Say so rather than write a corpus that looks fine and ranks randomly. */
-if (rows.length && rows.every((r) => r.total === 0)) {
-  console.error(
-    'Every pattern has a volume of 0 — none of ' + VOLUME_KEYS.join('/') +
-    ' matched. Check the "cluster fields" line above and add the right key.'
-  );
+/* A pattern present in no weekly bucket is a parsing failure, not a finding. */
+if (rows.length && rows.every((r) => !r.weeks_active)) {
+  console.error('Every pattern has weeks_active 0 — the bucket parsing is wrong. Not writing.');
   process.exit(1);
 }
 
