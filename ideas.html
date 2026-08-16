@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Content ideas — Private Real Estate Lending</title>
+<title>Ask &amp; brainstorm — Private Real Estate Lending</title>
 <style>
   :root {
     --forest:#0B3529; --forest-deep:#072A1F; --cream:#ECE9D8; --cream-text:#EAE9D5;
@@ -69,7 +69,12 @@
                   font-weight:700; color:var(--accent); }
   .source .stat { font-family:var(--mono); font-size:.75rem; color:var(--ink-quiet); }
 
-  .starters { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.5rem; }
+  .starter-label {
+    margin:0 0 .5rem; font-size:.625rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--ink-quiet);
+  }
+  .starters { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.25rem; }
+  .starters:last-of-type { margin-bottom:1.5rem; }
   .starters button {
     font-family:var(--sans); font-size:.8125rem; color:var(--ink-body);
     background:transparent; border:1px solid var(--rule-strong); border-radius:999px;
@@ -156,11 +161,10 @@
     </svg>
   </span>
   <span>
-    <h1>Content ideas</h1>
-    <p class="sub">Grounded in competitor ads and Trilith's own writing</p>
+    <h1>Ask &amp; brainstorm</h1>
+    <p class="sub">Every tracked ad, Trilith's own writing, and how the category hooks</p>
   </span>
   <nav>
-    <a href="./ask.html">Ask the corpus</a>
     <a href="./">← Briefing</a>
   </nav>
 </header>
@@ -170,13 +174,16 @@
     <div class="intro">
       <h2>How this works</h2>
       <p>
-        Describe what you want to make — a blog post, an ad angle, a newsletter,
-        a week of social. The agent searches both corpora before it proposes
-        anything, and shows you every search it ran.
+        Ask a question about the category — who is running what, how a claim is
+        phrased, how many advertisers use it — or describe something you want to
+        make. The agent searches before it answers, and shows you every search
+        it ran.
       </p>
       <p>
-        It checks what Trilith has already published, so it will tell you when a
-        topic is covered and what the genuinely new angle is instead.
+        Counts come from the whole corpus, not from a sample, so "how many" and
+        "who does it most" are exact. For ideas, it checks what Trilith has
+        already published and tells you when a topic is covered and what the
+        genuinely new angle is instead.
       </p>
       <div class="sources">
         <div class="source">
@@ -190,13 +197,21 @@
       </div>
     </div>
 
+    <p class="starter-label">Ask about the category</p>
     <div class="starters" id="starters">
+      <button type="button">Which advertisers mention tax returns, and how do they phrase it?</button>
+      <button type="button">How many advertisers are running DSCR, and who runs the most?</button>
+      <button type="button">Compare how Kiavi and Capital Fund 1 talk about speed.</button>
+      <button type="button">Show me every ad aimed at brokers rather than borrowers.</button>
+    </div>
+
+    <p class="starter-label">Or make something</p>
+    <div class="starters" id="starters-make">
       <button type="button">What are competitors saying that we have never written about?</button>
       <button type="button">Give me three blog posts aimed at brokers, with hooks.</button>
       <button type="button">Our DSCR posts are getting stale — what is the new angle?</button>
-      <button type="button">Which competitor hooks could we answer with a funded deal?</button>
+      <button type="button">Borrow a hook structure from outside the category for a bridge ad.</button>
       <button type="button">Plan a week of social from one existing blog post.</button>
-      <button type="button">What newsletter topic would land this month?</button>
     </div>
 
     <div id="transcript"></div>
@@ -212,7 +227,7 @@
         <li><code>npx wrangler secret put SUPABASE_ANON_KEY</code> — the anon key, never the service role key</li>
         <li><code>npx wrangler deploy</code></li>
         <li>Put the deployed URL into <code>WORKER_URL</code> at the top of the script in
-            <code>ideas.html</code> and <code>ask.html</code>, then commit</li>
+            <code>ideas.html</code>, then commit</li>
       </ol>
     </div>
   </div>
@@ -220,12 +235,12 @@
 
 <footer>
   <form class="composer" id="composer">
-    <textarea id="q" rows="1" placeholder="What do you want to make?"
-              autocomplete="off" aria-label="Your brief"></textarea>
-    <button type="submit" id="send">Brainstorm</button>
+    <textarea id="q" rows="1" placeholder="Ask about the category, or describe what you want to make…"
+              autocomplete="off" aria-label="Your question or brief"></textarea>
+    <button type="submit" id="send">Send</button>
   </form>
   <p class="hint">
-    Ideas are grounded in the tracked corpora only. Enter sends; Shift+Enter adds a line.
+    Answers are grounded in the tracked corpora only. Enter sends; Shift+Enter adds a line.
   </p>
 </footer>
 
@@ -291,11 +306,14 @@ function render(md) {
              '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
 }
 
-document.getElementById('starters').addEventListener('click', (e) => {
-  const btn = e.target.closest('button');
-  if (!btn || busy || !WORKER_URL) return;
-  input.value = btn.textContent.trim();
-  composer.requestSubmit();
+/* Two starter groups — asking and making — so bind the listener to each. */
+document.querySelectorAll('.starters').forEach((group) => {
+  group.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || busy || !WORKER_URL) return;
+    input.value = btn.textContent.trim();
+    composer.requestSubmit();
+  });
 });
 
 input.addEventListener('input', () => {
@@ -332,9 +350,9 @@ composer.addEventListener('submit', async (e) => {
   input.value = '';
   input.style.height = 'auto';
 
-  addMessage('user', 'Brief', brief);
+  addMessage('user', 'You', brief);
 
-  const { wrapper, bubble } = addMessage('bot', 'Ideas', '');
+  const { wrapper, bubble } = addMessage('bot', 'Answer', '');
   const searches = document.createElement('div');
   searches.className = 'searches';
   wrapper.insertBefore(searches, bubble);

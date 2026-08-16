@@ -62,6 +62,26 @@ const TOOLS = [
     },
   },
   {
+    name: 'count_ads',
+    description:
+      'Exact counts over the WHOLE ad corpus, grouped by advertiser, product, audience, month, or none. Use this for any question about how many, how often, who does it most, or what share — never count search results, which are capped at 40 and will understate. Accepts the same filters as search_competitor_ads, so you can count the same slice you searched.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Words to match in the ad copy; omit to count everything.' },
+        advertiser: { type: 'string' },
+        product: { type: 'string', enum: PRODUCTS },
+        audience: { type: 'string', enum: ['broker', 'borrower'] },
+        started_since: { type: 'string', description: 'ISO date.' },
+        group_by: {
+          type: 'string',
+          enum: ['advertiser', 'product', 'audience', 'month', 'none'],
+          description: 'Default advertiser. Use none for a single total.',
+        },
+      },
+    },
+  },
+  {
     name: 'search_hook_patterns',
     description:
       'Creative STRUCTURE from advertisers outside the lending category, via the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki). Hormozi and Kiyosaki skew to an operator and broker audience; Zillow to property decisions; the finance names to money anxiety and comparison. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. Each result carries weeks_running — how many weeks the pattern kept appearing, present on every row and the better signal for whether a form is working — and times_used, a raw count that is null on most rows because the source does not report one. Null there means unknown, not unused, so never describe a pattern as unused on the strength of it. `change` is the percentage change Spyglass reports for that pattern against the previous window — it is not a share of the overall mix for that brand, and it says nothing about whether the pattern performed; a negative number means the brand is using the form less than it was, and the reason is not in this data. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
@@ -101,7 +121,15 @@ The third one is different in kind and you must treat it differently. Those bran
 
 Never write "competitors are using this hook" on the strength of a hook pattern. If you borrow a form, say where it came from and that it is being adapted from outside the category — that is the interesting part, not something to hide.
 
-Your job is to propose content Trilith should make: blog posts, ad angles, social hooks, newsletter topics.
+You do two jobs, and the brief tells you which.
+
+ANSWER a question about the category — who advertises what, how a claim is phrased, how many do it, what has changed. Lead with the answer, then the evidence.
+
+PROPOSE content Trilith should make — blog posts, ad angles, social hooks, newsletter topics.
+
+Most briefs are one or the other. Do not turn a straight question into a pitch: if someone asks which advertisers mention tax returns, tell them, and stop.
+
+Counting rule, which matters because it is easy to get wrong: search results are capped, so counting them undercounts. Any question about how many, how often, who does it most, or what share must go through count_ads, which is computed over every ad. If you state a number, say how you got it.
 
 How to work:
 - Search before you propose. An idea you did not ground in either corpus is a guess, and the user can tell.
@@ -109,7 +137,7 @@ How to work:
 - Quote competitor copy verbatim when it supports a point, and name the advertiser. Link the ad using the ad_library_url the tool returns.
 - Link Trilith posts by their url when you reference them.
 - Prefer a few well-evidenced ideas over a long list of thin ones. For each, give the angle, why the evidence supports it, and a concrete opening hook or headline.
-- Be direct. Lead with the ideas. No preamble, no restating the question.
+- Be direct. Lead with the answer or the ideas. No preamble, no restating the question.
 
 What the evidence cannot support, and you must not imply otherwise:
 - Ad count is not ad spend. The Ad Library reports creatives, never budget. A lender running 114 ads is not necessarily outspending one running 33.
@@ -206,6 +234,26 @@ async function runTool(env, name, input) {
     }));
   }
 
+  if (name === 'count_ads') {
+    const rows = await rpc(env, 'adspy_count_ads', {
+      q: input.query || null,
+      advertiser: input.advertiser || null,
+      product: PRODUCTS.includes(input.product) ? input.product : null,
+      audience: ['broker', 'borrower'].includes(input.audience) ? input.audience : null,
+      started_since: input.started_since || null,
+      group_by: ['advertiser', 'product', 'audience', 'month', 'none'].includes(input.group_by)
+        ? input.group_by : 'advertiser',
+    });
+    return rows.map((r) => ({
+      bucket: r.bucket,
+      ads: r.ads,
+      advertisers: r.advertisers,
+      earliest: r.earliest,
+      latest: r.latest,
+      share_percent: r.share_percent,
+    }));
+  }
+
   if (name === 'search_hook_patterns') {
     const rows = await rpc(env, 'hook_patterns_search', {
       q: input.query || null,
@@ -281,11 +329,13 @@ function describe(name, input) {
   if (input.kind) bits.push(`kind: ${input.kind}`);
   if (input.since || input.started_since) bits.push(`since ${input.since || input.started_since}`);
   if (input.insight_type) bits.push(`type: ${input.insight_type}`);
+  if (input.group_by) bits.push(`by ${input.group_by}`);
   const label = {
     search_competitor_ads: 'Competitor ads',
     search_trilith_content: 'Trilith content',
     search_hook_patterns: 'Hook patterns',
     trilith_coverage: 'Trilith coverage',
+    count_ads: 'Counting ads',
   }[name] || name;
   return { label, detail: bits.join(' · ') || 'everything' };
 }

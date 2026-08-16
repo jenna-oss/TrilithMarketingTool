@@ -253,20 +253,36 @@ Both push steps need `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as
 repository secrets and skip themselves, without failing, when those are absent.
 The service key bypasses RLS — it belongs in secrets and nowhere else.
 
-## The ideation agent
+## The agent
 
-`ideas.html` is the page a strategist actually uses. It talks to the `/ideas`
-route on the Worker, which gives the model three tools rather than a corpus:
+`ideas.html` is the single page. It answers questions about the category and
+proposes content, talking to the `/ideas` route on the Worker, which gives the
+model five tools rather than a corpus:
 
-| Tool                     | Backed by                |
-| ------------------------ | ------------------------ |
-| `search_competitor_ads`  | `public.adspy_search_ads` |
-| `search_trilith_content` | `public.content_search`   |
-| `trilith_coverage`       | `public.content_coverage` |
+| Tool                     | Backed by                    |
+| ------------------------ | ---------------------------- |
+| `search_competitor_ads`  | `public.adspy_search_ads`    |
+| `count_ads`              | `public.adspy_count_ads`     |
+| `search_trilith_content` | `public.content_search`      |
+| `search_hook_patterns`   | `public.hook_patterns_search` |
+| `trilith_coverage`       | `public.content_coverage`    |
 
 It runs up to six rounds of searching before answering, and streams every
 search it makes to the page as it goes — an idea claiming a gap in the market
 is only worth anything if you can see the query behind it.
+
+### Why `count_ads` exists
+
+There was a second page, `ask.html`, that answered questions by putting the
+whole ad corpus — ~135K tokens — in a cached system prompt, rewritten whenever
+the cache lapsed. Retrieval replaced it, and `ask.html` is now a redirect.
+
+The one thing that design did better was exhaustive counting: it saw every ad
+at once, where a search returns 40. `count_ads` restores that property and
+improves on it — the count is computed by Postgres over every row, so it is
+exact rather than a model tallying text, and it costs a few hundred tokens. The
+system prompt tells the agent that counting search results undercounts and that
+any "how many" question must go through this tool.
 
 The Worker reads Supabase with the **anon** key, so this route physically
 cannot write to either corpus. The system prompt carries the same caveats
@@ -283,8 +299,8 @@ npx wrangler secret put SUPABASE_ANON_KEY
 npx wrangler deploy
 ```
 
-Then set `WORKER_URL` at the top of the script in `ideas.html` and `ask.html`.
-Both pages show setup instructions and disable their input until it is set.
+Then set `WORKER_URL` at the top of the script in `ideas.html`. The page shows
+setup instructions and disables its input until it is set.
 
 ## Security
 
@@ -295,6 +311,8 @@ Neither `adspy` nor `content` is exposed over PostgREST. Four wrappers in
 | ----------------------------- | --------------- |
 | `public.adspy_search_ads`     | anon, authenticated, service_role |
 | `public.content_search`       | anon, authenticated, service_role |
+| `public.adspy_count_ads`      | anon, authenticated, service_role |
+| `public.hook_patterns_search` | anon, authenticated, service_role |
 | `public.adspy_upsert_ads`     | service_role only |
 | `public.content_upsert_docs`  | service_role only |
 
