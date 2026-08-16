@@ -58,6 +58,56 @@ async function insights(brandId, type) {
   return res.json();
 }
 
+/* The REST response is bucketed by week — {type, count, buckets:[{year, week,
+ * clusters:[{id, label, rawDelta, percentDelta, ...}]}]} — where the MCP
+ * surface handed back a flat list. Collapse it: a pattern's total is its
+ * volume summed across every week in the window, and its deltas come from the
+ * most recent week that reported them.
+ *
+ * The per-cluster volume field is not named in the docs, so try the plausible
+ * ones and report the keys we actually saw if none match. Better to fail with
+ * the field list than to silently record every pattern as zero. */
+const VOLUME_KEYS = ['total', 'count', 'size', 'volume', 'mediaCount', 'adCount'];
+let loggedShape = false;
+
+function flatten(body) {
+  /* Flat form, in case the API ever returns one. */
+  if (Array.isArray(body)) return body;
+  if (Array.isArray(body?.rows)) return body.rows;
+  if (!Array.isArray(body?.buckets)) return null;
+
+  const buckets = [...body.buckets].sort(
+    (a, b) => (a.year - b.year) || (a.week - b.week)
+  );
+
+  const byLabel = new Map();
+
+  for (const bucket of buckets) {
+    for (const c of bucket.clusters ?? []) {
+      const label = String(c.label ?? '').trim();
+      if (!label) continue;
+
+      if (!loggedShape) {
+        console.log(`  cluster fields: ${Object.keys(c).join(', ')}`);
+        loggedShape = true;
+      }
+
+      const key = VOLUME_KEYS.find((k) => Number.isFinite(Number(c[k])));
+      const volume = key ? Number(c[key]) : 0;
+
+      const prev = byLabel.get(label) ?? { label, total: 0, rawDelta: null, percentDelta: null };
+      prev.total += volume;
+      /* Buckets are in ascending order, so the last non-null wins — the most
+       * recent week that had something to compare against. */
+      if (c.rawDelta !== null && c.rawDelta !== undefined) prev.rawDelta = c.rawDelta;
+      if (c.percentDelta !== null && c.percentDelta !== undefined) prev.percentDelta = c.percentDelta;
+      byLabel.set(label, prev);
+    }
+  }
+
+  return [...byLabel.values()].sort((a, b) => b.total - a.total);
+}
+
 const rows = [];
 const failures = [];
 
@@ -66,24 +116,19 @@ for (const brand of BRANDS) {
     try {
       const body = await insights(brand.id, type);
 
-      /* The MCP surface returns {rows:[{label,total,rawDelta,percentDelta}]}.
-       * Accept a bare array too rather than assume, and fail loudly with the
-       * shape we actually got instead of silently recording nothing. */
-      const list = Array.isArray(body) ? body : body?.rows;
+      const list = flatten(body);
       if (!Array.isArray(list)) {
-        throw new Error(`unexpected shape: ${JSON.stringify(body).slice(0, 200)}`);
+        throw new Error(`unexpected shape: ${JSON.stringify(body).slice(0, 300)}`);
       }
 
       for (const r of list) {
-        const label = String(r.label ?? '').trim();
-        if (!label) continue;
         rows.push({
           brand_id: brand.id,
           brand_name: brand.name,
           category: brand.category,
           insight_type: type,
-          label,
-          total: Number(r.total) || 0,
+          label: r.label,
+          total: r.total,
           raw_delta: r.rawDelta ?? null,
           percent_delta: r.percentDelta ?? null,
         });
@@ -110,6 +155,17 @@ await writeFile(
   join(ROOT, 'data', 'hook-patterns.json'),
   JSON.stringify({ fetchedAt: new Date().toISOString(), rows, failures }, null, 2)
 );
+
+/* If every pattern came back with volume zero the field-name guess missed, and
+ * loading them would flatten min_total filtering and the ordering to nothing.
+ * Say so rather than write a corpus that looks fine and ranks randomly. */
+if (rows.length && rows.every((r) => r.total === 0)) {
+  console.error(
+    'Every pattern has a volume of 0 — none of ' + VOLUME_KEYS.join('/') +
+    ' matched. Check the "cluster fields" line above and add the right key.'
+  );
+  process.exit(1);
+}
 
 console.log(`\n${rows.length} patterns across ${BRANDS.length} brands`);
 if (failures.length) console.log(`${failures.length} calls failed:`, failures);
