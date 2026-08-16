@@ -24,6 +24,19 @@
       --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57; --ochre:#D0A05C;
     }
   }
+  /* The toggle writes data-theme; without these the palette would only ever
+     follow the operating system and the control would do nothing here. */
+  :root[data-theme="light"] {
+    --ground:#ECE9D8; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C; --ochre:#B5823F;
+  }
+  :root[data-theme="dark"] {
+    --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+    --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+    --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57; --ochre:#D0A05C;
+  }
+
   * { box-sizing:border-box; }
   body {
     margin:0; background:var(--ground); color:var(--ink-body);

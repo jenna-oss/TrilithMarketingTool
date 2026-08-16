@@ -161,24 +161,20 @@
 
 <main>
   <div class="wrap">
-    <div class="intro">
-      <h2>How this works</h2>
-      <p>
-        Ask a question about the category — who is running what, how a claim is
-        phrased, how many advertisers use it. The agent searches before it
-        answers and shows you every search it ran. Counts come from the whole
-        corpus rather than a sample, so "how many" and "who does it most" are
-        exact.
-      </p>
-      <p>
-        <strong>Planning a batch</strong> is the other half. Say how many
-        short-form videos you want and the agent proposes that many concepts,
-        each pairing a hook form borrowed from outside the category with a topic
-        drawn from competitor ads and Trilith's own writing. No two share a hook
-        or a topic. You drop whatever you do not want, and nothing is locked
-        until you confirm the set.
-      </p>
-    </div>
+    <p class="page-eyebrow">Production — plan</p>
+    <h2 class="page-title">Plan a batch of concepts</h2>
+    <p class="page-lede">
+      Say how many short-form videos you want and the agent proposes that many
+      concepts, each pairing a hook form borrowed from outside the category with a
+      topic drawn from competitor ads and Trilith&rsquo;s own writing. No two share a
+      hook or a topic. You drop whatever you do not want, and nothing is locked
+      until you confirm the set.
+    </p>
+    <p class="page-lede" style="margin-top:-1rem">
+      Questions about the underlying data live on the
+      <a href="./briefing.html">briefing</a>, where the ads and the numbers are on
+      screen next to the answer.
+    </p>
 
     <div class="planner" id="planner">
       <form class="plan-form" id="plan-form">
@@ -196,16 +192,8 @@
       </p>
     </div>
 
-    <p class="starter-label">Or explore an angle first</p>
-    <div class="starters" id="starters-make">
-      <button type="button">What are competitors saying that we have never covered?</button>
-      <button type="button">Which hook forms would suit a broker-facing video?</button>
-      <button type="button">Our DSCR angles feel stale — what is the new one?</button>
-      <button type="button">Borrow a hook structure from outside the category for a bridge video.</button>
-      <button type="button">Which competitor claim could we answer with a funded deal?</button>
-    </div>
 
-    <div id="transcript"></div>
+    <div id="transcript" aria-live="polite"></div>
 
     <div class="chat-setup" id="setup" hidden>
       <h3>Backend not configured yet</h3>
@@ -224,16 +212,6 @@
   </div>
 </main>
 
-<footer>
-  <form class="chat-composer" id="composer">
-    <textarea id="q" rows="1" placeholder="Ask about the category, or describe what you want to make…"
-              autocomplete="off" aria-label="Your question or brief"></textarea>
-    <button type="submit" id="send">Send</button>
-  </form>
-  <p class="chat-hint">
-    Answers are grounded in the tracked corpora only. Enter sends; Shift+Enter adds a line.
-  </p>
-</footer>
 
 <script src="./assets/chat.js"></script>
 <script>
@@ -250,17 +228,13 @@ const planGo = document.getElementById('plan-go');
 const chat = AikoChat.create({
   workerUrl: WORKER_URL,
   transcript: document.getElementById('transcript'),
-  form: document.getElementById('composer'),
-  input: document.getElementById('q'),
-  button: document.getElementById('send'),
-  starters: document.querySelectorAll('.starters'),
   setupNote: document.getElementById('setup'),
-  userLabel: 'You',
-  botLabel: 'Answer',
+  userLabel: 'Plan request',
+  botLabel: 'Proposed batch',
   onPlan: renderPlan,
 });
 
-/* The Propose button greys out alongside Send while a request is in flight. */
+/* Propose greys out while a request is in flight. */
 chat.disableWhileBusy(planGo);
 const render = AikoChat.render;
 

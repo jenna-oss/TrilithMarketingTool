@@ -51,10 +51,17 @@
     let busy = false;
     const extraDisable = [];
 
+    /* The composer is optional. The planner page drives run() from its own form
+     * and has no free-text box at all, so every reference to input/button/form
+     * below is guarded. */
+    const hasComposer = Boolean(form && input && button);
+
     if (!workerUrl) {
       if (setupNote) setupNote.hidden = false;
-      input.disabled = button.disabled = true;
-      input.placeholder = 'Backend not configured — see the note above';
+      if (hasComposer) {
+        input.disabled = button.disabled = true;
+        input.placeholder = 'Backend not configured — see the note above';
+      }
       /* starters are the containing groups, so reach the buttons inside them. */
       Array.from(starters).forEach((group) => {
         group.querySelectorAll('button').forEach((b) => { b.disabled = true; });
@@ -78,7 +85,7 @@
 
     function setBusy(state) {
       busy = state;
-      button.disabled = state;
+      if (hasComposer) button.disabled = state;
       extraDisable.forEach((el) => { el.disabled = state; });
     }
 
@@ -176,10 +183,11 @@
         if (answer) history.push({ role: 'user', content: shown },
                                  { role: 'assistant', content: answer });
         setBusy(false);
-        input.focus();
+        if (hasComposer) input.focus();
       }
     }
 
+    if (hasComposer) {
     input.addEventListener('input', () => {
       input.style.height = 'auto';
       input.style.height = Math.min(input.scrollHeight, 160) + 'px';
@@ -197,13 +205,15 @@
       input.style.height = 'auto';
       run({ brief, history }, opts.userLabel || 'You', opts.botLabel || 'Answer');
     });
+    }
 
     Array.from(starters).forEach((group) => {
       group.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
         if (!btn || busy || !workerUrl) return;
-        input.value = btn.textContent.trim();
-        form.requestSubmit();
+        const text = btn.textContent.trim();
+        if (hasComposer) { input.value = text; form.requestSubmit(); }
+        else run({ brief: text, history }, opts.userLabel || 'You', opts.botLabel || 'Answer');
       });
     });
 
