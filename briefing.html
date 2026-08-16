@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Competitive Intelligence — Private Real Estate Lending</title>
 
+<link rel="stylesheet" href="./assets/chat.css">
 <style>
   /* ============================================================
      AIKO design tokens
@@ -295,6 +296,78 @@
     border-color: #ffffff26;
   }
   .nav-link:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+
+  /* ============================================================
+     Ask panel — the agent, available from anywhere in the document
+
+     Floating rather than a section at the end: a question about the
+     board is asked while looking at the board, not after scrolling
+     past the conclusions.
+     ============================================================ */
+
+  .ask-fab {
+    position: fixed;
+    right: var(--s4);
+    bottom: var(--s4);
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--emerald);
+    color: #F4F2E7;
+    border: none;
+    border-radius: 999px;
+    padding: .75rem 1.125rem;
+    font-family: var(--sans);
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 20px #0b352933;
+  }
+  .ask-fab:hover { background: var(--emerald-bar); }
+  .ask-fab:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
+  .ask-fab[hidden] { display: none; }
+
+  .ask-panel {
+    position: fixed;
+    right: var(--s4);
+    bottom: var(--s4);
+    z-index: 61;
+    width: min(30rem, calc(100vw - 2 * var(--s4)));
+    height: min(38rem, calc(100vh - 2 * var(--s4)));
+    display: flex;
+    flex-direction: column;
+    background: var(--ground);
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px #0b352940;
+    overflow: hidden;
+  }
+  .ask-panel[hidden] { display: none; }
+
+  .ask-head {
+    display: flex; align-items: center; gap: .625rem;
+    background: var(--panel); color: var(--cream-text);
+    padding: .75rem 1rem;
+  }
+  .ask-head h2 { margin: 0; font-size: .9375rem; color: var(--cream-text); }
+  .ask-head p { margin: 0; font-size: .75rem; color: var(--sage); }
+  .ask-close {
+    margin-left: auto; background: transparent; border: none; cursor: pointer;
+    color: var(--sage); font-size: 1.25rem; line-height: 1; padding: .25rem .5rem;
+  }
+  .ask-close:hover { color: var(--cream-text); }
+  .ask-close:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+
+  .ask-body { flex: 1; overflow-y: auto; padding: 1rem; min-height: 0; }
+  .ask-foot { border-top: 1px solid var(--rule); padding: .75rem 1rem; }
+
+  /* On a phone the panel is the screen; anything less is unusable. */
+  @media (max-width: 560px) {
+    .ask-panel {
+      right: 0; bottom: 0; width: 100vw; height: 100dvh; border-radius: 0; border: none;
+    }
+  }
 
   /* On a phone the label is the first thing worth dropping — the links
      are the reason the bar exists. */
@@ -1770,6 +1843,54 @@
   </div>
 </footer>
 
+
+<!-- ================= ASK PANEL ================= -->
+<button class="ask-fab" id="ask-fab" type="button" aria-expanded="false" aria-controls="ask-panel">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
+    <path d="M2.5 3.5h11v8h-6l-3.5 3v-3h-1.5z" stroke-linejoin="round"/>
+  </svg>
+  Ask about this data
+</button>
+
+<section class="ask-panel chat" id="ask-panel" hidden aria-label="Ask about the briefing">
+  <div class="ask-head">
+    <span>
+      <h2>Ask about this data</h2>
+      <p>Grounded in the tracked corpora</p>
+    </span>
+    <button class="ask-close" id="ask-close" type="button" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="ask-body">
+    <div class="chat-setup" id="ask-setup" hidden>
+      <h3>Backend not configured</h3>
+      <p style="font-size:.875rem;margin:0">
+        Set <code>WORKER_URL</code> in <code>briefing.html</code> once the Worker is deployed.
+      </p>
+    </div>
+
+    <p class="starter-label">Try</p>
+    <div class="starters" id="ask-starters">
+      <button type="button">Which advertisers mention tax returns, and how do they phrase it?</button>
+      <button type="button">How many advertisers are running DSCR, and who runs the most?</button>
+      <button type="button">Compare how Kiavi and Capital Fund 1 talk about speed.</button>
+      <button type="button">Show me every ad aimed at brokers rather than borrowers.</button>
+    </div>
+
+    <div id="ask-transcript"></div>
+  </div>
+
+  <div class="ask-foot">
+    <form class="chat-composer" id="ask-form">
+      <textarea id="ask-input" rows="1" placeholder="Ask about an advertiser, a claim, a number…"
+                autocomplete="off" aria-label="Your question"></textarea>
+      <button type="submit" id="ask-send">Ask</button>
+    </form>
+    <p class="chat-hint">Enter sends; Shift+Enter adds a line.</p>
+  </div>
+</section>
+
+<script src="./assets/chat.js"></script>
 <script>
   // Ad stills are hotlinked from the Spyglass CDN. Some embedding contexts
   // block third-party image hosts outright; when that happens collapse the
@@ -1822,6 +1943,50 @@
     update();
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', function () { measure(); update(); }, { passive: true });
+  })();
+
+  /* Ask panel. Same agent as the planner page, mounted in a floating panel so a
+     question about the board can be asked while looking at the board. */
+  (function () {
+    /* Keep in step with index.html — both point at the same Worker. */
+    var WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
+
+    var fab = document.getElementById('ask-fab');
+    var panel = document.getElementById('ask-panel');
+    var close = document.getElementById('ask-close');
+    if (!fab || !panel || !window.AikoChat) return;
+
+    AikoChat.create({
+      workerUrl: WORKER_URL,
+      transcript: document.getElementById('ask-transcript'),
+      form: document.getElementById('ask-form'),
+      input: document.getElementById('ask-input'),
+      button: document.getElementById('ask-send'),
+      starters: document.querySelectorAll('#ask-starters'),
+      setupNote: document.getElementById('ask-setup'),
+      userLabel: 'You',
+      botLabel: 'Answer',
+    });
+
+    function open() {
+      panel.hidden = false;
+      fab.hidden = true;
+      fab.setAttribute('aria-expanded', 'true');
+      document.getElementById('ask-input').focus();
+    }
+    function shut() {
+      panel.hidden = true;
+      fab.hidden = false;
+      fab.setAttribute('aria-expanded', 'false');
+      fab.focus();
+    }
+
+    fab.addEventListener('click', open);
+    close.addEventListener('click', shut);
+    /* Escape closes it, but not while the reader is mid-sentence in the box. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !panel.hidden) shut();
+    });
   })();
 </script>
 </body>
