@@ -45,12 +45,35 @@ function loadCorpus() {
   return corpusPromise;
 }
 
+/* Ad copy is full of styled unicode and emoji, and a few ads arrive with a
+ * surrogate half missing where Meta truncated the text mid-character. Those
+ * cannot be encoded as JSON, so the request body was rejected outright:
+ * "no low surrogate in string". Drop the orphans and NULs; matched pairs pass
+ * through untouched, so the styled glyphs survive. Same scrub the Supabase
+ * loader applies in tools/to-sql.mjs. */
+function scrub(s) {
+  const src = String(s ?? '');
+  let out = '';
+  for (let i = 0; i < src.length; i++) {
+    const c = src.charCodeAt(i);
+    if (c === 0) continue;
+    if (c >= 0xd800 && c <= 0xdbff) {
+      const next = src.charCodeAt(i + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) { out += src[i] + src[i + 1]; i++; }
+      continue; // orphaned high surrogate
+    }
+    if (c >= 0xdc00 && c <= 0xdfff) continue; // orphaned low surrogate
+    out += src[i];
+  }
+  return out;
+}
+
 /* One line per ad. Compact on purpose — this is the bulk of the cached prefix,
  * and JSON punctuation would cost tokens without adding meaning. */
 function renderCorpus(corpus) {
   const ads = Object.values(corpus.ads);
   const lines = ads.map((a) =>
-    `${a.libraryId}\t${a.advertiser}\t${a.started}\t${a.source}\tfirst_seen:${a.firstSeen}\t${a.copy}`
+    `${a.libraryId}\t${scrub(a.advertiser)}\t${a.started}\t${a.source}\tfirst_seen:${a.firstSeen}\t${scrub(a.copy)}`
   );
   return {
     text: lines.join('\n'),
