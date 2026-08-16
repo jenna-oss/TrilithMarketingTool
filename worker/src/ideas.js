@@ -187,6 +187,35 @@ async function runTool(env, name, input) {
   throw new Error(`unknown tool: ${name}`);
 }
 
+/* Rebuild an assistant turn using only the fields the API accepts.
+ *
+ * finalMessage() hands back blocks decorated with SDK-side extras — a text
+ * block carries `parsed`, for one — and echoing those straight back is rejected
+ * with "messages.1.content.1.text.parsed: Extra inputs are not permitted",
+ * which kills round two of every tool loop.
+ *
+ * Thinking blocks must survive intact, signature included: extended thinking
+ * plus tool use requires the original reasoning to come back unmodified, and
+ * dropping it is rejected just as hard as sending too much. */
+function toApiBlocks(content) {
+  return content.map((b) => {
+    switch (b.type) {
+      case 'text':
+        return b.citations
+          ? { type: 'text', text: b.text, citations: b.citations }
+          : { type: 'text', text: b.text };
+      case 'thinking':
+        return { type: 'thinking', thinking: b.thinking, signature: b.signature };
+      case 'redacted_thinking':
+        return { type: 'redacted_thinking', data: b.data };
+      case 'tool_use':
+        return { type: 'tool_use', id: b.id, name: b.name, input: b.input };
+      default:
+        return b;
+    }
+  });
+}
+
 /* A short human-readable form of what was searched, for the transparency strip
  * in the UI. The model's own arguments, not a paraphrase. */
 function describe(name, input) {
@@ -300,7 +329,7 @@ export async function handleIdeas(request, env, headers, ctx) {
           const calls = final.content.filter((b) => b.type === 'tool_use');
           if (!calls.length) break;
 
-          messages.push({ role: 'assistant', content: final.content });
+          messages.push({ role: 'assistant', content: toApiBlocks(final.content) });
 
           const results = [];
           for (const call of calls) {
