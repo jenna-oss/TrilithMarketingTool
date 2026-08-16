@@ -18,12 +18,29 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CHUNK = 200;
 
-const URL_BASE = process.env.SUPABASE_URL?.replace(/\/+$/, '');
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+/* Secrets arrive however the tool that stored them encoded the value. A stored
+ * URL with a trailing newline or a UTF-8 BOM produces "Failed to parse URL",
+ * with the offending characters invisible in the CI log because the value is
+ * masked. Strip both rather than trust the storage path. */
+const env = (name) => {
+  let v = String(process.env[name] ?? '').trim();
+  if (v.charCodeAt(0) === 0xfeff) v = v.slice(1);   // UTF-8 BOM
+  return v.trim();
+};
+
+const URL_BASE = env('SUPABASE_URL').replace(/\/+$/, '');
+const KEY = env('SUPABASE_SERVICE_ROLE_KEY');
 
 if (!URL_BASE || !KEY) {
   console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping the database push.');
   process.exit(0);
+}
+
+/* Fail on a malformed URL here, with a message naming the cause, rather than
+ * letting fetch report "Failed to parse URL" against a value the log masks. */
+if (!URL.canParse(`${URL_BASE}/rest/v1/`)) {
+  console.error('SUPABASE_URL is not a valid URL. Check the stored secret for stray whitespace.');
+  process.exit(1);
 }
 
 /* A failed request echoes the URL and sometimes the headers. Scrub the key out

@@ -19,12 +19,27 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
  * already a sizeable request. Keep it small rather than fast. */
 const CHUNK = 8;
 
-const URL_BASE = process.env.SUPABASE_URL?.replace(/\/+$/, '');
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+/* See push-supabase.mjs: a stored secret can carry a trailing newline or a BOM,
+ * and the CI log masks the value so the damage is invisible. */
+const env = (name) => {
+  let v = String(process.env[name] ?? '').trim();
+  if (v.charCodeAt(0) === 0xfeff) v = v.slice(1);   // UTF-8 BOM
+  return v.trim();
+};
+
+const URL_BASE = env('SUPABASE_URL').replace(/\/+$/, '');
+const KEY = env('SUPABASE_SERVICE_ROLE_KEY');
 
 if (!URL_BASE || !KEY) {
   console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping the content push.');
   process.exit(0);
+}
+
+/* Fail on a malformed URL here, with a message naming the cause, rather than
+ * letting fetch report "Failed to parse URL" against a masked value. */
+if (!URL.canParse(`${URL_BASE}/rest/v1/`)) {
+  console.error('SUPABASE_URL is not a valid URL. Check the stored secret for stray whitespace.');
+  process.exit(1);
 }
 
 const redact = (s) => String(s).split(KEY).join('[REDACTED]');
