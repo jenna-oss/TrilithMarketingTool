@@ -8,7 +8,7 @@ corpus in a prompt.
 | --------- | ------------------------------------------------ | ---------------------------- |
 | `adspy`   | 781 competitor ads, 256 advertisers               | `adspy.search_ads`           |
 | `content` | 37 Trilith pages, 254 passages                    | `content.search_content`     |
-| `adspy`   | 139 hook/USP patterns from 7 outside advertisers   | `adspy.search_hook_patterns` |
+| `adspy`   | 317 hook/USP patterns from 7 outside advertisers   | `adspy.search_hook_patterns` |
 
 The first two answer *what to say*: what competitors are saying, and what
 Trilith has already said. The third answers *what shape to say it in*, and is
@@ -71,9 +71,19 @@ running 33. The Ad Library reports creatives, never budget.
 
 # Hook patterns — `adspy.hook_patterns`
 
-139 creative structures from seven advertisers outside the lending category, via
-the Spyglass corpus. `HOOK` is how a piece opens; `USP` is the claim it leads
-with.
+317 searchable creative structures from seven advertisers outside the lending
+category, via the Spyglass API. `HOOK` is how a piece opens; `USP` is the claim
+it leads with.
+
+Two volume-ish fields, and they are not the same thing:
+
+- **`total`** — times the pattern was used. Only on the 59 rows seeded from the
+  Spyglass MCP surface; the REST endpoint does not report it, so it is null
+  elsewhere. Null means *unknown*, never zero, and `min_total` skips those rows
+  rather than dropping them.
+- **`weeks_active`** — weekly buckets the pattern appeared in, from the API. A
+  hook running every week for two months is a different signal from one that
+  spiked once.
 
 | Brand | Category | Patterns | Why it is here |
 | --- | --- | ---: | --- |
@@ -147,18 +157,16 @@ where brand_id = '7129388593' and label ilike '%astrology%';
 Muted rows are excluded from search and the refresh never clears the flag, so
 the judgement survives and stays visible instead of being reapplied by hand.
 
-Documented judgement calls. Three brands were filtered on load, because their
-creator content carries patterns with no bearing on financial advertising:
+91 of the 408 rows are muted and excluded from search:
 
-- **NerdWallet** — 50 returned, 12 dropped (song lyrics, nature imagery, a Game
-  Boy reaction).
-- **Zillow** — 37 returned, 17 dropped (astrology aesthetics, a Santa persona,
-  a Fantastic Four reference, music-career talk).
-- **Alex Hormozi** — 77 returned and truncated by the API, 25 kept. Most of the
-  remainder were near-duplicate revenue-reveal phrasings, plus AI-clone hooks
-  specific to his own product.
-
-Chime, LendingTree, Rocket Money and Robert Kiyosaki were loaded whole.
+- **80 superseded paraphrases.** The first load was by hand and some labels were
+  shortened in the process, so the API's verbatim versions arrived as new rows
+  beside them. The paraphrase is muted, not deleted, because it carries a
+  `total` the API cannot supply.
+- **11 creator-content artifacts** — astrology aesthetics, a Santa persona, song
+  lyrics, a Game Boy reaction, AI-clone hooks specific to Hormozi's own product.
+  These were filtered by hand on the first load and the refresh pulled them back
+  in, which is exactly why muting exists.
 
 Brands considered and skipped: Airbnb (traveller-facing, not host-facing),
 Robinhood and Acorns (retail-trading psychology, further from the audience than
