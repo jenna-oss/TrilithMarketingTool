@@ -1,9 +1,15 @@
 /* ---------------------------------------------------------------------------
- * Stage 3 of 3 — write the live-feed section into index.html.
+ * Stage 3 of 3 — write the automated regions of index.html.
  *
- * Only the region between the AUTO:FEED markers is touched, so the hand-written
- * analysis around it is never disturbed. Bails out rather than writing a broken
- * or empty section, because this page is client-facing and publishes itself.
+ * The briefing is hand-written analysis and stays that way. Only the regions
+ * between AUTO markers are touched:
+ *
+ *   AUTO:TOTALS  the corpus size quoted in the long-tail section, which is the
+ *                one figure on the page that moves every day
+ *   AUTO:FEED    the live-feed section (currently removed from the page)
+ *
+ * Each region is independent and each is optional. A missing marker is a design
+ * decision, not a failure — the job still harvests and commits.
  * ------------------------------------------------------------------------ */
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -23,16 +29,48 @@ const corpus = JSON.parse(await readFile(join(ROOT, 'data', 'ads.json'), 'utf8')
 const ads = Object.values(corpus.ads);
 if (!ads.length) { console.error('Corpus is empty. Not rendering.'); process.exit(1); }
 
-const html = await readFile(PAGE, 'utf8');
+let html = await readFile(PAGE, 'utf8');
+
+/* Replace the text between a marker pair. Returns the original untouched when
+ * the markers are absent or inverted, so a missing region is a no-op. */
+function replaceRegion(source, name, body) {
+  const open = `<!-- AUTO:${name}:START -->`;
+  const close = `<!-- AUTO:${name}:END -->`;
+  const i = source.indexOf(open);
+  const j = source.indexOf(close);
+  if (i === -1 || j === -1 || j < i) return { html: source, wrote: false };
+  return {
+    html: source.slice(0, i) + open + body + close + source.slice(j + close.length),
+    wrote: true,
+  };
+}
+
+/* The corpus size, quoted mid-sentence in the long-tail section. This is the
+ * only number on the page that changes daily, and it was drifting: the page
+ * said 774 while the sweep had reached 781. */
+const advertiserCount = new Set(ads.map((x) => x.advertiser)).size;
+const totals = replaceRegion(
+  html, 'TOTALS',
+  `${ads.length.toLocaleString()} live ads from ${advertiserCount} advertisers`
+);
+html = totals.html;
+if (totals.wrote) {
+  console.log(`Totals: ${ads.length} ads from ${advertiserCount} advertisers.`);
+}
+
 const a = html.indexOf(START);
 const b = html.indexOf(END);
 
 /* The live-feed section was removed from the page. Absent markers are a design
- * decision, not a failure — exit cleanly so the daily job still harvests and
- * commits data instead of going red every morning. Re-add the markers to the
- * page and this stage starts writing again with no change here. */
+ * decision, not a failure — write whatever else changed and exit cleanly rather
+ * than going red every morning. */
 if (a === -1 || b === -1 || b < a) {
-  console.log('No AUTO:FEED region in index.html — skipping the feed render.');
+  if (totals.wrote) {
+    await writeFile(PAGE, html);
+    console.log('Wrote the totals region. No AUTO:FEED region — skipping the feed.');
+  } else {
+    console.log('No AUTO regions in index.html — nothing to render.');
+  }
   process.exit(0);
 }
 
