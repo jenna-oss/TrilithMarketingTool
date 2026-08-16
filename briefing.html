@@ -226,6 +226,8 @@
   }
   .ask-link:hover { border-bottom-color: var(--sage); }
   .ask-link:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
+
+  /* ============================================================
      Ask panel — the agent, available from anywhere in the document
 
      Floating rather than a section at the end: a question about the
@@ -233,28 +235,60 @@
      past the conclusions.
      ============================================================ */
 
+  /* A round symbol rather than a labelled pill: at this size it reads as the
+     one persistent control on the page, and stops competing with the briefing's
+     own headings for attention. */
   .ask-fab {
     position: fixed;
-    right: var(--s4);
-    bottom: var(--s4);
-    z-index: 60;
+    right: var(--s5);
+    bottom: var(--s5);
+    z-index: 62;
     display: inline-flex;
     align-items: center;
-    gap: .5rem;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
     background: var(--emerald);
     color: #F4F2E7;
     border: none;
-    border-radius: 999px;
-    padding: .75rem 1.125rem;
-    font-family: var(--sans);
-    font-size: .875rem;
-    font-weight: 600;
+    border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 6px 20px #0b352933;
+    box-shadow: 0 8px 24px #0b352947;
+    transition: background .15s ease, transform .15s ease;
   }
-  .ask-fab:hover { background: var(--emerald-bar); }
-  .ask-fab:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
+  .ask-fab svg { width: 28px; height: 28px; display: block; }
+  .ask-fab:hover { background: var(--emerald-bar); transform: translateY(-2px); }
+  .ask-fab:focus-visible { outline: 2px solid var(--sage); outline-offset: 4px; }
   .ask-fab[hidden] { display: none; }
+  @media (prefers-reduced-motion: reduce) { .ask-fab { transition: none; } }
+
+  /* The label the pill used to carry, on hover and focus — so the symbol is not
+     the only thing explaining itself. */
+  .ask-fab::after {
+    content: "Ask about this data";
+    position: absolute;
+    right: calc(100% + .625rem);
+    white-space: nowrap;
+    background: var(--panel);
+    color: var(--cream-text);
+    font-family: var(--sans);
+    font-size: .8125rem;
+    font-weight: 600;
+    padding: .375rem .75rem;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease;
+  }
+  .ask-fab:hover::after,
+  .ask-fab:focus-visible::after { opacity: 1; }
+
+  @media (max-width: 560px) {
+    .ask-fab { right: var(--s4); bottom: var(--s4); width: 56px; height: 56px; }
+    .ask-fab svg { width: 24px; height: 24px; }
+    /* No hover on touch, and the tooltip would sit off-screen anyway. */
+    .ask-fab::after { display: none; }
+  }
 
   .ask-panel {
     position: fixed;
@@ -1780,11 +1814,13 @@
 
 
 <!-- ================= ASK PANEL ================= -->
-<button class="ask-fab" id="ask-fab" type="button" aria-expanded="false" aria-controls="ask-panel">
-  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
-    <path d="M2.5 3.5h11v8h-6l-3.5 3v-3h-1.5z" stroke-linejoin="round"/>
+<button class="ask-fab" id="ask-fab" type="button" aria-expanded="false" aria-controls="ask-panel"
+        aria-label="Ask about this data">
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3.5 5.5h17v11h-9.5l-5 4v-4h-2.5z"/>
+    <path d="M8 9.5h8M8 12.5h5"/>
   </svg>
-  Ask about this data
 </button>
 
 <section class="ask-panel chat" id="ask-panel" hidden aria-label="Ask about the briefing">
