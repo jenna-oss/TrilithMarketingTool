@@ -60,6 +60,23 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node tools/push-supabase.mjs
 
+      # Trilith's own writing changes far more slowly than the ad market, but
+      # re-harvesting is cheap and catches edits and new posts without anyone
+      # remembering to run it. Failures here must not sink the ad pull, which
+      # is the part that cannot be re-run later.
+      - name: Harvest site content
+        id: content
+        continue-on-error: true
+        run: node tools/pull-content.mjs
+
+      - name: Push content to Supabase
+        if: steps.content.outcome == 'success'
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node tools/push-content.mjs
+
       - name: Commit and push
         run: |
           git config user.name  "github-actions[bot]"
