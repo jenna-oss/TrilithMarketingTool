@@ -4,13 +4,16 @@ Two bodies of text live in Postgres, each behind one retrieval function. An
 agent answering a question should query these rather than be handed either
 corpus in a prompt.
 
-| Schema    | What it holds                                   | Entry point               |
-| --------- | ----------------------------------------------- | ------------------------- |
-| `adspy`   | 774 competitor ads, 249 advertisers             | `adspy.search_ads`        |
-| `content` | 37 Trilith pages, 254 passages                  | `content.search_content`  |
+| Schema    | What it holds                                    | Entry point                  |
+| --------- | ------------------------------------------------ | ---------------------------- |
+| `adspy`   | 781 competitor ads, 256 advertisers               | `adspy.search_ads`           |
+| `content` | 37 Trilith pages, 254 passages                    | `content.search_content`     |
+| `adspy`   | 94 hook/USP patterns from adjacent advertisers    | `adspy.search_hook_patterns` |
 
-Together they answer the two halves of a content question: what competitors are
-saying, and what Trilith has already said.
+The first two answer *what to say*: what competitors are saying, and what
+Trilith has already said. The third answers *what shape to say it in*, and is
+the only one not sourced from the lending category — read its caveats before
+using it.
 
 ---
 
@@ -63,6 +66,50 @@ excluded, because everything running that day shares that date without being new
 
 **Ad count is not spend.** A lender running 114 creatives is not outspending one
 running 33. The Ad Library reports creatives, never budget.
+
+---
+
+# Hook patterns — `adspy.hook_patterns`
+
+94 creative structures from five adjacent finance advertisers — Chime,
+LendingTree, NerdWallet, Rocket Money, Robert Kiyosaki — via the Spyglass
+corpus. `HOOK` is how a piece opens; `USP` is the claim it leads with.
+
+```sql
+select * from adspy.search_hook_patterns(
+  q            => 'rate comparison refinance savings',
+  insight_type => 'HOOK',        -- HOOK | USP
+  brand        => 'lendingtree',
+  min_total    => 10,            -- only patterns used at least this often
+  max_rows     => 25
+);
+```
+
+**These brands are not Trilith competitors, and this is not competitor
+intelligence.** Spyglass has no insight coverage for investor lenders at all —
+Kiavi, Lima One and the rest return empty, the same ceiling the Meta sweep hit.
+What it offers is *form*: the shape a piece of creative takes, abstracted into
+something reusable. Substance has to come from the ad corpus or Trilith's own
+writing. The agent is instructed never to claim a competitor uses a hook on the
+strength of this table, and to say plainly when it is adapting a form from
+outside the category.
+
+`percent_delta` is Spyglass's own change figure against the previous window.
+Negative means the brand is leaning on that pattern less than it was.
+
+## Refreshing it
+
+**This one does not refresh itself.** Spyglass is an MCP connector, not an HTTP
+API with credentials the CI job could use, so `hook_patterns` is loaded by hand
+and every row carries `captured_at` so staleness is visible rather than assumed.
+Ask and it can be re-pulled and extended to more brands in minutes. If Spyglass
+ever exposes a remote MCP endpoint or REST API with a token, this becomes a
+scheduled step like the other two.
+
+One documented judgement call: NerdWallet returned 50 patterns and 12 were
+artifacts of its influencer content — song lyrics, nature imagery, a Game Boy
+reaction — with no bearing on financial creative. Those were dropped; 38 kept.
+Every other brand was loaded whole.
 
 ---
 

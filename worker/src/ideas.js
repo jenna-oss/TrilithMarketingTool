@@ -62,6 +62,21 @@ const TOOLS = [
     },
   },
   {
+    name: 'search_hook_patterns',
+    description:
+      'Creative STRUCTURE from adjacent finance advertisers — Chime, LendingTree, NerdWallet, Rocket Money, Robert Kiyosaki — via the Spyglass corpus. HOOK is how a piece opens; USP is the claim it leads with. Use this for angles and hooks, never for topics: it tells you what shape a piece of creative takes, not what to write about. Pair a form found here with substance from the other two tools. These brands are NOT Trilith competitors and nothing here is evidence of what any competitor is doing — Spyglass has no insight coverage for investor lenders at all.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Words describing the kind of angle you want.' },
+        insight_type: { type: 'string', enum: ['HOOK', 'USP'] },
+        brand: { type: 'string', description: 'Partial brand name.' },
+        min_total: { type: 'integer', description: 'Only patterns used at least this many times.' },
+        limit: { type: 'integer', description: 'Default 15, max 40.' },
+      },
+    },
+  },
+  {
     name: 'trilith_coverage',
     description:
       'List Trilith documents — one row each, no passages. The fastest way to see what topics are already covered and where the gaps are. Note that only blog posts carry a publisher-stated date.',
@@ -74,9 +89,14 @@ const TOOLS = [
 
 const SYSTEM = `You are a content strategist working for AIKO, on behalf of their client Trilith Funding — a private real estate lender that finances investors (fix-and-flip, bridge, DSCR, ground-up, BRRRR, multifamily).
 
-You have two corpora, reachable only through your tools:
-1. Competitor ads — 774 ads from 249 advertisers on Meta, harvested daily.
+You have three corpora, reachable only through your tools:
+1. Competitor ads — real ads from lenders on Meta, harvested daily. This is what the competition is actually saying.
 2. Trilith's own published content — blog posts, funded-deal writeups, product pages, FAQ.
+3. Hook patterns — creative structure from adjacent finance advertisers (Chime, LendingTree, NerdWallet, Rocket Money, Robert Kiyosaki), from the Spyglass corpus.
+
+The third one is different in kind and you must treat it differently. Those brands are not Trilith's competitors and are not in the lending category. Spyglass has no insight coverage for investor lenders at all, so nothing in it is evidence about the competition. It gives you FORM — how a piece of creative opens, what claim it leads with — abstracted into reusable shapes. Use it for angles and hooks, never for topics. The substance of an idea must come from the ad corpus or Trilith's own writing; a hook pattern only tells you what shape to pour it into.
+
+Never write "competitors are using this hook" on the strength of a hook pattern. If you borrow a form, say where it came from and that it is being adapted from outside the category — that is the interesting part, not something to hide.
 
 Your job is to propose content Trilith should make: blog posts, ad angles, social hooks, newsletter topics.
 
@@ -178,6 +198,26 @@ async function runTool(env, name, input) {
     }));
   }
 
+  if (name === 'search_hook_patterns') {
+    const rows = await rpc(env, 'hook_patterns_search', {
+      q: input.query || null,
+      insight_type: ['HOOK', 'USP'].includes(input.insight_type) ? input.insight_type : null,
+      brand: input.brand || null,
+      min_total: Number.isFinite(Number(input.min_total)) ? Number(input.min_total) : null,
+      max_rows: clamp(input.limit, 15, 40),
+    });
+    return rows.map((r) => ({
+      brand: r.brand_name,
+      type: r.type_tag,
+      pattern: r.label,
+      times_used: r.total,
+      /* Spyglass's own change figure against the previous window. Negative
+       * means the brand is leaning on the pattern less than it was. */
+      change: r.percent_delta,
+      captured: r.captured_at,
+    }));
+  }
+
   if (name === 'trilith_coverage') {
     return rpc(env, 'content_coverage', {
       kind: KINDS.includes(input.kind) ? input.kind : null,
@@ -226,9 +266,11 @@ function describe(name, input) {
   if (input.audience) bits.push(`audience: ${input.audience}`);
   if (input.kind) bits.push(`kind: ${input.kind}`);
   if (input.since || input.started_since) bits.push(`since ${input.since || input.started_since}`);
+  if (input.insight_type) bits.push(`type: ${input.insight_type}`);
   const label = {
     search_competitor_ads: 'Competitor ads',
     search_trilith_content: 'Trilith content',
+    search_hook_patterns: 'Hook patterns',
     trilith_coverage: 'Trilith coverage',
   }[name] || name;
   return { label, detail: bits.join(' · ') || 'everything' };
