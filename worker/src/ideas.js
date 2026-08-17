@@ -197,6 +197,11 @@ Most briefs are one or the other. Do not turn a straight question into a pitch: 
 
 Counting rule, which matters because it is easy to get wrong: search results are capped, so counting them undercounts. Any question about how many, how often, who does it most, or what share must go through count_ads, which is computed over every ad. If you state a number, say how you got it.
 
+Search budget. You get a handful of rounds, not unlimited ones, and running out mid-thought produces a worse answer than planning the search did. So:
+- Do not run one count_ads per keyword. Counting 'DSCR', then 'W2', then 'credit', then 'rate' one at a time burns the budget on trivia and tells you almost nothing. Group a theme into one query, or read the copy with search_competitor_ads and judge it.
+- A broad question — 'what hooks are advertisers using' — is answered by reading fifty ads and naming the patterns, not by counting twenty words. Start with the read, then count only the two or three claims worth quantifying.
+- Prefer one well-chosen search over three narrow ones. You can always say a figure is approximate.
+
 How to work:
 - Search before you propose. An idea you did not ground in either corpus is a guess, and the user can tell.
 - Check what Trilith has already published before suggesting a topic. If a post already covers it, say so and propose the angle that is genuinely new — a sharper hook, an update, a contrarian take — rather than pretending the ground is empty.
@@ -574,10 +579,38 @@ export async function handleIdeas(request, env, headers, ctx) {
 
           messages.push({ role: 'user', content: results });
 
+          /* Out of rounds, and the model was still searching. Rather than
+           * ending with an error and nothing to show — which is what a broad
+           * question used to produce after thirty-odd searches — take one more
+           * turn with the tools removed. It has to answer from what it found. */
           if (round === MAX_ROUNDS - 1) {
-            send('error', {
-              message: `Stopped after ${MAX_ROUNDS} rounds of searching. Ask something narrower.`,
+            send('note', { message: 'Search budget reached — answering from what was found.' });
+
+            const closing = client.beta.messages.stream({
+              model: MODEL,
+              max_tokens: 8000,
+              thinking: { type: 'adaptive' },
+              betas: ['server-side-fallback-2026-07-01'],
+              fallbacks: 'default',
+              system: [
+                { type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral', ttl: '1h' } },
+                {
+                  type: 'text',
+                  text: 'You have used your search budget. Answer now from what the searches already returned. Do not ask for more searches. If the evidence is thinner than you would like, say which part is thin rather than withholding the answer.',
+                },
+              ],
+              messages,
             });
+
+            for await (const event of closing) {
+              if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+                send('token', event.delta.text);
+              }
+            }
+            const last = await closing.finalMessage();
+            totals.input += last.usage.input_tokens || 0;
+            totals.output += last.usage.output_tokens || 0;
+            totals.cacheRead += last.usage.cache_read_input_tokens || 0;
           }
         }
 

@@ -18,17 +18,32 @@ import { handleIdeas } from './ideas.js';
 /* Only the published pages may call this. The key lives here, so an open
  * endpoint would let anyone spend it. */
 const ALLOWED_ORIGINS = new Set([
+  'https://trilith-marketing-tool.vercel.app',
   'https://jenna-oss.github.io',
   'http://localhost:8788',
 ]);
 
+/* Vercel gives every preview deployment its own subdomain, so a branch build
+ * would be blocked by an exact-match list alone. Scope the pattern to this
+ * project rather than all of *.vercel.app — anyone can deploy there, and a
+ * blanket wildcard would hand the API key to whoever did. */
+const PREVIEW_ORIGIN = /^https:\/\/trilith-marketing-tool-[a-z0-9-]+\.vercel\.app$/;
+
+const isAllowed = (origin) => ALLOWED_ORIGINS.has(origin) || PREVIEW_ORIGIN.test(origin);
+
 function cors(origin) {
-  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : [...ALLOWED_ORIGINS][0];
+  /* Echo the caller's origin when it is allowed. Returning a different one —
+   * as this did when the site moved to Vercel — makes the browser block the
+   * response before it reaches the page, which surfaces as "Failed to fetch"
+   * with no clue as to why. */
+  const allowed = isAllowed(origin) ? origin : [...ALLOWED_ORIGINS][0];
   return {
     'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'content-type',
     'Access-Control-Max-Age': '86400',
+    /* Caches and CDNs must not serve one origin's CORS headers to another. */
+    Vary: 'Origin',
   };
 }
 
@@ -40,7 +55,7 @@ export default {
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
-    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+    if (origin && !isAllowed(origin)) {
       return json({ error: 'origin not allowed' }, 403, headers);
     }
 
