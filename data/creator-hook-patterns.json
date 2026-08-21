@@ -1,0 +1,141 @@
+{
+  "fetchedAt": "2026-08-21T00:00:00.000Z",
+  "note": "Not a Spyglass-computed insight -- Spyglass's own HOOK/USP aggregation returns empty for these creators, likely because it is tuned to paid ad campaigns rather than organic creator content. These patterns were derived by hand from the real hook quotes in data/education-creators.json: every quote below is verbatim, and a pattern was only kept if at least two independent creators used it, unless noted as single-example. Patterns are ordered by how many different creators converged on them -- convergence across people who do not know each other is the signal that a form actually works for this genre, not just a stylistic tic.",
+  "patterns": [
+    {
+      "slug": "real-numbers-on-my-own-deal",
+      "label": "Real numbers on my own deal",
+      "description": "Opens with a specific dollar figure from a named, actual transaction -- never a hypothetical or an industry average. The number is the hook; the lesson follows.",
+      "creatorCount": 3,
+      "examples": [
+        { "creator": "Sean Pan", "quote": "I bought this 4plex for $250,000 and this is how much I make from it.", "views": "59.8K" },
+        { "creator": "Michael Llanas", "quote": "The seller for this house wants to sell it for $210,000 because it's worth $210,000.", "views": "5.5K" },
+        { "creator": "Jeremy Werden", "quote": "We just sold this Lakehouse Airbnb and I want to walk you guys through the numbers and share why we did it.", "views": "9.4K" }
+      ]
+    },
+    {
+      "slug": "contrarian-warning-and-redirect",
+      "label": "Contrarian warning, then a redirect",
+      "description": "States what not to do in absolute terms -- never, don't wait -- then pivots immediately to the alternative. The prohibition is the hook; the redirect is the payoff.",
+      "creatorCount": 2,
+      "examples": [
+        { "creator": "Logan Fullmer", "quote": "Never ever ever buy single family rentals for income. Do this instead.", "views": "6.7K" },
+        { "creator": "Theoni Rapo", "quote": "If you've been waiting on the real estate market to crash so that you can buy a house, you need to listen to this.", "views": "6K" }
+      ]
+    },
+    {
+      "slug": "behind-the-scenes-in-the-moment",
+      "label": "Behind the scenes, in the moment",
+      "description": "Filmed as it happens, present tense, physically at the location -- the UPS store, the open house. The setting itself is the hook before any lesson is stated.",
+      "creatorCount": 2,
+      "examples": [
+        { "creator": "Jerry Norton", "quote": "I just pulled up to the UPS store and I'm about to go in and overnight closing docs for this house that we're buying in Tulsa, Oklahoma.", "views": "8.9K" },
+        { "creator": "Scott Betley", "quote": "Y'all, we went to another open house.", "views": "128K" }
+      ]
+    },
+    {
+      "slug": "binary-judgment-format",
+      "label": "Binary judgment format",
+      "description": "Names a strategy or property type, then sorts it into one of two labelled buckets on the spot -- moneymaker or money pit, underrated or overrated. Built as a repeatable series rather than a one-off.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Logan Fullmer", "quote": "Moneymaker or Money Pit?", "views": "10.4K" },
+        { "creator": "Logan Fullmer", "quote": "Underrated or overrated? Wholesaling.", "views": "6.7K" }
+      ]
+    },
+    {
+      "slug": "loan-program-reveal",
+      "label": "Loan-program reveal",
+      "description": "Introduces a specific named loan product as something most buyers do not know exists -- the hook is the existence of the program, not an argument for using it.",
+      "creatorCount": 3,
+      "examples": [
+        { "creator": "Theoni Rapo", "quote": "Laziest way you can buy an investment property in 2026 is with something called a DSCR loan.", "views": "10.2K" },
+        { "creator": "Scott Betley", "quote": "If you're hoping to purchase a home in 2025 and you're wondering if you can use down payment assistance or grant programs to cover the down payment on the house, this is the video for you.", "views": "269K" },
+        { "creator": "Erick Brice", "quote": "Buying a multi-family property is one of the quickest ways to building wealth through real estate!", "views": "19.1K" }
+      ]
+    },
+    {
+      "slug": "myth-bust-legality-correction",
+      "label": "Myth-bust / legality correction",
+      "description": "Opens by naming a misconception people actually voice out loud -- often \"is this illegal\" or \"is this a scam\" -- and corrects it on camera.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Michael Llanas", "quote": "He doesn't believe me that subject to is not illegal.", "views": "51.1K" }
+      ]
+    },
+    {
+      "slug": "framework-mental-model",
+      "label": "Framework / mental model",
+      "description": "Reduces a deal or process to a simple structural rule -- a ratio, a role count -- rather than a story. The rule is stated as fact, not as advice.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Jerry Norton", "quote": "As a flipper, I try to be all into the project at 70% of what I can resell it for.", "views": "12.3K" },
+        { "creator": "Jerry Norton", "quote": "When I think about a deal or a transaction, there are really three people in the transaction.", "views": "2.9K" }
+      ]
+    },
+    {
+      "slug": "jargon-translation",
+      "label": "Jargon translation",
+      "description": "Names an industry term investors throw around, admits it sounds intimidating, then defines it in one plain sentence.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Sean Pan", "quote": "Real estate investors love throwing around terms like cash on cash return.", "views": "5.8K" }
+      ]
+    },
+    {
+      "slug": "ranked-list",
+      "label": "Ranked list",
+      "description": "Enumerates every option in a category and orders them worst to best, arguing the case for each placement rather than just naming them.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Logan Fullmer", "quote": "Best ways to make money in real estate.", "views": "140K" }
+      ]
+    },
+    {
+      "slug": "rent-vs-mortgage-paradox",
+      "label": "Rent-vs-mortgage paradox",
+      "description": "Compares what someone already pays in rent to what they are being told they cannot afford in a mortgage -- the contradiction is the hook.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Scott Betley", "quote": "I can't tell you how many homebuyers come to me confused about why they can't qualify for a $2,000 mortgage payment when they're paying three to $4,000 a month in rent.", "views": "26.3K" }
+      ]
+    },
+    {
+      "slug": "second-person-case-study",
+      "label": "Second-person case study",
+      "description": "Addresses the viewer directly as a specific persona -- an age, a struggle, a situation -- then walks through that persona's exact path rather than speaking in generalities.",
+      "creatorCount": 2,
+      "examples": [
+        { "creator": "Erick Brice", "quote": "You're 20 years old.", "views": "39.7K" },
+        { "creator": "Scott Betley", "quote": "Just a quick PSA to anyone who is struggling to save for a down payment on a home right now.", "views": "9.1K" }
+      ]
+    },
+    {
+      "slug": "hypothetical-capital-scenario",
+      "label": "Hypothetical capital scenario",
+      "description": "Poses a specific hypothetical amount of money and situation, then answers with one specific move -- not a menu of options.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Jeremy Werden", "quote": "If I had $50,000 right now and I can only do one deal, what I would do personally, I would apply for a $1 million loan.", "views": "13K" }
+      ]
+    },
+    {
+      "slug": "persona-intro-voice-first",
+      "label": "Persona intro, voice-first",
+      "description": "Opens by establishing the creator's distinct persona or nickname before any content -- the hook is who is talking, not yet what they are saying.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Theoni Rapo", "quote": "Hey bestie, Theoni the lender here, also known as not your daddy's lender, but I'm also not your daddy's best friend either.", "views": "5.9K" }
+      ]
+    },
+    {
+      "slug": "personal-result-lifestyle-proof",
+      "label": "Personal result / lifestyle proof",
+      "description": "States a big personal financial outcome -- portfolio value, quitting a job, freedom to travel -- as the hook, before explaining how it was built.",
+      "creatorCount": 1,
+      "examples": [
+        { "creator": "Sean Pan", "quote": "We built a $4.7 million rental portfolio that let me leave my corporate job and travel the world by the time I was 29 years old.", "views": "5.4K" }
+      ]
+    }
+  ]
+}

@@ -117,6 +117,25 @@
     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
   }
 
+  .patterns { display:flex; flex-direction:column; gap:.625rem; margin-bottom:var(--s5); }
+  .pattern {
+    background:var(--card); border:1px solid var(--rule); border-radius:4px;
+    padding:.75rem 1rem;
+  }
+  .pattern-head { display:flex; align-items:baseline; gap:.5rem; flex-wrap:wrap; margin-bottom:.25rem; }
+  .pattern-head .name { font-weight:700; color:var(--ink); font-size:.9375rem; }
+  .pattern-head .count {
+    font-family:var(--mono); font-size:.625rem; letter-spacing:.03em; text-transform:uppercase;
+    color:var(--ink-quiet);
+  }
+  .pattern-desc { font-size:.8125rem; margin:0 0 .5rem; }
+  .pattern-examples { display:flex; flex-direction:column; gap:.25rem; }
+  .pattern-ex {
+    font-size:.8125rem; font-style:italic; color:var(--ink);
+    border-left:2px solid var(--emerald-bar); padding-left:.5rem;
+  }
+  .pattern-ex b { font-style:normal; font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
+
   .skipped {
     margin-top:var(--s5); border:1px solid var(--rule); border-radius:4px;
     background:var(--card); padding:var(--s3) var(--s4);
@@ -174,7 +193,7 @@
   <p class="page-lede" style="max-width:68ch; margin:0 0 .75rem;">
     Trilith wants to make educational content, not ads. The competitor ad corpus on the
     briefing is optimised for a click, and its hook forms are built to interrupt a scroll,
-    not to teach anything. These five people are the other model: individual educators in
+    not to teach anything. These eight people are the other model: individual educators in
     residential real estate investing whose organic content is built to be watched to the
     end, because the payoff is understanding something, not a claim.
   </p>
@@ -183,6 +202,15 @@
     the same way the hook-pattern library is studied for ad structure. This is not the
     competitor-ad briefing, and nothing here is a lender Trilith competes with.
   </p>
+
+  <h3 style="font-size:1.125rem; color:var(--ink); margin:0 0 .375rem;">Hook library</h3>
+  <p class="page-lede" style="max-width:68ch; margin:0 0 1.25rem; font-size:.9375rem;">
+    Named patterns mined from the real hooks below, not a Spyglass-computed insight — its
+    HOOK/USP aggregation comes back empty for these creators, most likely because it is tuned
+    to paid campaigns rather than organic posts. A pattern is only listed here if at least two
+    of these people used it independently, unless marked as a single example.
+  </p>
+  <div class="patterns" id="patterns"></div>
 
   <div class="note">
     <h3>How this was gathered, and what it is not</h3>
@@ -220,6 +248,46 @@ fetch('./data/education-creators.json')
   .then((r) => r.ok ? r.json() : null)
   .then((json) => { data = json; render(); })
   .catch(() => { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'Could not load creator data.'; });
+
+fetch('./data/creator-hook-patterns.json')
+  .then((r) => r.ok ? r.json() : null)
+  .then((json) => { renderPatterns(json); })
+  .catch(() => {});
+
+function renderPatterns(json) {
+  const el = document.getElementById('patterns');
+  if (!json || !json.patterns || !json.patterns.length) return;
+  el.innerHTML = '';
+  /* Convergent patterns first — multiple creators landing on the same form
+     independently is the signal that it actually works, not just a habit. */
+  const sorted = [...json.patterns].sort((a, b) => b.creatorCount - a.creatorCount);
+  sorted.forEach((p) => {
+    const card = document.createElement('div');
+    card.className = 'pattern';
+    const head = document.createElement('div');
+    head.className = 'pattern-head';
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = p.label;
+    const count = document.createElement('span');
+    count.className = 'count';
+    count.textContent = p.creatorCount > 1 ? `${p.creatorCount} creators` : 'single example';
+    head.append(name, count);
+    const desc = document.createElement('p');
+    desc.className = 'pattern-desc';
+    desc.textContent = p.description;
+    const examples = document.createElement('div');
+    examples.className = 'pattern-examples';
+    (p.examples || []).forEach((ex) => {
+      const line = document.createElement('div');
+      line.className = 'pattern-ex';
+      line.innerHTML = `&ldquo;${ex.quote.replace(/&/g, '&amp;').replace(/</g, '&lt;')}&rdquo; <b>— ${ex.creator}</b>`;
+      examples.append(line);
+    });
+    card.append(head, desc, examples);
+    el.append(card);
+  });
+}
 
 function render() {
   const creatorsEl = document.getElementById('creators');

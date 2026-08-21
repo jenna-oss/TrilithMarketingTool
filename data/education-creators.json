@@ -3,6 +3,132 @@
   "note": "Captured by hand via the Spyglass MCP during a research pass, not on the daily/weekly automated refresh. Every field below is a real value Spyglass returned on 2026-08-17 -- no placeholder content.",
   "creators": [
     {
+      "slug": "scott-betley",
+      "name": "Scott Betley",
+      "handle": "@thatmortgageguy_",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_thatmortgageguy_.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/thatmortgageguy_",
+      "followers": "193K",
+      "angle": "Mortgage qualification specifically — the rent-vs-mortgage paradox, down payment assistance programs, live open-house commentary on what a listing actually costs.",
+      "productLines": ["dscr", "multifamily"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "I can't tell you how many homebuyers come to me confused about why they can't qualify for a $2,000 mortgage payment when they're paying three to $4,000 a month in rent.",
+          "category": "Explainer",
+          "views": "26.3K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/114af897faeaada9320f88ec15b33d3e.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/114af897faeaada9320f88ec15b33d3e.mp4"
+        },
+        {
+          "hook": "Just a quick PSA to anyone who is struggling to save for a down payment on a home right now.",
+          "category": "Explainer",
+          "views": "9.1K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/56d89994d635eca3c832d3950aaeec19.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/56d89994d635eca3c832d3950aaeec19.mp4"
+        },
+        {
+          "hook": "Y'all, we went to another open house.",
+          "category": "Explainer",
+          "views": "128K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/223860623c8e4726dc911a0b260285f5.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/223860623c8e4726dc911a0b260285f5.mp4"
+        },
+        {
+          "hook": "If you're hoping to purchase a home in 2025 and you're wondering if you can use down payment assistance or grant programs to cover the down payment on the house, this is the video for you.",
+          "category": "Explainer",
+          "views": "269K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d29bad897c1241411a0bcc45f793cc09.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d29bad897c1241411a0bcc45f793cc09.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "theoni-rapo",
+      "name": "Theoni Rapo",
+      "handle": "@theonithelender",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_theonithelender.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/theonithelender",
+      "followers": "35.5K",
+      "angle": "DSCR and bank-statement loans specifically, in a distinctly casual voice — leads with the loan program as a contrarian shortcut rather than a technical product.",
+      "productLines": ["dscr"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "Okay, so there's a way that you can buy a house with business bank statements when you own a small business",
+          "category": "Explainer",
+          "views": "2.4K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/39601c1dc9622f591690c8038d7f8e16.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/39601c1dc9622f591690c8038d7f8e16.mp4"
+        },
+        {
+          "hook": "Laziest way you can buy an investment property in 2026 is with something called a DSCR loan.",
+          "category": "Explainer",
+          "views": "10.2K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d01d54d6c99c0d6b422028b76bf92e08.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d01d54d6c99c0d6b422028b76bf92e08.mp4"
+        },
+        {
+          "hook": "Hey bestie, Theoni the lender here, also known as not your daddy's lender, but I'm also not your daddy's best friend either.",
+          "category": "Text Overlay",
+          "views": "5.9K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1cd3b4a43ee32de74f6e119c05060614.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1cd3b4a43ee32de74f6e119c05060614.mp4"
+        },
+        {
+          "hook": "If you've been waiting on the real estate market to crash so that you can buy a house, you need to listen to this.",
+          "category": "Commentary",
+          "views": "6K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/9bff0961d76f55288d5759d72721e41c.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/9bff0961d76f55288d5759d72721e41c.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "jeremy-werden",
+      "name": "Jeremy Werden",
+      "handle": "@jeremywerden",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_jeremywerden.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/jeremywerden",
+      "followers": "106K",
+      "angle": "Short-term-rental deal breakdowns and creative financing in a high-rate market — seller financing and subject-to framed as leverage when buyers sit on the sidelines.",
+      "productLines": ["bridge", "portfolio"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "We just sold this Lakehouse Airbnb and I want to walk you guys through the numbers and share why we did it.",
+          "category": "Explainer",
+          "views": "9.4K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f0d06f1c4cb38c67e591a88c7480b582.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f0d06f1c4cb38c67e591a88c7480b582.mp4"
+        },
+        {
+          "hook": "If I had $50,000 right now and I can only do one deal, what I would do personally, I would apply for a $1 million loan.",
+          "category": "Storytime",
+          "views": "13K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/72a595d18cc03b190881fe86429be0e3.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/72a595d18cc03b190881fe86429be0e3.mp4"
+        },
+        {
+          "hook": "All right, what the heck is going on here?",
+          "category": "Explainer",
+          "views": "13.9K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/9f8f7809a55f0c9b0820cc762ca164e7.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/9f8f7809a55f0c9b0820cc762ca164e7.mp4"
+        },
+        {
+          "hook": null,
+          "category": "Explainer",
+          "views": "18.9K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e60769e9f888ff2ee9ba384cbb154067.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e60769e9f888ff2ee9ba384cbb154067.mp4"
+        }
+      ]
+    },
+    {
       "slug": "sean-pan",
       "name": "Sean Pan",
       "handle": "@seanjpan",
