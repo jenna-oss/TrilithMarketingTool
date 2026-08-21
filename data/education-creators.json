@@ -1,0 +1,207 @@
+{
+  "fetchedAt": "2026-08-17T00:00:00.000Z",
+  "note": "Captured by hand via the Spyglass MCP during a research pass, not on the daily/weekly automated refresh. Every field below is a real value Spyglass returned on 2026-08-17 -- no placeholder content.",
+  "creators": [
+    {
+      "slug": "sean-pan",
+      "name": "Sean Pan",
+      "handle": "@seanjpan",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_seanjpan.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/seanjpan",
+      "followers": "963K",
+      "angle": "Buy-and-hold rentals and house hacking, taught as arithmetic — cash-on-cash return, real P&L on owned properties, deal-analysis discipline.",
+      "productLines": ["dscr", "portfolio", "multifamily"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "I bought this 4plex for $250,000 and this is how much I make from it.",
+          "category": "Greenscreen",
+          "views": "59.8K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/da1a594dee8934a08b1319c9df83708a.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/da1a594dee8934a08b1319c9df83708a.mp4"
+        },
+        {
+          "hook": "Does it matter if you intend to have like housemates and stuff like that?",
+          "category": "Explainer",
+          "views": "8.6K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1ba77a00eb87547f4228b7441f492726.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1ba77a00eb87547f4228b7441f492726.mp4"
+        },
+        {
+          "hook": "Real estate investors love throwing around terms like cash on cash return.",
+          "category": "Explainer",
+          "views": "5.8K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/4cec8b8e8544fbf891bde4e15f83a1c3.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/4cec8b8e8544fbf891bde4e15f83a1c3.mp4"
+        },
+        {
+          "hook": "We built a $4.7 million rental portfolio that let me leave my corporate job and travel the world by the time I was 29 years old.",
+          "category": "Tutorial",
+          "views": "5.4K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e618abbc539bca4d1cbceb1b5d33fe7e.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e618abbc539bca4d1cbceb1b5d33fe7e.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "jerry-norton",
+      "name": "Jerry Norton",
+      "handle": "@flippingmastery",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_flippingmastery.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/flippingmastery",
+      "followers": "118K",
+      "angle": "Fix-and-flip mechanics and deal structuring — how a flipper prices an offer, how OPM (other people's money) deals split, why sequencing matters before scaling.",
+      "productLines": ["fix-and-flip", "bridge"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "As a flipper, I try to be all into the project at 70% of what I can resell it for.",
+          "category": "Commentary",
+          "views": "12.3K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/110ec8e8174e91230a008cacae3aa142.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/110ec8e8174e91230a008cacae3aa142.mp4"
+        },
+        {
+          "hook": "Do the math with me.",
+          "category": "Commentary",
+          "views": "11.2K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/5c7a8da6e3812a87ac26e4462ee751b2.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/5c7a8da6e3812a87ac26e4462ee751b2.mp4"
+        },
+        {
+          "hook": "I just pulled up to the UPS store and I'm about to go in and overnight closing docs for this house that we're buying in Tulsa, Oklahoma.",
+          "category": "Explainer",
+          "views": "8.9K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1a767b83a872e9da4238fc15a5b9e30e.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1a767b83a872e9da4238fc15a5b9e30e.mp4"
+        },
+        {
+          "hook": "When I think about a deal or a transaction, there are really three people in the transaction.",
+          "category": "Explainer",
+          "views": "2.9K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/879376db65ec446d7c51c410cbfa1cf8.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/879376db65ec446d7c51c410cbfa1cf8.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "logan-fullmer",
+      "name": "Logan Fullmer",
+      "handle": "@logan_fullmer",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_logan_fullmer.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/logan_fullmer",
+      "followers": "184K",
+      "angle": "Ranks every way to make money in real estate, worst to best, and argues the case for each — a listicle structure that carries real mechanics (owner financing, messy-title investing, commercial vs. residential).",
+      "productLines": ["portfolio", "multifamily", "bridge"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "Best ways to make money in real estate.",
+          "category": "Explainer",
+          "views": "140K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8e265737c159b28f792d17c8396e2363.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8e265737c159b28f792d17c8396e2363.mp4"
+        },
+        {
+          "hook": "Moneymaker or Money Pit?",
+          "category": "Explainer",
+          "views": "10.4K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/0d5fc160d8a2b7f731f7e7fb5ff04cc5.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/0d5fc160d8a2b7f731f7e7fb5ff04cc5.mp4"
+        },
+        {
+          "hook": "Underrated or overrated? Wholesaling.",
+          "category": "Explainer",
+          "views": "6.7K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/627b6f8ac012dcfb90e01994aaa16b4d.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/627b6f8ac012dcfb90e01994aaa16b4d.mp4"
+        },
+        {
+          "hook": "Never ever ever buy single family rentals for income. Do this instead.",
+          "category": "Text Overlay",
+          "views": "6.7K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8696863b9f9b8c0445e4faa0d57b2df9.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8696863b9f9b8c0445e4faa0d57b2df9.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "michael-llanas",
+      "name": "Michael Llanas",
+      "handle": "@turnupthehustle",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_turnupthehustle.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/turnupthehustle",
+      "followers": "194K",
+      "angle": "Creative financing explained through real deals — subject-to, BRRRR refinance timing, and structuring a purchase for a seller who cannot sell traditionally.",
+      "productLines": ["brrrr", "bridge", "dscr"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "He doesn't believe me that subject to is not illegal.",
+          "category": "Explainer",
+          "views": "51.1K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/760963d0d52e7568d416c483efa8ca2b.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/760963d0d52e7568d416c483efa8ca2b.mp4"
+        },
+        {
+          "hook": "The seller for this house wants to sell it for $210,000 because it's worth $210,000.",
+          "category": "Explainer",
+          "views": "5.5K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1d11ff4bcb807a476a580e4d14f61580.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1d11ff4bcb807a476a580e4d14f61580.mp4"
+        },
+        {
+          "hook": "I love BRRRR deals.",
+          "category": "Explainer",
+          "views": "1.2K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3f673660981347052f2b98f6314ec051.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3f673660981347052f2b98f6314ec051.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "erick-brice",
+      "name": "Erick Brice",
+      "handle": "@iameroc",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_iameroc.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/iameroc",
+      "followers": "111K",
+      "angle": "Loan-program mechanics specifically — FHA house-hacking qualification, bank-statement and non-traditional-income mortgages, told as step-by-step numbers.",
+      "productLines": ["dscr", "multifamily"],
+      "audience": "borrower",
+      "videos": [
+        {
+          "hook": "This is your house This is your house Hey",
+          "category": "Text Overlay",
+          "views": "226K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6c43e5d34b6fe296c61ff771e88b039c.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6c43e5d34b6fe296c61ff771e88b039c.mp4"
+        },
+        {
+          "hook": "You're 20 years old.",
+          "category": "Day in the Life",
+          "views": "39.7K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c86c522f90ec860450dfde355ce62f71.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c86c522f90ec860450dfde355ce62f71.mp4"
+        },
+        {
+          "hook": null,
+          "category": "Explainer",
+          "views": "19.1K",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3d737989dc86f198160107632b7988fd.jpg",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3d737989dc86f198160107632b7988fd.mp4"
+        }
+      ]
+    }
+  ],
+  "consideredAndSkipped": [
+    { "name": "Keegan Shivers", "why": "301K followers but content is personal-brand realtor life (listings, day-in-the-life), not investing or lending education." },
+    { "name": "Emeline Siron", "why": "French-language real estate investment content — large following (85.6K) but wrong market and language for this audience." },
+    { "name": "Seth Williams / REtipster", "why": "Land investing specifically, not residential — adjacent but off-thesis for this page." }
+  ]
+}

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Educational creators — Private Real Estate Lending</title>
+<script src="./assets/theme.js"></script>
+<link rel="stylesheet" href="./assets/nav.css">
+<style>
+  :root {
+    --cream-text:#EAE9D5; --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
+    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C; --ochre:#B5823F;
+    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
+    --s1:.5rem; --s2:.75rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57; --ochre:#D0A05C;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#ECE9D8; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C; --ochre:#B5823F;
+  }
+  :root[data-theme="dark"] {
+    --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+    --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+    --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57; --ochre:#D0A05C;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink-body);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1080px; margin:0 auto; padding:var(--s5) var(--s4) var(--s6); }
+  h2 { color:var(--ink); font-weight:700; line-height:1.12; margin:0 0 var(--s2); font-size:1.5rem; }
+  h3 { color:var(--ink); font-weight:700; margin:0 0 var(--s2); font-size:1rem; }
+
+  .note {
+    background:var(--card); border:1px dashed var(--clay); border-radius:4px;
+    padding:var(--s3) var(--s4); margin-bottom:var(--s5); font-size:.875rem;
+  }
+  .note h3 { color:var(--clay); }
+  .note p { margin:0 0 var(--s2); }
+  .note p:last-child { margin-bottom:0; }
+  .note code { font-family:var(--mono); font-size:.8125rem; background:var(--card-sunk); padding:.125rem .375rem; border-radius:2px; }
+
+  .filters { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:var(--s5); }
+  .filters button {
+    font-family:var(--sans); font-size:.8125rem; color:var(--ink-body);
+    background:transparent; border:1px solid var(--rule-strong); border-radius:999px;
+    padding:.4375rem .875rem; cursor:pointer;
+  }
+  .filters button:hover { border-color:var(--accent); color:var(--ink); }
+  .filters button[aria-pressed="true"] { border-color:var(--accent); color:var(--ink); background:var(--card); }
+  .filters button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  .creators { display:flex; flex-direction:column; gap:var(--s4); }
+  .creator {
+    background:var(--card); border:1px solid var(--rule);
+    border-left:3px solid var(--emerald-bar); border-radius:4px; padding:var(--s4);
+  }
+  .creator-head { display:flex; gap:var(--s3); align-items:flex-start; margin-bottom:var(--s3); }
+  .creator-head img {
+    width:56px; height:56px; border-radius:50%; object-fit:cover; flex:none;
+    background:var(--card-sunk);
+  }
+  .creator-id { min-width:0; flex:1; }
+  .creator-id .name { font-weight:700; color:var(--ink); font-size:1.0625rem; }
+  .creator-id .handle {
+    font-family:var(--mono); font-size:.75rem; color:var(--ink-quiet);
+    text-decoration:none;
+  }
+  .creator-id .handle:hover { color:var(--accent); }
+  .creator-id .followers { font-family:var(--mono); font-size:.75rem; color:var(--ink-quiet); }
+  .creator-angle { font-size:.9375rem; margin:0 0 var(--s3); max-width:64ch; }
+  .creator-chips { display:flex; flex-wrap:wrap; gap:.375rem; margin-bottom:var(--s3); }
+  .chip {
+    font-family:var(--mono); font-size:.625rem; letter-spacing:.04em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); border:1px solid var(--accent);
+    border-radius:999px; padding:.125rem .5rem;
+  }
+
+  .clips { display:grid; gap:.75rem; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); }
+  .clip {
+    display:block; background:var(--card-sunk); border:1px solid var(--rule);
+    border-radius:4px; overflow:hidden; text-decoration:none; color:inherit;
+  }
+  .clip:hover { border-color:var(--accent); }
+  .clip:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .clip .frame {
+    aspect-ratio:9/16; background:var(--rule); position:relative;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .clip .frame img { width:100%; height:100%; object-fit:cover; display:block; }
+  .clip .views {
+    position:absolute; right:.3125rem; bottom:.3125rem;
+    font-family:var(--mono); font-size:.5625rem; color:#EAE9D5;
+    background:#0B3529cc; padding:.09375rem .3125rem; border-radius:2px;
+  }
+  .clip .cat {
+    position:absolute; left:.3125rem; top:.3125rem;
+    font-family:var(--mono); font-size:.5625rem; letter-spacing:.04em; text-transform:uppercase;
+    font-weight:700; color:#EAE9D5; background:#2C785Ecc; padding:.09375rem .375rem; border-radius:2px;
+  }
+  .clip .line {
+    font-size:.75rem; color:var(--ink); padding:.5rem .5625rem; line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+
+  .skipped {
+    margin-top:var(--s5); border:1px solid var(--rule); border-radius:4px;
+    background:var(--card); padding:var(--s3) var(--s4);
+  }
+  .skipped h3 { font-size:.9375rem; }
+  .skipped ul { margin:0; padding-left:1.125rem; font-size:.875rem; }
+  .skipped li { margin-bottom:.375rem; }
+  .skipped li:last-child { margin-bottom:0; }
+
+  .empty {
+    text-align:center; color:var(--ink-quiet); font-size:.875rem;
+    border:1px solid var(--rule); border-radius:4px; padding:var(--s5) var(--s4);
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <a class="site-brand" href="./">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+    <span>
+      <span class="name">Trilith marketing tool</span><br>
+      <span class="who">aikogroup.io — internal</span>
+    </span>
+  </a>
+
+  <nav class="site-nav" aria-label="Sections">
+    <span class="nav-group">
+      <span class="nav-group-label">Intelligence</span>
+      <a class="nav-link" href="./briefing.html">Briefing</a>
+      <a class="nav-link" href="./creators.html" aria-current="page">Creators</a>
+    </span>
+    <span class="nav-group">
+      <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./">Plan</a>
+      <a class="nav-link" href="./edit.html">Edit</a>
+      <a class="nav-link" href="./output.html">Output</a>
+    </span>
+    <button class="theme-toggle" id="theme-toggle" type="button"
+            aria-label="Toggle light and dark theme" aria-pressed="false">
+      <span data-theme-label>Dark</span>
+    </button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="page-eyebrow">Intelligence — creators</p>
+  <h2 class="page-title" style="font-size:clamp(1.75rem,3.4vw,2.5rem); letter-spacing:-.015em; margin:0 0 1rem;">
+    Single-person educators, not brand ads
+  </h2>
+  <p class="page-lede" style="max-width:68ch; margin:0 0 .75rem;">
+    Trilith wants to make educational content, not ads. The competitor ad corpus on the
+    briefing is optimised for a click, and its hook forms are built to interrupt a scroll,
+    not to teach anything. These five people are the other model: individual educators in
+    residential real estate investing whose organic content is built to be watched to the
+    end, because the payoff is understanding something, not a claim.
+  </p>
+  <p class="page-lede" style="max-width:68ch; margin:0 0 2rem;">
+    Study the form here — the ranking, the worked example, the plain-numbers walkthrough —
+    the same way the hook-pattern library is studied for ad structure. This is not the
+    competitor-ad briefing, and nothing here is a lender Trilith competes with.
+  </p>
+
+  <div class="note">
+    <h3>How this was gathered, and what it is not</h3>
+    <p>
+      Found via a Spyglass creator search on 2026-08-17 and hand-checked one by one — several
+      names that came back were dropped for being off-thesis (a realtor's personal brand,
+      land investing, the wrong market and language). This is a one-time research pass, not
+      on the daily or weekly refresh the rest of the site runs on, and it is committed as a
+      plain data file rather than a database table.
+    </p>
+    <p>
+      The clips below link to the creators' own posts, mirrored through Spyglass's CDN. This
+      page is for internal creative reference — studying pacing, structure and framing — not
+      for republishing, and not an offer of any kind to the creators shown.
+    </p>
+  </div>
+
+  <div class="filters" id="filters" role="group" aria-label="Filter by product line"></div>
+
+  <div class="creators" id="creators"></div>
+
+  <div class="empty" id="empty" hidden>No creators match that filter.</div>
+</main>
+
+<script>
+const PRODUCT_LABELS = {
+  dscr: 'DSCR', 'fix-and-flip': 'Fix & flip', bridge: 'Bridge',
+  'ground-up': 'Ground-up', portfolio: 'Portfolio', brrrr: 'BRRRR', multifamily: 'Multifamily',
+};
+
+let data = null;
+let active = 'all';
+
+fetch('./data/education-creators.json')
+  .then((r) => r.ok ? r.json() : null)
+  .then((json) => { data = json; render(); })
+  .catch(() => { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'Could not load creator data.'; });
+
+function render() {
+  const creatorsEl = document.getElementById('creators');
+  const filtersEl = document.getElementById('filters');
+  const emptyEl = document.getElementById('empty');
+  if (!data || !data.creators || !data.creators.length) {
+    emptyEl.hidden = false;
+    emptyEl.textContent = 'No creators recorded yet.';
+    return;
+  }
+
+  if (!filtersEl.children.length) {
+    const lines = [...new Set(data.creators.flatMap((c) => c.productLines || []))];
+    [['all', 'All'], ...lines.map((l) => [l, PRODUCT_LABELS[l] || l])].forEach(([key, label], i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.setAttribute('aria-pressed', String(i === 0));
+      b.addEventListener('click', () => {
+        active = key;
+        filtersEl.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        render();
+      });
+      filtersEl.append(b);
+    });
+  }
+
+  creatorsEl.innerHTML = '';
+  const shown = data.creators.filter((c) => active === 'all' || (c.productLines || []).includes(active));
+  emptyEl.hidden = shown.length > 0;
+
+  shown.forEach((c) => {
+    const card = document.createElement('div');
+    card.className = 'creator';
+
+    const head = document.createElement('div');
+    head.className = 'creator-head';
+    if (c.avatarUrl) {
+      const img = document.createElement('img');
+      img.src = c.avatarUrl; img.alt = ''; img.loading = 'lazy';
+      head.append(img);
+    }
+    const id = document.createElement('div');
+    id.className = 'creator-id';
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = c.name;
+    const meta = document.createElement('div');
+    const handle = document.createElement('a');
+    handle.className = 'handle';
+    handle.href = c.profileUrl || '#';
+    handle.target = '_blank'; handle.rel = 'noopener noreferrer';
+    handle.textContent = `${c.handle} · ${c.platform}`;
+    const followers = document.createElement('span');
+    followers.className = 'followers';
+    followers.textContent = c.followers ? `  ·  ${c.followers} followers` : '';
+    meta.append(handle, followers);
+    id.append(name, meta);
+    head.append(id);
+
+    const angle = document.createElement('p');
+    angle.className = 'creator-angle';
+    angle.textContent = c.angle || '';
+
+    const chips = document.createElement('div');
+    chips.className = 'creator-chips';
+    (c.productLines || []).forEach((l) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = PRODUCT_LABELS[l] || l;
+      chips.append(chip);
+    });
+
+    const clips = document.createElement('div');
+    clips.className = 'clips';
+    (c.videos || []).forEach((v) => {
+      const a = document.createElement('a');
+      a.className = 'clip';
+      a.href = v.mediaUrl; a.target = '_blank'; a.rel = 'noopener noreferrer';
+
+      const frame = document.createElement('div');
+      frame.className = 'frame';
+      if (v.thumbnailUrl) {
+        const img = document.createElement('img');
+        img.src = v.thumbnailUrl; img.alt = ''; img.loading = 'lazy';
+        frame.append(img);
+      }
+      if (v.category) {
+        const cat = document.createElement('span');
+        cat.className = 'cat';
+        cat.textContent = v.category;
+        frame.append(cat);
+      }
+      if (v.views) {
+        const views = document.createElement('span');
+        views.className = 'views';
+        views.textContent = `${v.views} views`;
+        frame.append(views);
+      }
+
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.textContent = v.hook ? `“${v.hook}”` : '';
+
+      a.append(frame, line);
+      clips.append(a);
+    });
+
+    card.append(head, angle, chips, clips);
+    creatorsEl.append(card);
+  });
+
+  if (data.consideredAndSkipped && data.consideredAndSkipped.length && !document.getElementById('skipped')) {
+    const box = document.createElement('div');
+    box.className = 'skipped';
+    box.id = 'skipped';
+    const h = document.createElement('h3');
+    h.textContent = 'Considered and skipped';
+    const ul = document.createElement('ul');
+    data.consideredAndSkipped.forEach((s) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${s.name}</strong> — ${s.why}`;
+      ul.append(li);
+    });
+    box.append(h, ul);
+    document.querySelector('main.wrap').append(box);
+  }
+}
+
+if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
+</script>
+</body>
+</html>
