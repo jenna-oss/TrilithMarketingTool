@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-08-17T12:48:50.573Z",
+  "fetchedAt": "2026-08-24T12:55:05.451Z",
   "rows": [
     {
       "brand_id": "108521893501",
@@ -251,8 +251,8 @@
       "label": "Cost comparison curiosity hook (let's see how much it costs to make one at home)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -25
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "108521893501",
@@ -295,8 +295,8 @@
       "label": "Questioning financial advisor necessity (Should you hire a financial advisor?)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -2,
+      "percent_delta": -20
     },
     {
       "brand_id": "108521893501",
@@ -372,8 +372,8 @@
       "label": "Pop culture and money talk hook (Everyone's talking about [trend], but...)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -6,
-      "percent_delta": -50
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "108521893501",
@@ -438,8 +438,8 @@
       "label": "Question-based curiosity challenging retirement assumptions (What if.../So what happens...)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -2,
+      "percent_delta": -20
     },
     {
       "brand_id": "108521893501",
@@ -581,8 +581,8 @@
       "label": "Credit card debt consolidation and payoff strategies",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -7,
-      "percent_delta": -5.9
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "108521893501",
@@ -592,8 +592,8 @@
       "label": "Questioning the cost and value of financial advisors and retirement planning",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -14,
+      "percent_delta": -26.9
     },
     {
       "brand_id": "108521893501",
@@ -647,8 +647,8 @@
       "label": "High-yield savings and checking account bonuses and APY comparisons",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -7,
-      "percent_delta": -24.1
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "108521893501",
@@ -669,8 +669,8 @@
       "label": "Frustrated drivers and car owners comparing insurance rates to save money",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -5.6
     },
     {
       "brand_id": "108521893501",
@@ -790,8 +790,8 @@
       "label": "Ready to buy a home?",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -4,
-      "percent_delta": -26.7
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -823,8 +823,8 @@
       "label": "I asked my bank for a business loan",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -7.1
+      "raw_delta": -7,
+      "percent_delta": -53.8
     },
     {
       "brand_id": "84763399274",
@@ -834,8 +834,8 @@
       "label": "Here's how we're going to use a personal loan to get out of credit card debt",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -2,
+      "percent_delta": -18.2
     },
     {
       "brand_id": "84763399274",
@@ -911,8 +911,8 @@
       "label": "Homebuyers exploring mortgage options and calculating monthly payments",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -7,
-      "percent_delta": -9.5
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -922,8 +922,8 @@
       "label": "Debt consolidation personal loan options with specific APR and payment details for credit card debt payoff",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -53,
-      "percent_delta": -75.7
+      "raw_delta": -1,
+      "percent_delta": -5.9
     },
     {
       "brand_id": "84763399274",
@@ -933,8 +933,8 @@
       "label": "Small business owners seeking fast funding and capital for expansion",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -3,
-      "percent_delta": -4.7
+      "raw_delta": -7,
+      "percent_delta": -11.5
     },
     {
       "brand_id": "84763399274",
@@ -944,8 +944,8 @@
       "label": "Auto loan refinancing options and rates for lower payments",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -28,
-      "percent_delta": -37.8
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -955,8 +955,8 @@
       "label": "Comparing LendingTree rates to national averages and discovering savings on loans, insurance, and debt consolidation",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -16,
-      "percent_delta": -27.6
+      "raw_delta": -4,
+      "percent_delta": -9.5
     },
     {
       "brand_id": "84763399274",
@@ -966,8 +966,8 @@
       "label": "Personal finance and money habits with casual, relatable scenarios including seasonal spending, zodiac money moods, and everyday financial struggles.",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -3.2
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -988,8 +988,8 @@
       "label": "Woman comparing and saving on auto insurance via phone or referral",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -3.7
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -999,8 +999,8 @@
       "label": "Mortgage rate announcements and predictions",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -6,
-      "percent_delta": -16.2
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -1010,8 +1010,8 @@
       "label": "Personal loan options with specific rates, amounts, and APR examples",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -23,
-      "percent_delta": -88.5
+      "raw_delta": -1,
+      "percent_delta": -33.3
     },
     {
       "brand_id": "84763399274",
@@ -1032,8 +1032,8 @@
       "label": "Mortgage rate and payment comparisons and home finance explanations",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -6,
-      "percent_delta": -28.6
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "84763399274",
@@ -1107,6 +1107,17 @@
       "category": "Finance",
       "insight_type": "HOOK",
       "label": "Enthusiastic, casual reactions to food or cooking (best chicken, juicy, hot)",
+      "total": null,
+      "weeks_active": 6,
+      "raw_delta": 0,
+      "percent_delta": 0
+    },
+    {
+      "brand_id": "246223015551168",
+      "brand_name": "Chime",
+      "category": "Finance",
+      "insight_type": "HOOK",
+      "label": "Fast signup with fee-free perks (sign up in minutes and [benefit])",
       "total": null,
       "weeks_active": 6,
       "raw_delta": 0,
@@ -1296,8 +1307,8 @@
       "label": "Financial benefit vs traditional banking (not Chime, with Chime)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -40
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "246223015551168",
@@ -1318,8 +1329,8 @@
       "label": "Quick setup with instant financial benefit (Open a [brand] checking account in [time] and we'll spot you up to $[amount])",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -14.3
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "246223015551168",
@@ -1447,17 +1458,6 @@
       "brand_name": "Chime",
       "category": "Finance",
       "insight_type": "HOOK",
-      "label": "Fast signup with fee-free perks (sign up in minutes and [benefit])",
-      "total": null,
-      "weeks_active": 3,
-      "raw_delta": -3,
-      "percent_delta": -15
-    },
-    {
-      "brand_id": "246223015551168",
-      "brand_name": "Chime",
-      "category": "Finance",
-      "insight_type": "HOOK",
       "label": "Hypothetical money challenge (if you had $0 in your account right now)",
       "total": null,
       "weeks_active": 2,
@@ -1494,8 +1494,8 @@
       "label": "Quick account opening with overdraft protection and sign-up bonus",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -1.6
+      "raw_delta": -9,
+      "percent_delta": -14.8
     },
     {
       "brand_id": "246223015551168",
@@ -1505,8 +1505,8 @@
       "label": "Personal finance and relationships with a focus on holidays, dating, and budgeting",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -1.4
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "246223015551168",
@@ -1516,8 +1516,8 @@
       "label": "Chime Visa card lifestyle glimpses with cash, cash back, and financial benefits",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -10,
-      "percent_delta": -15.6
+      "raw_delta": -4,
+      "percent_delta": -7.4
     },
     {
       "brand_id": "246223015551168",
@@ -1549,8 +1549,8 @@
       "label": "Personal stories and financial relief with Chime",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -5.9
     },
     {
       "brand_id": "246223015551168",
@@ -1626,8 +1626,8 @@
       "label": "Subscription tracking challenges and surprise costs",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -11.8
+      "raw_delta": -13,
+      "percent_delta": -86.7
     },
     {
       "brand_id": "633318986770616",
@@ -1637,8 +1637,8 @@
       "label": "Canceling unwanted services and subscriptions",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -6,
+      "percent_delta": -85.7
     },
     {
       "brand_id": "633318986770616",
@@ -1648,8 +1648,8 @@
       "label": "Budgeting methods and financial tips",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -14.3
+      "raw_delta": -9,
+      "percent_delta": -75
     },
     {
       "brand_id": "633318986770616",
@@ -1659,19 +1659,8 @@
       "label": "Rocket money promotional value propositions and ease",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
-    },
-    {
-      "brand_id": "633318986770616",
-      "brand_name": "Rocket Money",
-      "category": "Finance",
-      "insight_type": "HOOK",
-      "label": "High-stakes games, giveaways, and challenge hooks",
-      "total": null,
-      "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -2,
+      "percent_delta": -40
     },
     {
       "brand_id": "633318986770616",
@@ -1681,8 +1670,8 @@
       "label": "Personal financial confessions and awkward money moments",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -22.2
+      "raw_delta": -4,
+      "percent_delta": -57.1
     },
     {
       "brand_id": "633318986770616",
@@ -1692,8 +1681,19 @@
       "label": "Skit openings, reactions, and conversational tangents",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -3,
-      "percent_delta": -13
+      "raw_delta": -13,
+      "percent_delta": -65
+    },
+    {
+      "brand_id": "633318986770616",
+      "brand_name": "Rocket Money",
+      "category": "Finance",
+      "insight_type": "HOOK",
+      "label": "High-stakes games, giveaways, and challenge hooks",
+      "total": null,
+      "weeks_active": 5,
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "633318986770616",
@@ -1703,8 +1703,8 @@
       "label": "App tracking daily spending limits and safe-to-spend amounts with calendar and text message interfaces",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -11,
-      "percent_delta": -30.6
+      "raw_delta": -23,
+      "percent_delta": -92
     },
     {
       "brand_id": "633318986770616",
@@ -1714,8 +1714,8 @@
       "label": "Relatable financial anxiety, overspending regrets, and money management moments",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -12,
+      "percent_delta": -26.7
     },
     {
       "brand_id": "633318986770616",
@@ -1725,8 +1725,8 @@
       "label": "Canceling unwanted subscriptions and negotiating bills with app",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -31,
+      "percent_delta": -79.5
     },
     {
       "brand_id": "633318986770616",
@@ -1736,8 +1736,8 @@
       "label": "Street interviews revealing hidden subscriptions and overspending",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -3,
-      "percent_delta": -10.3
+      "raw_delta": -22,
+      "percent_delta": -84.6
     },
     {
       "brand_id": "633318986770616",
@@ -1747,8 +1747,8 @@
       "label": "Person discovering hidden subscriptions with Rocket Money",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -4,
-      "percent_delta": -22.2
+      "raw_delta": -13,
+      "percent_delta": -92.9
     },
     {
       "brand_id": "633318986770616",
@@ -1758,8 +1758,8 @@
       "label": "Person sharing Rocket Money budgeting success on Twitter",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -10
+      "raw_delta": -12,
+      "percent_delta": -66.7
     },
     {
       "brand_id": "633318986770616",
@@ -1769,8 +1769,8 @@
       "label": "Person repeatedly surprised by bills and subscriptions, overwhelmed by requests, then relieved by Rocket Money",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -10,
+      "percent_delta": -55.6
     },
     {
       "brand_id": "33416011787",
@@ -1791,8 +1791,8 @@
       "label": "Curiosity questions, engagement hooks, and introductions",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -11.1
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "33416011787",
@@ -1890,8 +1890,8 @@
       "label": "Rich Dad Kiyosaki livestream whiteboard revealing cashflow quadrant income secrets",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -2.4
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "33416011787",
@@ -1901,8 +1901,8 @@
       "label": "Rat race escape via Cashflow board game",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -3,
-      "percent_delta": -11.1
+      "raw_delta": -1,
+      "percent_delta": -4.2
     },
     {
       "brand_id": "33416011787",
@@ -1912,8 +1912,8 @@
       "label": "Kiyosaki and Tanner on AI investing and wealth protection",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -17,
+      "percent_delta": -47.2
     },
     {
       "brand_id": "33416011787",
@@ -1934,8 +1934,8 @@
       "label": "Robert Kiyosaki promoting financial education and investment books",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -5,
-      "percent_delta": -16.1
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "33416011787",
@@ -1989,8 +1989,8 @@
       "label": "Working harder won't make you rich",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -14.3
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "33416011787",
@@ -2011,8 +2011,8 @@
       "label": "Challenging conventional wisdom about wealth and financial advice",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -7.7
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "7129388593",
@@ -2033,8 +2033,8 @@
       "label": "Lifestyle and routine context involving Zillow searches and apartment/home renovation (e.g., 'spend the day with me', 'get ready with me', 'I'm renovating my entire house')",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -5
     },
     {
       "brand_id": "7129388593",
@@ -2417,7 +2417,7 @@
       "insight_type": "HOOK",
       "label": "Buying a home is like [everyday activity] (Buying a home is like [everyday activity])",
       "total": null,
-      "weeks_active": 4,
+      "weeks_active": 3,
       "raw_delta": 0,
       "percent_delta": 0
     },
@@ -2561,8 +2561,8 @@
       "label": "Apartment hunting and renting on Zillow, featuring personal stories, upgrades, and rental specials",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -4
     },
     {
       "brand_id": "7129388593",
@@ -2637,7 +2637,7 @@
       "insight_type": "USP",
       "label": "Neighborhood entrance sign for Avondale Trace",
       "total": null,
-      "weeks_active": 4,
+      "weeks_active": 3,
       "raw_delta": 0,
       "percent_delta": 0
     },
@@ -2682,8 +2682,8 @@
       "label": "AI clone comparison (AI clone as good as [person])",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -33.3
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2691,6 +2691,17 @@
       "category": "Education",
       "insight_type": "HOOK",
       "label": "Direct address to 'Alex' with personal/financial story (Hey Alex, I...)",
+      "total": null,
+      "weeks_active": 6,
+      "raw_delta": -1,
+      "percent_delta": -10
+    },
+    {
+      "brand_id": "116482854782233",
+      "brand_name": "Alex Hormozi",
+      "category": "Education",
+      "insight_type": "HOOK",
+      "label": "Business sales and offer optimization advice (if you don't know what to sell...)",
       "total": null,
       "weeks_active": 6,
       "raw_delta": 0,
@@ -2701,22 +2712,11 @@
       "brand_name": "Alex Hormozi",
       "category": "Education",
       "insight_type": "HOOK",
-      "label": "Business sales and offer optimization advice (if you don't know what to sell...)",
-      "total": null,
-      "weeks_active": 6,
-      "raw_delta": -6,
-      "percent_delta": -46.2
-    },
-    {
-      "brand_id": "116482854782233",
-      "brand_name": "Alex Hormozi",
-      "category": "Education",
-      "insight_type": "HOOK",
       "label": "Business constraint and capacity building advice (put capacity before the constraint)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -4,
-      "percent_delta": -40
+      "raw_delta": -1,
+      "percent_delta": -16.7
     },
     {
       "brand_id": "116482854782233",
@@ -2737,8 +2737,8 @@
       "label": "Business growth curiosity hooks with bold time-bound promises (What if / I'll show you in X seconds)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -7,
-      "percent_delta": -77.8
+      "raw_delta": -1,
+      "percent_delta": -50
     },
     {
       "brand_id": "116482854782233",
@@ -2748,8 +2748,8 @@
       "label": "Follow-up on 10/10 rating prompt (\"you rated us a 10 out of 10\")",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -11.1
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2770,8 +2770,8 @@
       "label": "Free offer debate and strategy (giving it away for free)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -14.3
+      "raw_delta": -2,
+      "percent_delta": -33.3
     },
     {
       "brand_id": "116482854782233",
@@ -2781,8 +2781,8 @@
       "label": "Authority: Business owner credentials with revenue/location stats",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -2,
+      "percent_delta": -22.2
     },
     {
       "brand_id": "116482854782233",
@@ -2803,8 +2803,8 @@
       "label": "Business hiring and management advice (Signs you are hiring dumb humans)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -25
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2814,8 +2814,8 @@
       "label": "Offer optimization and pricing strategy (5 out of 10 offer / 10 out of 10 offer)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -25
+      "raw_delta": -1,
+      "percent_delta": -16.7
     },
     {
       "brand_id": "116482854782233",
@@ -2825,8 +2825,8 @@
       "label": "Authority: speaker references own book '$100 million offers' as credibility (I talk about this in my book, I wrote the book on offers)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -8,
-      "percent_delta": -80
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2847,8 +2847,8 @@
       "label": "Team intro with credibility and reframing mindset (I met [Name]. / [Name]'s [adjective].)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -16.7
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2858,8 +2858,8 @@
       "label": "Business offer differentiation (So what really makes you money, sales or offer?)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -7,
-      "percent_delta": -70
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2869,8 +2869,8 @@
       "label": "Personal intro and business context (Hi, my name is... / I have a...)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -28.6
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2902,8 +2902,8 @@
       "label": "Professional income flex (I'm a [job title] doing $[revenue])",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -16.7
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2935,8 +2935,8 @@
       "label": "Business reality checks and insider knowledge (ruthless/cutthroat business truths, business shapes, selling company stories)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -16.7
     },
     {
       "brand_id": "116482854782233",
@@ -2946,8 +2946,8 @@
       "label": "Founder introduces self and business (I have a [company/brand] where I [verb] [target audience] with [product/service])",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -25
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -2957,8 +2957,8 @@
       "label": "High-revenue founder confession (I run [business] doing [revenue])",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -14.3
     },
     {
       "brand_id": "116482854782233",
@@ -2968,8 +2968,8 @@
       "label": "Entrepreneur income scaling (million dollar business owner, income streams)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -2,
+      "percent_delta": -50
     },
     {
       "brand_id": "116482854782233",
@@ -2979,8 +2979,8 @@
       "label": "Conditional business struggle (if your business is doing [revenue range]...)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -20
     },
     {
       "brand_id": "116482854782233",
@@ -3001,8 +3001,8 @@
       "label": "Excited announcement with direct audience address (I'm only sharing this because...)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -3,
-      "percent_delta": -42.9
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3023,8 +3023,8 @@
       "label": "Comparing levels of success (What separates a top 1% entrepreneur from a top 0.1% entrepreneur?)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -20
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3034,8 +3034,8 @@
       "label": "Business advice on offer vs product (In the short term, the best product doesn't win. The best offer does.)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -33.3
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3056,8 +3056,8 @@
       "label": "Hypothetical wealth and income advice ('If you're [situation], [advice]')",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -20
     },
     {
       "brand_id": "116482854782233",
@@ -3067,8 +3067,8 @@
       "label": "Business owner revenue reveal (I run a [industry] company doing about $[amount] a year)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -14.3
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3144,8 +3144,8 @@
       "label": "Direct, tough-love business advice (Stop whining)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -20
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3188,8 +3188,8 @@
       "label": "Agency updates (just finished our marketing workshop)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -20
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3210,8 +3210,8 @@
       "label": "Direct lead generation advice and questions (leads, business, marketing campaign)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -25
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3243,8 +3243,8 @@
       "label": "Business authority flex with revenue proof (I run a [business] doing about [revenue])",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -2,
-      "percent_delta": -50
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3254,8 +3254,8 @@
       "label": "Financial milestone progression (hit your first [X] and the next [Y] is unlikely)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -33.3
     },
     {
       "brand_id": "116482854782233",
@@ -3309,8 +3309,8 @@
       "label": "It's not that [X] don't work, it's just that [Y] (not that [X] don't work)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -3,
-      "percent_delta": -60
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3386,8 +3386,8 @@
       "label": "Curiosity questions about money and risk",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": 0,
-      "percent_delta": 0
+      "raw_delta": -1,
+      "percent_delta": -25
     },
     {
       "brand_id": "116482854782233",
@@ -3452,8 +3452,8 @@
       "label": "Provocative mortality reminders (your critics are going to eventually die)",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -25
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3484,7 +3484,7 @@
       "insight_type": "HOOK",
       "label": "Provocative business truth (Most business owners don't change. They live the same six months of their lives, a hundred times in a row, and then they die.)",
       "total": null,
-      "weeks_active": 5,
+      "weeks_active": 4,
       "raw_delta": -2,
       "percent_delta": -40
     },
@@ -3507,8 +3507,8 @@
       "label": "Entrepreneur sharing practical business advice and personal growth strategies",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -49,
-      "percent_delta": -6.4
+      "raw_delta": -12,
+      "percent_delta": -1.7
     },
     {
       "brand_id": "116482854782233",
@@ -3518,8 +3518,8 @@
       "label": "Alex Hormozi motivational and business advice on success, discipline, and entrepreneurship",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -6,
-      "percent_delta": -1.2
+      "raw_delta": -15,
+      "percent_delta": -3.1
     },
     {
       "brand_id": "116482854782233",
@@ -3529,8 +3529,8 @@
       "label": "Business owners scaling to $1M+ or $100M with frameworks and roadmaps",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -6,
-      "percent_delta": -4.7
+      "raw_delta": -92,
+      "percent_delta": -76
     },
     {
       "brand_id": "116482854782233",
@@ -3540,8 +3540,8 @@
       "label": "Using AI trained on Alex Hormozi's knowledge to scale content and business growth",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -8,
-      "percent_delta": -18.6
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3551,8 +3551,8 @@
       "label": "Scaling healthcare and wellness practices to $1M+ revenue",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -2.2
+      "raw_delta": -34,
+      "percent_delta": -77.3
     },
     {
       "brand_id": "116482854782233",
@@ -3584,8 +3584,8 @@
       "label": "Alex Hormozi promoting Offers Workshop in Las Vegas",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -8,
-      "percent_delta": -72.7
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",
@@ -3595,8 +3595,8 @@
       "label": "Business owner attending marketing workshop in Vegas",
       "total": null,
       "weeks_active": 6,
-      "raw_delta": -1,
-      "percent_delta": -8.3
+      "raw_delta": 0,
+      "percent_delta": 0
     },
     {
       "brand_id": "116482854782233",

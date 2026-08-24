@@ -1,29 +1,65 @@
 {
-  "fetchedAt": "2026-08-17T12:49:20.748Z",
+  "fetchedAt": "2026-08-24T12:55:35.284Z",
   "cards": [
     {
       "slug": "kiavi",
       "brand": "Kiavi",
-      "category": "Text Overlay",
-      "line": "Your builds are modern, so why is your financing stuck in the past?",
+      "category": "Explainer",
+      "line": "Real estate investing moves in a cycle.",
       "mediaType": "VIDEO",
-      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f35473eafb8d9ee469e1f765ec9a001b.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f35473eafb8d9ee469e1f765ec9a001b.webp",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e5a0a015aefca6f8b77da21d8bbe1a69.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e5a0a015aefca6f8b77da21d8bbe1a69.webp",
       "platform": null,
-      "daysRun": 12,
-      "startAt": "2026-08-03"
+      "daysRun": 2,
+      "startAt": "2026-08-21"
     },
     {
       "slug": "kiavi",
       "brand": "Kiavi",
       "category": "Explainer",
-      "line": "Building new construction projects is complex.",
+      "line": "Real estate investing moves in a cycle.",
       "mediaType": "VIDEO",
-      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/02e32a55d04e4f07c54ef11e12396249.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/02e32a55d04e4f07c54ef11e12396249.webp",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e5a0a015aefca6f8b77da21d8bbe1a69.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e5a0a015aefca6f8b77da21d8bbe1a69.webp",
       "platform": null,
-      "daysRun": 1,
-      "startAt": "2026-08-14"
+      "daysRun": 2,
+      "startAt": "2026-08-21"
+    },
+    {
+      "slug": "kiavi",
+      "brand": "Kiavi",
+      "category": "Explainer",
+      "line": "Real estate investing moves in a cycle.",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e5a0a015aefca6f8b77da21d8bbe1a69.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e5a0a015aefca6f8b77da21d8bbe1a69.webp",
+      "platform": null,
+      "daysRun": 2,
+      "startAt": "2026-08-21"
+    },
+    {
+      "slug": "kiavi",
+      "brand": "Kiavi",
+      "category": "Text Overlay",
+      "line": "Real estate investing moves in a cycle.",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3ed4ed4af611d332a999062f57b737fe.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3ed4ed4af611d332a999062f57b737fe.webp",
+      "platform": null,
+      "daysRun": 2,
+      "startAt": "2026-08-21"
+    },
+    {
+      "slug": "kiavi",
+      "brand": "Kiavi",
+      "category": "Text Overlay",
+      "line": "Success on Repeat",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3ed4ed4af611d332a999062f57b737fe.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3ed4ed4af611d332a999062f57b737fe.webp",
+      "platform": null,
+      "daysRun": 2,
+      "startAt": "2026-08-21"
     },
     {
       "slug": "lima",
@@ -34,7 +70,7 @@
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/ee9332ed1cd4278c28ddb3e5417249b6.mp4",
       "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/ee9332ed1cd4278c28ddb3e5417249b6.webp",
       "platform": null,
-      "daysRun": 15,
+      "daysRun": 23,
       "startAt": "2026-07-31"
     },
     {
@@ -46,7 +82,7 @@
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/df7db6342a77c8be8d0bacea173d6c3b.mp4",
       "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/df7db6342a77c8be8d0bacea173d6c3b.webp",
       "platform": null,
-      "daysRun": 13,
+      "daysRun": 21,
       "startAt": "2026-08-02"
     },
     {
@@ -58,7 +94,7 @@
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/7ffce8b89d7180e717be842332931f77.mp4",
       "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/7ffce8b89d7180e717be842332931f77.webp",
       "platform": null,
-      "daysRun": 7,
+      "daysRun": 15,
       "startAt": "2026-08-08"
     },
     {
@@ -70,8 +106,56 @@
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/df7db6342a77c8be8d0bacea173d6c3b.mp4",
       "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/df7db6342a77c8be8d0bacea173d6c3b.webp",
       "platform": null,
-      "daysRun": 2,
+      "daysRun": 10,
       "startAt": "2026-08-13"
+    },
+    {
+      "slug": "lima",
+      "brand": "Lima One",
+      "category": "Announcement",
+      "line": "Compete like a cash buyer",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/78173137df61de47cba69a067a7de9eb.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/78173137df61de47cba69a067a7de9eb.webp",
+      "platform": null,
+      "daysRun": 7,
+      "startAt": "2026-08-16"
+    },
+    {
+      "slug": "visio",
+      "brand": "Visio Lending",
+      "category": "Announcement",
+      "line": "5/6 ARM Pro | Visio Lending",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/b20b864d27f001fd88fb794c0b5ffb8f.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/b20b864d27f001fd88fb794c0b5ffb8f.webp",
+      "platform": null,
+      "daysRun": 5,
+      "startAt": "2026-08-18"
+    },
+    {
+      "slug": "silver",
+      "brand": "New Silver",
+      "category": "Explainer",
+      "line": "Five U.S. markets are cutting fix -and -flip hold times right now, and four of them are doing it while margins go up too.",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f7c871d825f393855778b6cb8276451e.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f7c871d825f393855778b6cb8276451e.webp",
+      "platform": null,
+      "daysRun": 2,
+      "startAt": "2026-08-21"
+    },
+    {
+      "slug": "renovo",
+      "brand": "Renovo Financial",
+      "category": "Skit",
+      "line": "I asked our loan officers what they would do if our chief lending officer and co-founder, Daniel Rosen, called them.",
+      "mediaType": "VIDEO",
+      "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8eac650e340b58696fff0d400fef0f53.mp4",
+      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8eac650e340b58696fff0d400fef0f53.webp",
+      "platform": null,
+      "daysRun": 5,
+      "startAt": "2026-08-18"
     }
   ],
   "failures": []
