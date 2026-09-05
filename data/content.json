@@ -1,6 +1,6 @@
 {
   "site": "trilithfunding.com",
-  "fetchedAt": "2026-09-04T14:41:11.698Z",
+  "fetchedAt": "2026-09-05T13:40:54.903Z",
   "docs": [
     {
       "url": "https://www.trilithfunding.com",
@@ -457,13 +457,13 @@
       "published": null,
       "date_source": null,
       "updated": null,
-      "word_count": 44,
-      "body": "Education August 28, 2026 8 min read\n\n## How private lenders count real estate investing experience\n\nSee which completed projects may count as lender experience, why a long track record can look thin, and how to build a file underwriting can verify.\n\nRead More",
+      "word_count": 42,
+      "body": "Education September 4, 2026 5 min read\n\n## Multifamily DSCR loans: What changes at five units\n\nPrivate lenders do not use one universal DSCR formula at five units. See when rent over PITIA or underwritten NOI may control the deal.\n\nRead More",
       "chunks": [
         {
           "ordinal": 0,
-          "heading": "How private lenders count real estate investing experience",
-          "text": "Education August 28, 2026 8 min read\n\nHow private lenders count real estate investing experience\nSee which completed projects may count as lender experience, why a long track record can look thin, and how to build a file underwriting can verify.\n\nRead More"
+          "heading": "Multifamily DSCR loans: What changes at five units",
+          "text": "Education September 4, 2026 5 min read\n\nMultifamily DSCR loans: What changes at five units\nPrivate lenders do not use one universal DSCR formula at five units. See when rent over PITIA or underwritten NOI may control the deal.\n\nRead More"
         }
       ]
     },
@@ -1385,6 +1385,60 @@
         },
         {
           "ordinal": 5,
+          "heading": "Ready to Get Started?",
+          "text": "Ready to Get Started?\nTell us about your deal. We will get back to you within 24 hours.\n\nSubmit a Deal\n\nAll Articles"
+        }
+      ]
+    },
+    {
+      "url": "https://www.trilithfunding.com/blog/multifamily-dscr-loan-five-units",
+      "kind": "blog",
+      "title": "Multifamily DSCR loans: What changes at five units",
+      "summary": "Private lenders do not use one universal DSCR formula at five units. See when rent over PITIA or underwritten NOI may control the deal.",
+      "author": null,
+      "published": "2026-09-04",
+      "date_source": "json-ld",
+      "updated": "2026-09-04",
+      "word_count": 963,
+      "body": "Education September 4, 2026 5 min read\n\n# Multifamily DSCR loans: What changes at five units\n\nCalling a multifamily DSCR loan a larger version of a four-unit deal is how investors get surprised. DSCR stands for debt service coverage ratio, but private lenders do not all feed that ratio the same way. Some programs use qualifying rent divided by PITIA. Others use net operating income or underwritten cash flow divided by annual debt service. Unit count alone does not tell you which formula controls.\n\n## Why five units changes the multifamily DSCR loan\n\nFannie Mae defines an eligible multifamily property as one containing at least five dwelling units, while its Small Residential Income Property Appraisal Report covers two- to four-unit properties. Those agency references do not control every private program, but they show why the fifth unit is a real boundary. Trilith Funding's multifamily loan program follows that five-plus distinction and underwrites on property cash flow.\n\nFor one- to four-unit rentals, comparable sales and a market-rent schedule often do much of the work. On five-plus-unit properties, the income capitalization approach usually carries more weight. The appraiser analyzes stabilized income, operating expenses, and a capitalization rate supported by the market. Fannie Mae's capitalization rate guidance also requires sales and property-specific analysis for its program.\n\nSend the rent roll, leases, and operating history with the appraisal order. A five-plus appraisal needs more from the owner than a few promising comparable sales.\n\n## Private-lender DSCR may use rent over PITIA or NOI\n\nPrivate lending does not have one universal DSCR formula. Many residential-style programs divide qualifying monthly rent by monthly PITIA, or annualized rent by annualized PITIA. PITIA includes principal, interest, taxes, insurance, and applicable association dues. Trilith Funding's current DSCR explainer publishes that rent-over-PITIA formula. Some five-plus or commercial-style programs instead divide net operating income (NOI) or underwritten net cash flow (NCF) by annual debt service. Confirm the formula with the lender rather than inferring it from unit count.\n\nWhen a program uses NOI, the number comes from an underwriting model, not a generic five-unit rule or the borrower's pro forma. The lender or appraiser starts with supportable rent and other income, then applies its treatment of vacancy, concessions, collection loss, and normalized operating expenses. It may make further reserve adjustments to reach NCF. Depending on the program, the inputs may come from trailing statements, the current rent roll and leases, the appraisal, a lender expense factor, or a combination of them.\n\nFannie Mae's small mortgage loan guidance illustrates an NCF-over-annual-debt-service method. It is useful context for commercial-style multifamily underwriting, not a rule for private lenders.\n\nFor an NOI-based program, the sequence usually looks like this:\n\n- Start with supportable rent and other income.\n- Deduct vacancy, credit loss, and normalized operating expenses.\n- Apply program-specific reserves or adjustments.\n- Divide the resulting NOI or NCF by annual debt service. Suppose an eight-unit property has $120,000 in annual potential rent. After $10,000 for vacancy and collection loss plus $40,000 of normalized expenses, NOI is $70,000. Against $60,000 of annual debt service, the illustrative NOI-based DSCR is 1.17 before other program adjustments. That example does not describe a rent-over-PITIA program, where operating expenses are not deducted from the qualifying-rent numerator.\n\nAsk which formula applies before writing the offer. Loan sizing may be constrained by value, loan-to-value, DSCR, or a combination of them, subject to full underwriting review.\n\n## Operating history becomes underwriting evidence\n\nMarket evidence still matters, but the property's own record carries more weight. A seller's pro forma is an argument. The rent roll, leases, collections, and expense history are evidence.\n\nFannie Mae's multifamily lease audit guidance illustrates the standard: reconcile the rent roll with signed leases and validate collections with ledgers, receipts, bank statements, or similar records. Private lenders set their own requirements, but unexplained gaps create the same problem.\n\nPrepare a package that includes:\n\n- A current rent roll showing concessions, delinquency, and vacancy.\n- Executed leases, expirations, and recent renewals.\n- A trailing 12-month profit-and-loss statement and current results.\n- Support for collections, expenses, and known capital work. If the rent roll says $9,400 a month while collections support $8,100, explain the difference before the underwriter finds it. Concessions and partial-payment arrangements do not automatically kill a file, but they need documentation. Trilith Funding's overview of real estate loan underwriting explains what the lender is trying to confirm.\n\n## Stabilization determines the right loan structure\n\nPermanent multifamily DSCR financing is strongest when occupancy, collections, expenses, and condition support durable cash flow. A building in lease-up or carrying material deferred work may be sized to current facts rather than the finished business plan.\n\nThe asset may still work, but permanent debt may be the wrong first step. A bridge loan can provide time to complete repairs, lease units, document collections, and refinance after stabilization, depending on the deal and current program terms.\n\nDo not rely on a universal occupancy threshold. Ask how the lender defines stabilization, which income period it uses, and how it treats repairs or reserves. Then rerun the deal with lower collections, higher expenses, and a less generous value.\n\n## Let the building make its case\n\nFive units does not make the borrower disappear. Credit, liquidity, experience, entity structure, and guarantees can still matter. The building simply supplies more of the proof.\n\nA clean rent roll can be reconciled, operating statements corrected, and vacant units leased. Fixing those items before applying is cheaper than discovering them in a reduced loan amount.\n\nModel the building before the lender does. Request a quote or call (470) 771-7050 to talk through the strategy and financing path with Trilith Funding.\n\n### Ready to Get Started?\n\nTell us about your deal. We will get back to you within 24 hours.\n\nSubmit a Deal\n\nAll Articles",
+      "chunks": [
+        {
+          "ordinal": 0,
+          "heading": "Multifamily DSCR loans: What changes at five units",
+          "text": "Education September 4, 2026 5 min read\n\nMultifamily DSCR loans: What changes at five units\nCalling a multifamily DSCR loan a larger version of a four-unit deal is how investors get surprised. DSCR stands for debt service coverage ratio, but private lenders do not all feed that ratio the same way. Some programs use qualifying rent divided by PITIA. Others use net operating income or underwritten cash flow divided by annual debt service. Unit count alone does not tell you which formula controls."
+        },
+        {
+          "ordinal": 1,
+          "heading": "Why five units changes the multifamily DSCR loan",
+          "text": "Why five units changes the multifamily DSCR loan\nFannie Mae defines an eligible multifamily property as one containing at least five dwelling units, while its Small Residential Income Property Appraisal Report covers two- to four-unit properties. Those agency references do not control every private program, but they show why the fifth unit is a real boundary. Trilith Funding's multifamily loan program follows that five-plus distinction and underwrites on property cash flow.\n\nFor one- to four-unit rentals, comparable sales and a market-rent schedule often do much of the work. On five-plus-unit properties, the income capitalization approach usually carries more weight. The appraiser analyzes stabilized income, operating expenses, and a capitalization rate supported by the market. Fannie Mae's capitalization rate guidance also requires sales and property-specific analysis for its program.\n\nSend the rent roll, leases, and operating history with the appraisal order. A five-plus appraisal needs more from the owner than a few promising comparable sales."
+        },
+        {
+          "ordinal": 2,
+          "heading": "Private-lender DSCR may use rent over PITIA or NOI",
+          "text": "Private-lender DSCR may use rent over PITIA or NOI\n\n\nPrivate lending does not have one universal DSCR formula. Many residential-style programs divide qualifying monthly rent by monthly PITIA, or annualized rent by annualized PITIA. PITIA includes principal, interest, taxes, insurance, and applicable association dues. Trilith Funding's current DSCR explainer publishes that rent-over-PITIA formula. Some five-plus or commercial-style programs instead divide net operating income (NOI) or underwritten net cash flow (NCF) by annual debt service. Confirm the formula with the lender rather than inferring it from unit count.\n\nWhen a program uses NOI, the number comes from an underwriting model, not a generic five-unit rule or the borrower's pro forma. The lender or appraiser starts with supportable rent and other income, then applies its treatment of vacancy, concessions, collection loss, and normalized operating expenses. It may make further reserve adjustments to reach NCF. Depending on the program, the inputs may come from trailing statements, the current rent roll and leases, the appraisal, a lender expense factor, or a combination of them.\n\nFannie Mae's small mortgage loan guidance illustrates an NCF-over-annual-debt-service method. It is useful context for commercial-style multifamily underwriting, not a rule for private lenders."
+        },
+        {
+          "ordinal": 3,
+          "heading": "Private-lender DSCR may use rent over PITIA or NOI",
+          "text": "It is useful context for commercial-style multifamily underwriting, not a rule for private lenders.\n\nFor an NOI-based program, the sequence usually looks like this:\n\n- Start with supportable rent and other income.\n- Deduct vacancy, credit loss, and normalized operating expenses.\n- Apply program-specific reserves or adjustments.\n- Divide the resulting NOI or NCF by annual debt service. Suppose an eight-unit property has $120,000 in annual potential rent. After $10,000 for vacancy and collection loss plus $40,000 of normalized expenses, NOI is $70,000. Against $60,000 of annual debt service, the illustrative NOI-based DSCR is 1.17 before other program adjustments. That example does not describe a rent-over-PITIA program, where operating expenses are not deducted from the qualifying-rent numerator.\n\nAsk which formula applies before writing the offer. Loan sizing may be constrained by value, loan-to-value, DSCR, or a combination of them, subject to full underwriting review."
+        },
+        {
+          "ordinal": 4,
+          "heading": "Operating history becomes underwriting evidence",
+          "text": "Operating history becomes underwriting evidence\nMarket evidence still matters, but the property's own record carries more weight. A seller's pro forma is an argument. The rent roll, leases, collections, and expense history are evidence.\n\nFannie Mae's multifamily lease audit guidance illustrates the standard: reconcile the rent roll with signed leases and validate collections with ledgers, receipts, bank statements, or similar records. Private lenders set their own requirements, but unexplained gaps create the same problem.\n\nPrepare a package that includes:\n\n- A current rent roll showing concessions, delinquency, and vacancy.\n- Executed leases, expirations, and recent renewals.\n- A trailing 12-month profit-and-loss statement and current results.\n- Support for collections, expenses, and known capital work. If the rent roll says $9,400 a month while collections support $8,100, explain the difference before the underwriter finds it. Concessions and partial-payment arrangements do not automatically kill a file, but they need documentation. Trilith Funding's overview of real estate loan underwriting explains what the lender is trying to confirm."
+        },
+        {
+          "ordinal": 5,
+          "heading": "Stabilization determines the right loan structure",
+          "text": "Stabilization determines the right loan structure\nPermanent multifamily DSCR financing is strongest when occupancy, collections, expenses, and condition support durable cash flow. A building in lease-up or carrying material deferred work may be sized to current facts rather than the finished business plan.\n\nThe asset may still work, but permanent debt may be the wrong first step. A bridge loan can provide time to complete repairs, lease units, document collections, and refinance after stabilization, depending on the deal and current program terms.\n\nDo not rely on a universal occupancy threshold. Ask how the lender defines stabilization, which income period it uses, and how it treats repairs or reserves. Then rerun the deal with lower collections, higher expenses, and a less generous value."
+        },
+        {
+          "ordinal": 6,
+          "heading": "Let the building make its case",
+          "text": "Let the building make its case\nFive units does not make the borrower disappear. Credit, liquidity, experience, entity structure, and guarantees can still matter. The building simply supplies more of the proof.\n\nA clean rent roll can be reconciled, operating statements corrected, and vacant units leased. Fixing those items before applying is cheaper than discovering them in a reduced loan amount.\n\nModel the building before the lender does. Request a quote or call (470) 771-7050 to talk through the strategy and financing path with Trilith Funding."
+        },
+        {
+          "ordinal": 7,
           "heading": "Ready to Get Started?",
           "text": "Ready to Get Started?\nTell us about your deal. We will get back to you within 24 hours.\n\nSubmit a Deal\n\nAll Articles"
         }
