@@ -43,7 +43,15 @@ jobs:
       # The creative wall: the actual ads the board lenders are running, with
       # their media and current run lengths. Weekly for the same reason as the
       # patterns — credits are billed per row.
+      #
+      # Not allowed to sink the job. The wall refusing to write keeps last
+      # week's cards, which is a stale section; letting it fail the run throws
+      # away the hook patterns harvested above it, which is a stale corpus and
+      # a wasted week of credits. The daily pull learned this ordering the hard
+      # way — the same rule belongs here.
       - name: Pull creatives from Spyglass
+        id: creatives
+        continue-on-error: true
         env:
           SPYGLASS_API_KEY: ${{ secrets.SPYGLASS_API_KEY }}
         run: node tools/pull-creatives.mjs
@@ -80,6 +88,15 @@ jobs:
           done
           echo "::error::Could not push after 3 attempts."
           exit 1
+
+      # Loud, but after everything that can still succeed has. A wall quietly
+      # serving month-old cards under a heading that says "right now" is the
+      # thing this warning exists to stop.
+      - name: Flag a stale creative wall
+        if: steps.creatives.outcome == 'failure'
+        run: |
+          echo "::warning::The creative wall did not refresh; briefing.html still shows the previous harvest."
+          echo "Read the 'first row:' line in the creatives step — the response shape has probably changed again."
 
       - name: Push to Supabase
         env:

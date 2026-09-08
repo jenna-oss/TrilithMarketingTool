@@ -10,6 +10,13 @@
  * section about what lenders are *buying* must not quietly include what they
  * merely posted.
  *
+ * How "paid" is read has already changed once: `isOrganic` disappeared from the
+ * response in early September 2026 and every row silently failed the filter,
+ * which emptied the wall and failed this job for two weeks. isPaid() therefore
+ * reads whichever signal the response actually carries, and the run logs one
+ * whole row so the next such change is one log line to diagnose rather than a
+ * fortnight of red.
+ *
  * Needs SPYGLASS_API_KEY. Skips itself, without failing, when it is absent.
  * ------------------------------------------------------------------------ */
 
@@ -78,6 +85,23 @@ function line(c) {
   return text.length > 150 ? `${text.slice(0, 147).trimEnd()}…` : text;
 }
 
+/* Paid rows are marked by an _AD-suffixed enum — META_AD, TIKTOK_AD — on
+ * whichever of the platform/type fields the surface happens to expose (REST
+ * sends `type` and `platforms`, the MCP surface sends `platform`). Prefer the
+ * old boolean while any response still carries it, and treat a row we cannot
+ * read as organic: wrongly dropping a paid ad costs one card, wrongly keeping
+ * an organic post puts a thing nobody bought on a wall about ad spend. */
+const AD_ENUM = /(^|_)AD$/i;
+
+function tags(c) {
+  return [c.platform, c.type, ...(Array.isArray(c.platforms) ? c.platforms : [])];
+}
+
+function isPaid(c) {
+  if (typeof c.isOrganic === 'boolean') return c.isOrganic === false;
+  return tags(c).some((t) => typeof t === 'string' && AD_ENUM.test(t.trim()));
+}
+
 const cards = [];
 const failures = [];
 let loggedShape = false;
@@ -93,11 +117,12 @@ for (const brand of BRANDS) {
     }
     if (!loggedShape && list.length) {
       console.log(`  creative fields: ${Object.keys(list[0]).join(', ')}`);
+      console.log(`  first row: ${JSON.stringify(list[0]).slice(0, 900)}`);
       loggedShape = true;
     }
 
     const paid = list
-      .filter((c) => c.isOrganic === false)
+      .filter(isPaid)
       .filter((c) => c.mediaUrl && c.thumbnailUrl)
       .filter((c) => line(c))
       .sort((a, b) => (b.daysRun ?? 0) - (a.daysRun ?? 0))
@@ -112,7 +137,7 @@ for (const brand of BRANDS) {
         mediaType: c.mediaType || null,
         mediaUrl: c.mediaUrl,
         thumbnailUrl: c.thumbnailUrl,
-        platform: c.platform || null,
+        platform: tags(c).find((t) => typeof t === 'string' && AD_ENUM.test(t.trim())) || null,
         daysRun: Number.isFinite(Number(c.daysRun)) ? Number(c.daysRun) : null,
         startAt: c.startAt ? String(c.startAt).slice(0, 10) : null,
       });
