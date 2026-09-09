@@ -136,15 +136,6 @@
   }
   .pattern-ex b { font-style:normal; font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
 
-  .skipped {
-    margin-top:var(--s5); border:1px solid var(--rule); border-radius:4px;
-    background:var(--card); padding:var(--s3) var(--s4);
-  }
-  .skipped h3 { font-size:.9375rem; }
-  .skipped ul { margin:0; padding-left:1.125rem; font-size:.875rem; }
-  .skipped li { margin-bottom:.375rem; }
-  .skipped li:last-child { margin-bottom:0; }
-
   .empty {
     text-align:center; color:var(--ink-quiet); font-size:.875rem;
     border:1px solid var(--rule); border-radius:4px; padding:var(--s5) var(--s4);
@@ -201,8 +192,8 @@
   <div class="note">
     <h3>Where this came from</h3>
     <p>
-      Spyglass creator search, 2026-08-17, checked by hand. Off-thesis names were dropped —
-      they are listed at the bottom. One-time pass: it does not refresh with the rest of the site.
+      Spyglass creator search, 2026-08-17, checked by hand. Off-thesis names were dropped.
+      One-time pass: it does not refresh with the rest of the site.
     </p>
     <p>
       The hook patterns were read off these clips by hand. Spyglass returns nothing for
@@ -385,21 +376,6 @@ function render() {
     creatorsEl.append(card);
   });
 
-  if (data.consideredAndSkipped && data.consideredAndSkipped.length && !document.getElementById('skipped')) {
-    const box = document.createElement('div');
-    box.className = 'skipped';
-    box.id = 'skipped';
-    const h = document.createElement('h3');
-    h.textContent = 'Considered and skipped';
-    const ul = document.createElement('ul');
-    data.consideredAndSkipped.forEach((s) => {
-      const li = document.createElement('li');
-      li.innerHTML = `<strong>${s.name}</strong> — ${s.why}`;
-      ul.append(li);
-    });
-    box.append(h, ul);
-    document.querySelector('main.wrap').append(box);
-  }
 }
 
 if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
