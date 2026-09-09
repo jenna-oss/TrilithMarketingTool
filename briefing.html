@@ -933,6 +933,14 @@
     <div class="sec-head">
       <p class="eyebrow">The board</p>
       <h2>Who is actually in market</h2>
+      <p>
+        Every lender tracked, ordered by the size of its book — the ones with no
+        published figure sit in the middle, and the two regional shops, ruled in
+        ochre, come last. <strong>Ad count does not follow book size.</strong> The
+        heaviest advertisers in the category are at the bottom of this table, not
+        the top, and that mismatch is the finding. Volume is lifetime or annual
+        originations; ad counts are live Meta ads, refreshed daily.
+      </p>
     </div>
 
     <div class="board">
@@ -940,6 +948,7 @@
         <thead>
           <tr>
             <th scope="col">Lender</th>
+            <th scope="col">Origination volume</th>
             <th scope="col">Live Meta ads</th>
             <th scope="col">Landing pages</th>
             <th scope="col">Social reach</th>
@@ -949,13 +958,23 @@
         <tbody>
           <tr>
             <td class="brand">Kiavi</td>
+            <td class="num">≈$8B / yr — #1 in the US</td>
             <td class="num" data-ads="Kiavi">37 live ads</td>
             <td class="num">8</td>
             <td class="num">33.1K FB · 11.9K IG</td>
             <td class="claim">“You Find It, Kiavi will Fund It”</td>
           </tr>
           <tr>
+            <td class="brand">CoreVest</td>
+            <td class="num">$7.8B · 35,000 projects</td>
+            <td class="num" data-ads="CoreVest"><span class="absent">no paid ads</span></td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td class="claim">—</td>
+          </tr>
+          <tr>
             <td class="brand">Lima One Capital</td>
+            <td class="num">$2B+ funded</td>
             <td class="num" data-ads="Lima One Capital">39 live ads</td>
             <td class="num">4</td>
             <td class="num">15.5K FB · 8.2K IG</td>
@@ -963,6 +982,7 @@
           </tr>
           <tr>
             <td class="brand">Visio Lending</td>
+            <td class="num">$1.5B in STR alone</td>
             <td class="num" data-ads="Visio Lending">38 live ads</td>
             <td class="num">4 <span style="color:var(--ink-quiet)">(2 broker)</span></td>
             <td class="num">1.7K FB · 1.6K IG</td>
@@ -970,34 +990,47 @@
           </tr>
           <tr>
             <td class="brand">Anchor Loans</td>
+            <td class="num">top-10 RTL originator</td>
             <td class="num" data-ads="Anchor Loans"><span class="absent">no paid ads</span></td>
             <td class="num">—</td>
             <td class="num">4.7K FB · <b>41.6K CEO IG</b></td>
             <td class="claim">“We focused on the opportunity”</td>
           </tr>
           <tr>
-            <td class="brand">New Silver</td>
-            <td class="num" data-ads="New Silver">7 live ads</td>
-            <td class="num">—</td>
-            <td class="num">2.6K FB · 1.5K IG</td>
-            <td class="claim">“Your lender should be your first call”</td>
-          </tr>
-          <tr>
             <td class="brand">RCN Capital</td>
+            <td class="num">top-10 RTL originator</td>
             <td class="num" data-ads="RCN Capital">11 live ads</td>
             <td class="num">broker referral</td>
             <td class="num">1.7K FB · 166 IG</td>
             <td class="claim">“Skip the Bank’s Red Tape”</td>
           </tr>
           <tr>
+            <td class="brand">Civic Financial Services</td>
+            <td class="num">institutional</td>
+            <td class="num" data-ads="Civic Financial Services">10 live ads</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td class="claim">—</td>
+          </tr>
+          <tr>
             <td class="brand">LendingOne</td>
+            <td class="num">—</td>
             <td class="num" data-ads="LendingOne">15 live ads</td>
             <td class="num">direct</td>
             <td class="num">3.3K FB · 8.1K IG</td>
             <td class="claim">“Your next deal should not stall waiting on your lender”</td>
           </tr>
           <tr>
+            <td class="brand">New Silver</td>
+            <td class="num">—</td>
+            <td class="num" data-ads="New Silver">7 live ads</td>
+            <td class="num">—</td>
+            <td class="num">2.6K FB · 1.5K IG</td>
+            <td class="claim">“Your lender should be your first call”</td>
+          </tr>
+          <tr>
             <td class="brand">Renovo Financial</td>
+            <td class="num">—</td>
             <td class="num" data-ads="Renovo Financial">7 live ads</td>
             <td class="num">direct</td>
             <td class="num">1.6K FB · 4.5K IG</td>
@@ -1005,14 +1038,47 @@
           </tr>
           <tr>
             <td class="brand">Temple View Capital</td>
+            <td class="num">—</td>
             <td class="num" data-ads="Temple View Capital">2 live ads</td>
             <td class="num">direct</td>
             <td class="num">812 FB · 1.4K IG</td>
             <td class="claim">“Pain points we’ve experienced ourselves”</td>
           </tr>
+          <tr class="offbook">
+            <td class="brand">Capital Fund 1</td>
+            <td class="num">regional · Scottsdale AZ</td>
+            <td class="num" data-ads="Capital Fund 1">119 live ads</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td class="claim">—</td>
+          </tr>
+          <tr class="offbook">
+            <td class="brand">Griffin Funding</td>
+            <td class="num">regional · San Diego CA</td>
+            <td class="num" data-ads="Griffin Funding">45 live ads</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td class="claim">—</td>
+          </tr>
         </tbody>
       </table>
     </div>
+
+    <div class="method" style="margin-top:var(--s4)">
+      <h3>Why this is the most useful table here</h3>
+      <p>
+        On Meta, Trilith is not competing with the giants. It is competing with
+        <strong>Capital Fund 1, Griffin Funding and a few hundred regional shops</strong> —
+        while CoreVest has funded $7.8 billion and never run a single ad, and Anchor
+        has never bought one either.
+      </p>
+      <p>
+        A balance sheet does not win attention here. That is a fight a founder-led
+        lender with real deal math can actually win, and it is the strongest
+        argument on this page for moving now.
+      </p>
+    </div>
+
 
     <div class="method" style="margin-top:var(--s4)">
       <h3>And six that spend nothing at all</h3>
@@ -1046,99 +1112,6 @@
         Almost none come from the national platforms. They come from regional shops,
         brokers and individual loan officers — and their copy is sharper than
         anything the big lenders are running.
-      </p>
-    </div>
-
-    <div class="sec-head" style="margin-top:var(--s5)">
-      <h2 style="font-size:1.125rem">Size and spend are different leagues</h2>
-      <p>
-        The largest originators are not the largest advertisers, and it is not
-        close. Volume figures are lifetime or annual originations; ad counts are
-        live Meta ads measured the same day.
-      </p>
-    </div>
-
-    <div class="board">
-      <table class="board-t">
-        <thead>
-          <tr>
-            <th scope="col">Lender</th>
-            <th scope="col">Origination volume</th>
-            <th scope="col">Live Meta ads</th>
-            <th scope="col">Read</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="offbook">
-            <td class="brand">Capital Fund 1</td>
-            <td class="num">regional · Scottsdale AZ</td>
-            <td class="num" style="color:var(--clay);font-weight:700">114</td>
-            <td class="claim">Outspends the national leader more than three to one</td>
-          </tr>
-          <tr class="offbook">
-            <td class="brand">Griffin Funding</td>
-            <td class="num">regional · San Diego CA</td>
-            <td class="num" style="color:var(--clay);font-weight:700">44</td>
-            <td class="claim">Also outspends Kiavi</td>
-          </tr>
-          <tr>
-            <td class="brand">Kiavi</td>
-            <td class="num">≈$8B / yr — #1 in the US</td>
-            <td class="num">33</td>
-            <td class="claim">Biggest book, third on ad presence</td>
-          </tr>
-          <tr>
-            <td class="brand">Lima One Capital</td>
-            <td class="num">$2B+ funded</td>
-            <td class="num">26</td>
-            <td class="claim">Proportionate</td>
-          </tr>
-          <tr>
-            <td class="brand">Visio Lending</td>
-            <td class="num">$1.5B in STR alone</td>
-            <td class="num">21</td>
-            <td class="claim">Narrow product, steady spend</td>
-          </tr>
-          <tr>
-            <td class="brand">Civic Financial Services</td>
-            <td class="num">institutional</td>
-            <td class="num">10</td>
-            <td class="claim">Back in market</td>
-          </tr>
-          <tr>
-            <td class="brand">RCN Capital</td>
-            <td class="num">top-10 RTL originator</td>
-            <td class="num">10</td>
-            <td class="claim">All of it aimed at brokers</td>
-          </tr>
-          <tr>
-            <td class="brand">Anchor Loans</td>
-            <td class="num">top-10 RTL originator</td>
-            <td class="num absent">0</td>
-            <td class="claim">Organic only — has never bought an ad</td>
-          </tr>
-          <tr>
-            <td class="brand">CoreVest</td>
-            <td class="num">$7.8B funded · 35,000 projects</td>
-            <td class="num absent">0</td>
-            <td class="claim">Never advertised, at any scale</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="method" style="margin-top:var(--s4)">
-      <h3>Why this is the most useful table here</h3>
-      <p>
-        On Meta, Trilith is not competing with the giants. It is competing with
-        <strong>Capital Fund 1, Griffin Funding and a few hundred regional shops</strong> —
-        while CoreVest has funded $7.8 billion and never run a single ad, and Anchor
-        has never bought one either.
-      </p>
-      <p>
-        A balance sheet does not win attention here. That is a fight a founder-led
-        lender with real deal math can actually win, and it is the strongest
-        argument on this page for moving now.
       </p>
     </div>
 
