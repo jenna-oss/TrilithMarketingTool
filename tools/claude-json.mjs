@@ -26,14 +26,25 @@ export function hasKey() {
   return Boolean(String(process.env.ANTHROPIC_API_KEY ?? '').trim());
 }
 
-/* Models are chatty by default and will happily wrap JSON in prose or a fenced
- * block. Prefilling the assistant turn with the opening brace makes the reply
- * start inside the object, which removes most of the parsing problem; the
- * fence-stripping below covers the rest. */
+/* Models are chatty by default and will wrap JSON in prose or a fenced block.
+ *
+ * Prefilling the assistant turn with an opening brace is the usual fix, and it
+ * is NOT available here: claude-opus-5 rejects assistant prefill outright with
+ * "This model does not support assistant message prefill" (400). So the system
+ * prompt asks for bare JSON and this unwraps whatever comes back — fenced
+ * block first, then the outermost braces, so a stray sentence either side does
+ * not cost us the run. */
 function extractJson(text) {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   const body = (fenced ? fenced[1] : text).trim();
-  return JSON.parse(body);
+  try {
+    return JSON.parse(body);
+  } catch (err) {
+    const open = body.indexOf('{');
+    const close = body.lastIndexOf('}');
+    if (open === -1 || close <= open) throw err;
+    return JSON.parse(body.slice(open, close + 1));
+  }
 }
 
 export async function claudeJson({ system, user, maxTokens = 8192 }) {
@@ -51,11 +62,7 @@ export async function claudeJson({ system, user, maxTokens = 8192 }) {
       model: MODEL,
       max_tokens: maxTokens,
       system,
-      messages: [
-        { role: 'user', content: user },
-        /* Prefill: the reply continues from here, so it opens inside the object. */
-        { role: 'assistant', content: '{' },
-      ],
+      messages: [{ role: 'user', content: user }],
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
@@ -83,7 +90,7 @@ export async function claudeJson({ system, user, maxTokens = 8192 }) {
     .join('');
 
   try {
-    return extractJson(`{${text}`);
+    return extractJson(text);
   } catch (err) {
     throw new Error(`Claude did not return JSON: ${err.message} — got: ${text.slice(0, 200)}`);
   }

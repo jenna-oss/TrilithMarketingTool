@@ -118,10 +118,12 @@ async function creatorMedia(brandId) {
  * anywhere we have, so try the plausible spellings and report which one
  * answered — one log line makes this a five-minute fix instead of a guess.
  * Discovery failing is survivable; the roster simply does not grow today. */
+/* Confirmed live on 2026-09-09: /brands/search is the route. It answered with
+ * a field-level validation error while the alternatives 404'd, which is how we
+ * found it. The fallbacks stay as a cheap hedge if the path ever moves. */
 const SEARCH_ROUTES = [
   { path: '/brands/search', method: 'POST' },
   { path: '/search/brands', method: 'POST' },
-  { path: '/brands', method: 'POST' },
 ];
 
 function searchBody(query) {
@@ -131,7 +133,9 @@ function searchBody(query) {
     query,
     count: 20,
     minFollowers: MIN_FOLLOWERS,
-    sortBy: 'MOST_FOLLOWERS',
+    /* No sortBy: the API rejects it for mode "smart" — "results are ordered by
+     * relevance". That 400 is also how we learned this route is the real one;
+     * the other two spellings 404. */
   });
 }
 
