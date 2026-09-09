@@ -144,6 +144,7 @@ jobs:
         env:
           # The repo secret is named ANTHROPIC_API; the CLI reads ANTHROPIC_API_KEY.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
+          SESSION_ID: ${{ needs.plan.outputs.session }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           TOPIC: ${{ matrix.topic }}
           MAX_TURNS: ${{ inputs.max_turns }}
@@ -185,6 +186,61 @@ jobs:
           find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer video/remotion/package.json -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion/src -maxdepth 1 -name '*.tsx' -newer video/remotion/package.json -exec cp {} artifact/ \; 2>/dev/null || true
           echo "--- artifact contents ---"; ls -la artifact/
+
+      # Storage is what makes a render survive. The artifact below expires in
+      # fourteen days and re-rendering is not a recovery path — the Assembly
+      # agent writes a fresh component every run, so the same brief does not
+      # give back the same video.
+      #
+      # always(): a failed render is worth a row too. "Slot 2 failed at 04:12,
+      # here is the run" is the question you ask later, and without the row
+      # there is nothing to ask it of.
+      - name: Store the video
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SESSION_ID: ${{ needs.plan.outputs.session }}
+          SLOT: ${{ matrix.slot }}
+          NAME: ${{ matrix.name }}
+          TOPIC: ${{ matrix.topic }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          BASE="${SUPABASE_URL%/}"
+          MP4=$(find video/remotion/out -name '*.mp4' -print -quit 2>/dev/null || true)
+
+          if [ -z "$MP4" ]; then
+            echo "No mp4 — recording the failure."
+            curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render"               -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"               -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"               -H 'content-type: application/json'               -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" --arg r "$RUN_URL"                     '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,status:"failed",
+                               error:"render produced no mp4",run_url:$r}}')" > /dev/null
+            echo "### Slot $SLOT — no video produced" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          PATH_IN_BUCKET="$SESSION_ID/$SLOT-$NAME.mp4"
+          BYTES=$(wc -c < "$MP4" | tr -d ' ')
+          DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$MP4" 2>/dev/null || echo "")
+
+          echo "Uploading $MP4 ($BYTES bytes) -> videos/$PATH_IN_BUCKET"
+          curl -sS -X POST "$BASE/storage/v1/object/videos/$PATH_IN_BUCKET"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: video/mp4'             -H 'x-upsert: true'             --data-binary "@$MP4" > /dev/null
+
+          curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render"             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: application/json'             -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC"                   --arg p "$PATH_IN_BUCKET" --argjson b "$BYTES" --arg d "${DUR:-0}" --arg r "$RUN_URL"                   '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,
+                             storage_path:$p,bytes:$b,duration_seconds:($d|tonumber),
+                             status:"rendered",run_url:$r}}')" > /dev/null
+
+          # A signed link in the job summary, so reviewing is a click rather than
+          # a download. The bucket is private; this is the only way in.
+          SIGNED=$(curl -sS -X POST "$BASE/storage/v1/object/sign/videos/$PATH_IN_BUCKET"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: application/json'             -d '{"expiresIn": 2592000}' | jq -r '.signedURL // empty')
+
+          {
+            echo "### Slot $SLOT — $NAME"
+            echo ""
+            echo "- **Size:** $(( BYTES / 1024 )) KB"
+            [ -n "$DUR" ] && echo "- **Duration:** ${DUR}s"
+            echo "- **Stored:** \`videos/$PATH_IN_BUCKET\`"
+            [ -n "$SIGNED" ] && echo "- **Watch (30-day link):** ${BASE}/storage/v1${SIGNED}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         if: always()

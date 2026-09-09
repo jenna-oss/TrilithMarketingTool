@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 21 migrations applied to the Supabase project
+The `kb` schema is defined by 23 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,8 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 23 | `kb_video_renders` | the videos bucket and the row tying each render back to its brief |
+| 22 | `kb_plans_ready_to_render` | locked plans, newest first — how briefs reach CI without a committed file |
 | 21 | `kb_effectiveness_resolve_urls` | resolve cited URLs to row ids, or the section 39 metric reads zero forever |
 | 20 | `kb_retrieval_effectiveness` | the section 39 metric as a view: how many retrieved sources reached a saved idea |
 | 19 | `kb_planning_sessions` | durable plan storage, bulk retrieval logging |
