@@ -62,6 +62,16 @@ function toNumber(label) {
   return Number.isFinite(n) ? n : 0;
 }
 
+/* Harvested views arrive both ways: older rows carry "226K" from the MCP
+ * capture, the REST surface returns a raw 211040. Printed side by side on the
+ * same chart one of them looks like a bug, so every label is rebuilt from the
+ * number rather than trusted as-is. */
+function compact(n) {
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1).replace(/\.0$/, '')}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1).replace(/\.0$/, '')}K`;
+  return String(Math.round(n));
+}
+
 /* The row label. The hand-built version had editorial notes -- "a lender's
  * $25M loss" -- which nothing can regenerate, so this uses the creator's own
  * opening line instead: shorter, less quotable, and always true. */
@@ -102,7 +112,7 @@ for (const c of creatorData.creators ?? []) {
   for (const v of c.videos ?? []) {
     const n = toNumber(v.views);
     if (!n) continue;
-    creatorRows.push({ kind: 'creator', name: c.name, note: note(v.hook), views: n, viewsLabel: v.views });
+    creatorRows.push({ kind: 'creator', name: c.name, note: note(v.hook), views: n, viewsLabel: compact(n) });
   }
 }
 creatorRows.sort((a, b) => b.views - a.views);
@@ -141,7 +151,7 @@ for (const lender of LENDERS) {
       name: lender.name,
       note: 'best post',
       views: organic[0].n,
-      viewsLabel: organic[0].label,
+      viewsLabel: compact(organic[0].n),
     });
     console.log(`  ${lender.name.padEnd(20)} ${list.length} returned, best organic ${organic[0].label}`);
   } catch (err) {
