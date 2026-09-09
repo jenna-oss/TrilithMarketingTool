@@ -64,6 +64,8 @@ const MAX_CANDIDATES_CHECKED = 6;
 
 /* The filter buttons on creators.html are built from these, so an invented
  * value would render as a raw slug chip. */
+const PLATFORM_LABELS = { INSTAGRAM: 'Instagram', TIKTOK: 'TikTok', FACEBOOK: 'Facebook' };
+
 const PRODUCT_LINES = ['dscr', 'fix-and-flip', 'bridge', 'ground-up', 'portfolio', 'brrrr', 'multifamily'];
 
 const DISCOVERY_QUERIES = [
@@ -160,25 +162,46 @@ async function searchCreators(query) {
   throw new Error(`no discovery route answered: ${errors.join(' | ')}`);
 }
 
+/* The search surface and the media surface disagree about shape. The MCP
+ * search returns followers:[{platform, handle, count}]; the REST route that
+ * actually answers returns flat igFollowers / igUsername / tiktokFollowers /
+ * tiktokUsername instead. Reading only the MCP shape scored every candidate at
+ * zero followers, so all 50 failed the follower gate and the roster could
+ * never grow -- the run looked healthy and did nothing. Read both. */
+function parseCount(raw) {
+  const s = String(raw ?? '').trim();
+  if (!s) return 0;
+  const n = /k$/i.test(s) ? parseFloat(s) * 1e3
+    : /m$/i.test(s) ? parseFloat(s) * 1e6
+      : parseFloat(s.replace(/,/g, ''));
+  return Number.isFinite(n) ? n : 0;
+}
+
+const compact = (n) => (n >= 1e6
+  ? `${(n / 1e6).toFixed(1).replace(/\.0$/, '')}M`
+  : n >= 1e3 ? `${(n / 1e3).toFixed(1).replace(/\.0$/, '')}K` : String(n));
+
 function followerCount(b) {
-  const rows = Array.isArray(b.followers) ? b.followers : [];
-  let best = 0;
-  let handle = null;
-  let platform = null;
-  let label = null;
-  for (const f of rows) {
-    const raw = String(f.count ?? '').trim();
-    const n = /k$/i.test(raw) ? parseFloat(raw) * 1e3
-      : /m$/i.test(raw) ? parseFloat(raw) * 1e6
-        : parseFloat(raw.replace(/,/g, ''));
-    if (Number.isFinite(n) && n > best) {
-      best = n;
-      handle = f.handle ?? null;
-      platform = f.platform ?? null;
-      label = raw || null;
-    }
+  const rows = [];
+
+  /* MCP shape. */
+  for (const f of Array.isArray(b.followers) ? b.followers : []) {
+    rows.push({ n: parseCount(f.count), handle: f.handle ?? null, platform: f.platform ?? null, label: String(f.count ?? '').trim() || null });
   }
-  return { count: best, label, handle, platform };
+  /* REST shape. */
+  if (b.igFollowers !== undefined || b.igUsername) {
+    const n = parseCount(b.igFollowers);
+    if (n) rows.push({ n, handle: b.igUsername ?? null, platform: 'INSTAGRAM', label: compact(n) });
+  }
+  if (b.tiktokFollowers !== undefined || b.tiktokUsername) {
+    const n = parseCount(b.tiktokFollowers);
+    if (n) rows.push({ n, handle: b.tiktokUsername ?? null, platform: 'TIKTOK', label: compact(n) });
+  }
+
+  const best = rows.sort((x, y) => y.n - x.n)[0];
+  return best
+    ? { count: best.n, label: best.label, handle: best.handle, platform: best.platform }
+    : { count: 0, label: null, handle: null, platform: null };
 }
 
 /* ------------------------------------------------------- relevance screen -- */
@@ -376,9 +399,13 @@ onThesis: false if this person is not primarily a residential real estate invest
           spyglassId: String(cand.id),
           name: cand.name,
           handle: handle ? `@${handle}` : null,
-          avatarUrl: cand.logoUrl ?? null,
-          platform: cand._followers.platform === 'FACEBOOK' ? 'Facebook' : 'Instagram',
-          profileUrl: handle ? `https://instagram.com/${handle}` : null,
+          avatarUrl: cand.logoUrl ?? cand.thumbnailUrl ?? null,
+          platform: PLATFORM_LABELS[cand._followers.platform] ?? 'Instagram',
+          profileUrl: handle
+            ? (cand._followers.platform === 'TIKTOK'
+              ? `https://tiktok.com/@${handle}`
+              : `https://instagram.com/${handle}`)
+            : null,
           followers: cand._followers.label,
           angle: profile.angle ?? '',
           productLines: lines.length ? lines : ['dscr'],
