@@ -148,13 +148,32 @@
 <footer class="chat-dropzone" id="dropzone">
   <div class="wrap">
     <div class="attachments" id="tray" hidden></div>
+
+    <!-- Staged text files can go two places: to the model for this one message,
+         or into the knowledge base permanently. This offers the second. Text
+         only — PDFs need parsers a Worker does not have. -->
+    <div class="kb-add" id="kb-add" hidden>
+      <span class="kb-count" id="kb-count"></span>
+      <label class="kb-as" for="kb-type">as</label>
+      <select id="kb-type">
+        <option value="transcript">Transcript</option>
+        <option value="research">Research</option>
+        <option value="report">Report</option>
+        <option value="article">Article</option>
+        <option value="interview">Interview</option>
+        <option value="other" selected>Other</option>
+      </select>
+      <button type="button" id="kb-send">Add to library</button>
+      <span class="kb-status" id="kb-status" role="status"></span>
+    </div>
+
     <p class="attach-error" id="attach-error" role="alert" hidden></p>
 
     <form class="chat-composer" id="chat-form">
       <input type="file" id="chat-files" multiple hidden
-             accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,.md,.csv,.tsv,.txt,.json">
+             accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,text/vtt,.md,.csv,.tsv,.txt,.json,.vtt,.srt">
       <button type="button" class="chat-attach" id="chat-attach"
-              aria-label="Attach files" title="Attach images, PDFs or text files">
+              aria-label="Attach files" title="Attach images, PDFs, transcripts or text files">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
@@ -166,7 +185,7 @@
     </form>
     <p class="chat-hint">
       Enter sends; Shift+Enter adds a line. Attach images, PDFs or text files &mdash;
-      drop them here or paste a screenshot.
+      drop them here or paste a screenshot. Text files can also be added to the library.
     </p>
   </div>
 </footer>
@@ -186,6 +205,11 @@ const attachBtn = document.getElementById('chat-attach');
 const tray = document.getElementById('tray');
 const attachError = document.getElementById('attach-error');
 const dropzone = document.getElementById('dropzone');
+const kbAdd = document.getElementById('kb-add');
+const kbCount = document.getElementById('kb-count');
+const kbType = document.getElementById('kb-type');
+const kbSend = document.getElementById('kb-send');
+const kbStatus = document.getElementById('kb-status');
 
 /* ---------------------------------------------------------------------------
  * Attachments.
@@ -204,7 +228,7 @@ const MAX_IMAGE_BYTES = 3.5 * 1024 * 1024;
 const MAX_PDF_BYTES = 8 * 1024 * 1024;
 const MAX_TEXT_CHARS = 100000;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-const TEXT_NAMES = /\.(txt|md|markdown|csv|tsv|json)$/i;
+const TEXT_NAMES = /\.(txt|md|markdown|csv|tsv|json|vtt|srt)$/i;
 
 const staged = [];
 let chat = null;
@@ -273,7 +297,115 @@ function drawTray() {
      one thing the question is about. */
   const pending = staged.some((a) => !a.ready);
   if (WORKER_URL) sendBtn.disabled = pending || Boolean(chat && chat.isBusy());
+
+  drawKbAdd();
 }
+
+/* --- the knowledge base ---------------------------------------------------
+ * Attaching a file and adding it to the library are different acts. An
+ * attachment is read once, for this message. A library upload is permanent and
+ * every future planning session can retrieve it. Only text files qualify: PDFs
+ * need parsers the Worker does not have, and half-extracting one would produce
+ * confident citations with invisible gaps.
+ * ------------------------------------------------------------------------ */
+const KB_TOKEN_KEY = 'trilith-kb-upload-token';
+const kbEligible = () => staged.filter((a) => a.ready && a.kind === 'text');
+
+function drawKbAdd() {
+  const n = kbEligible().length;
+  kbAdd.hidden = n === 0 || !WORKER_URL;
+  kbCount.textContent = n === 1 ? 'Add 1 text file to the library' : `Add ${n} text files to the library`;
+}
+
+function kbSay(message, tone) {
+  kbStatus.textContent = message || '';
+  kbStatus.className = 'kb-status' + (tone ? ' ' + tone : '');
+}
+
+/* Kept in localStorage so it is asked for once per browser rather than once per
+   upload. Cleared on a 401, so a rotated token re-prompts instead of failing
+   silently forever. */
+function kbToken({ force } = {}) {
+  let token = force ? '' : (localStorage.getItem(KB_TOKEN_KEY) || '');
+  if (!token) {
+    token = (window.prompt('Upload token for the knowledge base:') || '').trim();
+    if (token) localStorage.setItem(KB_TOKEN_KEY, token);
+  }
+  return token;
+}
+
+async function kbUpload(entry, token, documentType) {
+  const res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/kb/upload', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+    body: JSON.stringify({
+      name: entry.name,
+      text: entry.text,
+      document_type: documentType,
+    }),
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, body };
+}
+
+kbSend.addEventListener('click', async () => {
+  const files = kbEligible();
+  if (!files.length) return;
+
+  let token = kbToken();
+  if (!token) { kbSay('No token — nothing uploaded.', 'bad'); return; }
+
+  kbSend.disabled = true;
+  const done = [];
+  const failed = [];
+
+  for (const entry of files) {
+    kbSay(`Uploading ${entry.name}…`);
+    let result;
+    try {
+      result = await kbUpload(entry, token, kbType.value);
+    } catch (err) {
+      failed.push(`${entry.name}: could not reach the server`);
+      continue;
+    }
+
+    /* A rotated token should cost one retry, not a mystery. */
+    if (result.status === 401) {
+      localStorage.removeItem(KB_TOKEN_KEY);
+      token = kbToken({ force: true });
+      if (!token) { failed.push(`${entry.name}: no token`); break; }
+      try { result = await kbUpload(entry, token, kbType.value); }
+      catch { failed.push(`${entry.name}: could not reach the server`); continue; }
+    }
+
+    if (result.ok) {
+      done.push(entry);
+    } else {
+      failed.push(`${entry.name}: ${result.body.error || 'rejected (' + result.status + ')'}`);
+    }
+  }
+
+  /* Uploaded files leave the tray. They are in the library now; leaving them
+     staged would also send them as attachments on the next message, which is
+     the same content twice by two different routes. */
+  for (const entry of done) {
+    const at = staged.indexOf(entry);
+    if (at > -1) staged.splice(at, 1);
+  }
+
+  kbSend.disabled = false;
+  drawTray();
+
+  if (done.length && !failed.length) {
+    kbSay(`${done.length} added — searchable in a few seconds.`, 'ok');
+  } else if (done.length) {
+    kbSay(`${done.length} added, ${failed.length} failed.`, 'bad');
+    showError(failed.join(' · '));
+  } else {
+    kbSay('Nothing added.', 'bad');
+    showError(failed.join(' · '));
+  }
+});
 
 async function stage(files) {
   showError('');

@@ -15,6 +15,13 @@ SUPABASE_URL = "https://kugnlobgsguxggnqiseh.supabase.co"
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   npx wrangler secret put SUPABASE_ANON_KEY
 #   npx wrangler secret put VOYAGE_API_KEY
+#   npx wrangler secret put KB_UPLOAD_TOKEN
+#
+# KB_UPLOAD_TOKEN guards /kb/upload, the one route here that writes anything.
+# The origin allowlist in index.js stops browsers and nothing else — curl sends
+# whatever Origin it likes — so without this token anyone who found the URL
+# could put text into the corpus the planner cites. Unset it and uploads return
+# 503 rather than running unguarded.
 #
 # VOYAGE_API_KEY is optional. Without it the knowledge-base tools still answer,
 # using keyword search alone, and every result they return is marked degraded so

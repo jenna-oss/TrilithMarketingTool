@@ -75,6 +75,16 @@ that does not require OAuth on the channel, so it reads the watch page, which
 YouTube changes freely and which challenges datacenter IPs the same way Meta
 does. A failure there is per-video and never stops the rest of the run.
 
+## 3. Upload from the Plan page
+
+For something you want searchable immediately: stage a text file in the
+planner's composer and press **Add to library**. Chunked, embedded and
+retrievable in seconds, without waiting for the scheduled run.
+
+Text only — `.txt` `.md` `.vtt` `.srt` `.json` `.csv` `.tsv`. PDFs and Word
+documents go in `kb/files/` above, because the parsers for those cannot run in a
+Worker. Needs `KB_UPLOAD_TOKEN` set on the Worker; the page asks for it once.
+
 ## Then
 
 ```bash

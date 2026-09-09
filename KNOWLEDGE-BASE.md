@@ -196,6 +196,39 @@ everything lands in Postgres — so there is no push to race over.
 
 Getting material in is documented in [`kb/README.md`](kb/README.md).
 
+### Uploading from the Plan page
+
+There is a third way in, for a transcript you want searchable now rather than at
+the next run: stage a text file in the planner's composer and press **Add to
+library**. The Worker chunks it, embeds it, and it is retrievable in seconds.
+
+Two deliberate limits.
+
+**Text only** — `.txt` `.md` `.vtt` `.srt` `.json` `.csv` `.tsv`. PDFs and Word
+documents keep going through `kb/files/`, where the Actions runner has
+`pdf-parse` and `mammoth`. A Worker cannot run either, and half-extracting a PDF
+would be worse than refusing it: the gaps would be invisible and the citations
+would still look sound.
+
+**A shared token is required.** `/kb/upload` is the only route that writes, and
+the CORS allowlist is a browser control, not a security boundary — `curl` sends
+whatever `Origin` it likes. Without a token, anyone who found the Worker URL
+could put text into the corpus the planner is instructed to trust, which would
+defeat every traceability guarantee here. Set it with
+`npx wrangler secret put KB_UPLOAD_TOKEN`; the page asks for it once and keeps it
+in `localStorage`. With no token set, the route returns 503 rather than running
+unguarded.
+
+Uploads are contained in the database as well as at the door. Every uploaded
+document is forced into an `upload:` source-key namespace, and
+`kb_upload_chunks` refuses any document outside it — so an uploader cannot
+overwrite, re-chunk or empty a harvested transcript even knowing its id. The
+worst it can do is add to its own namespace, which is the feature.
+
+The route answers before the work finishes, per §12 and §40: the document is
+written, the response goes out, and chunking and embedding continue under
+`ctx.waitUntil`.
+
 ### Chunking
 
 Transcripts and prose are chunked differently, per §13.

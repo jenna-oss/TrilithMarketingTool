@@ -151,3 +151,28 @@
   font-family: var(--chat-mono); font-size: .8125rem;
   background: var(--chat-sunk); padding: .125rem .375rem; border-radius: 2px;
 }
+
+/* Adding a staged text file to the knowledge base. Deliberately quieter than
+   the send button: this is the rarer action, and an accidental permanent write
+   to the corpus is much more annoying to undo than an accidental message. */
+.chat .kb-add {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .5rem;
+  margin-top: .5rem; font-family: var(--chat-sans); font-size: .75rem;
+  color: var(--chat-quiet);
+}
+.chat .kb-add .kb-count { color: var(--chat-body); }
+.chat .kb-add select {
+  font-family: var(--chat-sans); font-size: .75rem; color: var(--chat-body);
+  background: var(--chat-card); border: 1px solid var(--chat-rule);
+  border-radius: .25rem; padding: .125rem .375rem;
+}
+.chat .kb-add button {
+  font-family: var(--chat-sans); font-size: .75rem; color: var(--chat-body);
+  background: var(--chat-sunk); border: 1px solid var(--chat-rule);
+  border-radius: 999px; padding: .1875rem .75rem; cursor: pointer;
+}
+.chat .kb-add button:hover:not(:disabled) { color: var(--chat-ink); border-color: var(--chat-accent); }
+.chat .kb-add button:disabled { opacity: .5; cursor: default; }
+.chat .kb-status { font-family: var(--chat-mono); font-size: .6875rem; }
+.chat .kb-status.ok { color: var(--chat-go); }
+.chat .kb-status.bad { color: var(--chat-clay); }
