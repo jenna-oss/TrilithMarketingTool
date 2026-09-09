@@ -116,7 +116,19 @@ for (const c of creatorData.creators ?? []) {
   }
 }
 creatorRows.sort((a, b) => b.views - a.views);
-const topCreators = creatorRows.slice(0, TOP_CREATORS);
+
+/* One row per creator, their best post -- which is what the lender half has
+ * always been. Ranking posts instead let a single prolific creator take two or
+ * three of the seven rows, which reads as a duplicate rather than as a point
+ * about that creator, and spends the chart's limited space on fewer people. */
+const seenCreators = new Set();
+const topCreators = creatorRows
+  .filter((r) => {
+    if (seenCreators.has(r.name)) return false;
+    seenCreators.add(r.name);
+    return true;
+  })
+  .slice(0, TOP_CREATORS);
 console.log(`${creatorRows.length} creator posts with views; keeping top ${topCreators.length}`);
 
 /* --- lenders, harvested here --- */
