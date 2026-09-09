@@ -27,6 +27,13 @@ const PRODUCTS = ['dscr', 'fix-and-flip', 'bridge', 'ground-up', 'portfolio', 'b
 
 const str = (v, max = 400) => (typeof v === 'string' ? v.trim().slice(0, max) : null);
 
+/* A source id was capped at 64 because chunk ids are UUIDs and 36 characters.
+ * The agent cites URLs, which are longer, so every Trilith link in the first
+ * exported plan was silently cut mid-slug — including one that still looked
+ * like a whole URL, which is the worse failure: a dead link that reads as a
+ * live one. Long enough for any real URL, and still bounded. */
+const SOURCE_ID_MAX = 500;
+
 export const emptyPlan = () => ({
   goal: null,
   target_count: null,
@@ -63,7 +70,7 @@ export function normalisePlan(input) {
     slot.product = PRODUCTS.includes(s.product) ? s.product : null;
     slot.audience = ['broker', 'borrower'].includes(s.audience) ? s.audience : null;
     slot.source_ids = Array.isArray(s.source_ids)
-      ? s.source_ids.map((id) => str(id, 64)).filter(Boolean).slice(0, 12) : [];
+      ? s.source_ids.map((id) => str(id, SOURCE_ID_MAX)).filter(Boolean).slice(0, 12) : [];
     slot.status = slot.topic ? 'locked' : 'empty';
     return slot;
   });
@@ -205,7 +212,7 @@ export function applyPlanTool(plan, name, input) {
       product: PRODUCTS.includes(input.product) ? input.product : null,
       audience: ['broker', 'borrower'].includes(input.audience) ? input.audience : null,
       source_ids: Array.isArray(input.source_ids)
-        ? input.source_ids.map((id) => str(id, 64)).filter(Boolean).slice(0, 12) : [],
+        ? input.source_ids.map((id) => str(id, SOURCE_ID_MAX)).filter(Boolean).slice(0, 12) : [],
     };
 
     const locked = plan.slots.filter((s) => s.status === 'locked').length;
