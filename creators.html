@@ -192,6 +192,14 @@
     text-align:center; color:var(--ink-quiet); font-size:.875rem;
     border:1px solid var(--rule); border-radius:4px; padding:var(--s5) var(--s4);
   }
+
+  /* Closes the page rather than opening it: the roster above is the argument,
+     this is what it adds up to. Counts come from the data file, so the daily
+     job keeps them honest. */
+  .page-close {
+    margin-top:var(--s6); padding-top:var(--s5);
+    border-top:1px solid var(--rule-strong);
+  }
 </style>
 </head>
 <body>
@@ -229,11 +237,6 @@
 </header>
 
 <main class="wrap">
-  <p class="page-eyebrow">Intelligence — creators</p>
-  <h2 class="page-title" style="font-size:clamp(1.75rem,3.4vw,2.5rem); letter-spacing:-.015em; margin:0 0 2rem;">
-    Single-person educators, not brand ads
-  </h2>
-
   <h3 style="font-size:1.125rem; color:var(--ink); margin:0 0 .375rem;">Who this audience actually watches</h3>
   <p class="page-lede" style="max-width:56ch; margin:0 0 1.25rem; font-size:.9375rem;">
     Best-performing organic post, creators against lenders, same audience and same
@@ -359,6 +362,14 @@
   <div class="creators" id="creators"></div>
 
   <div class="empty" id="empty" hidden>No creators match that filter.</div>
+
+  <section class="page-close">
+    <p class="page-eyebrow">Intelligence — creators</p>
+    <h2 class="page-title" style="font-size:clamp(1.75rem,3.4vw,2.5rem); letter-spacing:-.015em; margin:0 0 .5rem;">
+      Single-person educators, not brand ads
+    </h2>
+    <p class="page-lede" id="roster-summary" style="max-width:56ch; margin:0;"></p>
+  </section>
 </main>
 
 <script>
@@ -372,7 +383,7 @@ let active = 'all';
 
 fetch('./data/education-creators.json')
   .then((r) => r.ok ? r.json() : null)
-  .then((json) => { data = json; render(); stamp(json); })
+  .then((json) => { data = json; render(); stamp(json); summarise(json); })
   .catch(() => { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'Could not load creator data.'; });
 
 fetch('./data/creator-hook-patterns.json')
@@ -382,6 +393,8 @@ fetch('./data/creator-hook-patterns.json')
 
 /* A page that refreshes daily should say when it last did. If the job stops,
    the date going stale is the only symptom anyone would see here. */
+const fmt = (d) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
 function stamp(json) {
   const el = document.getElementById('refreshed');
   if (!el || !json || !json.fetchedAt) return;
@@ -390,7 +403,19 @@ function stamp(json) {
   /* UTC, because the job stamps UTC. Formatting in the reader's zone turns a
      midnight-UTC stamp into the previous day west of Greenwich, which reads as
      a refresh that did not happen. */
-  el.textContent = ` Last refreshed ${d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}.`;
+  el.textContent = ` Last refreshed ${fmt(d)}.`;
+}
+
+/* The closing line. Written from the data rather than typed into the markup,
+   so it cannot drift from the roster the way a hand-kept count would. */
+function summarise(json) {
+  const el = document.getElementById('roster-summary');
+  if (!el || !json || !Array.isArray(json.creators) || !json.creators.length) return;
+  const people = json.creators.length;
+  const clips = json.creators.reduce((n, c) => n + ((c.videos || []).length), 0);
+  const d = new Date(json.fetchedAt);
+  const when = Number.isNaN(d.getTime()) ? null : fmt(d);
+  el.textContent = `${people} of them, ${clips} clips between them${when ? `, refreshed ${when}` : ''}.`;
 }
 
 function renderPatterns(json) {
