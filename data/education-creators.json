@@ -1,6 +1,6 @@
 {
-  "fetchedAt": "2026-08-17T00:00:00.000Z",
-  "note": "Captured by hand via the Spyglass MCP during a research pass, not on the daily/weekly automated refresh. Every field below is a real value Spyglass returned on 2026-08-17 -- no placeholder content.",
+  "fetchedAt": "2026-09-09T00:59:51.818Z",
+  "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
       "slug": "scott-betley",
@@ -359,18 +359,5 @@
       ]
     }
   ],
-  "consideredAndSkipped": [
-    {
-      "name": "Keegan Shivers",
-      "why": "301K followers but content is personal-brand realtor life (listings, day-in-the-life), not investing or lending education."
-    },
-    {
-      "name": "Emeline Siron",
-      "why": "French-language real estate investment content — large following (85.6K) but wrong market and language for this audience."
-    },
-    {
-      "name": "Seth Williams / REtipster",
-      "why": "Land investing specifically, not residential — adjacent but off-thesis for this page."
-    }
-  ]
+  "failures": []
 }
