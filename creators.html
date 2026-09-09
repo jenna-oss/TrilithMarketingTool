@@ -136,6 +136,58 @@
   }
   .pattern-ex b { font-style:normal; font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
 
+  /* ============================================================
+     Creator benchmark — the reach gulf, moved here from the briefing
+     ============================================================ */
+
+  .legend {
+    display:flex; flex-wrap:wrap; gap:var(--s4);
+    margin-bottom:var(--s4);
+    font-size:.75rem; color:var(--ink-quiet);
+  }
+  .legend span { display:inline-flex; align-items:center; gap:.5rem; }
+  .legend i { width:14px; height:4px; border-radius:2px; display:inline-block; }
+
+  .bench { display:grid; gap:.375rem; margin-top:var(--s4); margin-bottom:var(--s5); }
+  .bench-row {
+    display:grid;
+    grid-template-columns:minmax(0, 15rem) minmax(0, 1fr) 4.5rem;
+    gap:var(--s3); align-items:center; padding:.3125rem 0;
+  }
+  .bench-row .who {
+    font-size:.8125rem; color:var(--ink);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .bench-row .who i { font-style:normal; color:var(--ink-quiet); }
+  /* Both are spans, so they must be blockified explicitly — percentage
+     width and height:100% do not apply to inline boxes. */
+  .bench-track {
+    display:block; background:var(--card-sunk); border-radius:2px;
+    height:14px; overflow:hidden;
+  }
+  .bench-fill { display:block; height:100%; border-radius:2px; min-width:3px; }
+  .bench-row[data-kind="creator"] .bench-fill { background:var(--emerald-bar); }
+  .bench-row[data-kind="lender"]  .bench-fill { background:var(--clay); }
+  .bench-row .v {
+    font-family:var(--mono); font-size:.8125rem; text-align:right;
+    color:var(--ink); font-variant-numeric:tabular-nums;
+  }
+  @media (max-width: 640px) {
+    .bench-row { grid-template-columns:minmax(0, 1fr) 4rem; }
+    .bench-track { grid-column:1 / -1; }
+  }
+
+  /* Neutral analysis card. Deliberately not .note, which is dashed clay and
+     reads as a caveat — this is a finding, not a warning. */
+  .method {
+    background:var(--card-sunk); border:1px solid var(--rule); border-radius:4px;
+    padding:var(--s4); margin-bottom:var(--s5); font-size:.875rem;
+  }
+  .method h3 { font-size:.9375rem; color:var(--ink); margin:0 0 var(--s2); }
+  .method p { margin:0 0 var(--s2); color:var(--ink-body); }
+  .method p:last-child { margin-bottom:0; }
+  .method strong { color:var(--ink); }
+
   .empty {
     text-align:center; color:var(--ink-quiet); font-size:.875rem;
     border:1px solid var(--rule); border-radius:4px; padding:var(--s5) var(--s4);
@@ -181,6 +233,101 @@
   <h2 class="page-title" style="font-size:clamp(1.75rem,3.4vw,2.5rem); letter-spacing:-.015em; margin:0 0 2rem;">
     Single-person educators, not brand ads
   </h2>
+
+  <h3 style="font-size:1.125rem; color:var(--ink); margin:0 0 .375rem;">Who this audience actually watches</h3>
+  <p class="page-lede" style="max-width:56ch; margin:0 0 1.25rem; font-size:.9375rem;">
+    Best-performing organic post, creators against lenders, same audience and same
+    platform. Every lender in the category combined does not reach what one creator
+    reaches with a single video about their own deal.
+  </p>
+  <div class="legend">
+    <span><i style="background:var(--emerald-bar)"></i> Real estate creators</span>
+    <span><i style="background:var(--clay)"></i> Lenders</span>
+  </div>
+  <div class="bench">
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Erick Brice <i>· 111K</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:100%"></span></span>
+      <span class="v">98.1K</span>
+    </div>
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Sean Pan <i>· 4plex line-item P&amp;L</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:61%"></span></span>
+      <span class="v">59.8K</span>
+    </div>
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Logan Fullmer <i>· a lender’s $25M loss</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:41%"></span></span>
+      <span class="v">39.9K</span>
+    </div>
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Michael Llanas <i>· “subject-to isn’t illegal”</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:33%"></span></span>
+      <span class="v">32K</span>
+    </div>
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Jerry Norton <i>· raw seller phone call</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:27%"></span></span>
+      <span class="v">26K</span>
+    </div>
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Sean Pan <i>· selling 16 units</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:22%"></span></span>
+      <span class="v">22K</span>
+    </div>
+    <div class="bench-row" data-kind="creator">
+      <span class="who">Sean Pan <i>· BRRRR w/ private money</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:17%"></span></span>
+      <span class="v">16.3K</span>
+    </div>
+    <div class="bench-row" data-kind="lender">
+      <span class="who">Kiavi <i>· best post (BiggerPockets)</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:6%"></span></span>
+      <span class="v">5.7K</span>
+    </div>
+    <div class="bench-row" data-kind="lender">
+      <span class="who">Anchor Loans <i>· best post</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:2%"></span></span>
+      <span class="v">996</span>
+    </div>
+    <div class="bench-row" data-kind="lender">
+      <span class="who">Lima One <i>· best post</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
+      <span class="v">770</span>
+    </div>
+    <div class="bench-row" data-kind="lender">
+      <span class="who">Kiavi <i>· typical post</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
+      <span class="v">222</span>
+    </div>
+    <div class="bench-row" data-kind="lender">
+      <span class="who">New Silver <i>· best post</i></span>
+      <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
+      <span class="v">196</span>
+    </div>
+  </div>
+  <div class="method" style="margin-top:var(--s5)">
+    <h3>The format that separates them</h3>
+    <p>
+      Creators post <strong>arithmetic</strong>. Lenders post <strong>claims</strong>.
+      Sean Pan’s top video is a line-item P&amp;L: $4,750 rent, minus $475 management,
+      $410 landscaping, $1,021 mortgage, $953 escrow — $1,890 a month. That is the
+      whole video.
+    </p>
+    <p>
+      His BRRRR post is more pointed still. He narrates taking a private money loan
+      for the rehab, refinancing at 75% of a $330,000 appraisal, recovering every
+      dollar he put in plus $30,000 tax-free, and keeping a cash-flowing property.
+      <strong>That is Trilith’s product, told end to end, by someone who does not sell it.</strong>
+    </p>
+    <p>
+      And every top performer closes the same way — a comment keyword.
+      CALCULATOR, MARKETS, MASTERCLASS, WAITLIST, PODCAST, “free leads”, KIAVI.
+      Trilith’s four funded case studies contain exactly this kind of arithmetic —
+      $370,900, 7.875%, 70% LTV — published as static pages with no narration and
+      no way to capture the reader.
+    </p>
+  </div>
 
   <h3 style="font-size:1.125rem; color:var(--ink); margin:0 0 .375rem;">Hook library</h3>
   <p class="page-lede" style="max-width:56ch; margin:0 0 1.25rem; font-size:.9375rem;">

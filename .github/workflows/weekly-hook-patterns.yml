@@ -56,6 +56,18 @@ jobs:
           SPYGLASS_API_KEY: ${{ secrets.SPYGLASS_API_KEY }}
         run: node tools/pull-creatives.mjs
 
+      # Spyglass hands back frame zero, and many of these ads open on black, so
+      # the wall filled up with empty grey boxes. Swap those for a real frame.
+      # Not on the runner image, so install it; the script exits clean without
+      # ffmpeg rather than failing, and this step must not sink the harvest.
+      - name: Install ffmpeg
+        continue-on-error: true
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Replace blank thumbnails
+        continue-on-error: true
+        run: node tools/thumbs.mjs
+
       # Rebuilds the wall and the figures on the briefing from whatever has
       # just been harvested. Safe with no data: every region is optional.
       - name: Render the briefing
@@ -68,7 +80,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/hook-patterns.json data/creatives.json briefing.html
+          git add data/hook-patterns.json data/creatives.json briefing.html assets/thumbs
           if git diff --staged --quiet; then
             echo "No change in hook patterns or creative this week."
             exit 0

@@ -8,7 +8,7 @@
       "line": "Building new construction projects is complex.",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/02e32a55d04e4f07c54ef11e12396249.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/02e32a55d04e4f07c54ef11e12396249.webp",
+      "thumbnailUrl": "./assets/thumbs/02e32a55d04e4f07c54ef11e12396249.webp",
       "platform": "META_AD",
       "daysRun": 23,
       "startAt": "2026-08-14"
@@ -68,7 +68,7 @@
       "line": "Portfolio power plays",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6dda30672def6083cfea14163b5790c7.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6dda30672def6083cfea14163b5790c7.webp",
+      "thumbnailUrl": "./assets/thumbs/6dda30672def6083cfea14163b5790c7.webp",
       "platform": "META_AD",
       "daysRun": 12,
       "startAt": "2026-08-25"
@@ -80,7 +80,7 @@
       "line": "Compete like a cash buyer",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d3dc593fb3bf5f6cc0414d062f5240db.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d3dc593fb3bf5f6cc0414d062f5240db.webp",
+      "thumbnailUrl": "./assets/thumbs/d3dc593fb3bf5f6cc0414d062f5240db.webp",
       "platform": "META_AD",
       "daysRun": 12,
       "startAt": "2026-08-25"
@@ -92,7 +92,7 @@
       "line": "Portfolio power plays",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6dda30672def6083cfea14163b5790c7.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6dda30672def6083cfea14163b5790c7.webp",
+      "thumbnailUrl": "./assets/thumbs/6dda30672def6083cfea14163b5790c7.webp",
       "platform": "META_AD",
       "daysRun": 12,
       "startAt": "2026-08-25"
@@ -104,7 +104,7 @@
       "line": "Scale your flip investments",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/66ad47e7610851f10771c0d623c24777.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/66ad47e7610851f10771c0d623c24777.webp",
+      "thumbnailUrl": "./assets/thumbs/66ad47e7610851f10771c0d623c24777.webp",
       "platform": "META_AD",
       "daysRun": 11,
       "startAt": "2026-08-26"
@@ -116,7 +116,7 @@
       "line": "You fixed it. Now rent it.",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/df7db6342a77c8be8d0bacea173d6c3b.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/df7db6342a77c8be8d0bacea173d6c3b.webp",
+      "thumbnailUrl": "./assets/thumbs/df7db6342a77c8be8d0bacea173d6c3b.webp",
       "platform": "META_AD",
       "daysRun": 11,
       "startAt": "2026-08-26"
@@ -128,7 +128,7 @@
       "line": "Know What Qualifies with Visio",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1f8e1257dfcf5c42c36e4142151be371.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1f8e1257dfcf5c42c36e4142151be371.webp",
+      "thumbnailUrl": "./assets/thumbs/1f8e1257dfcf5c42c36e4142151be371.webp",
       "platform": "META_AD",
       "daysRun": 4,
       "startAt": "2026-09-02"
@@ -176,7 +176,7 @@
       "line": "Built for real estate investors.",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f2879ee27de8d5258513217bc139dd16.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f2879ee27de8d5258513217bc139dd16.webp",
+      "thumbnailUrl": "./assets/thumbs/f2879ee27de8d5258513217bc139dd16.webp",
       "platform": "META_AD",
       "daysRun": 4,
       "startAt": "2026-09-02"
@@ -212,7 +212,7 @@
       "line": "Skip the Bank’s Red Tape.",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3ceb70bac0d32d87527eb8ff5c2781fc.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3ceb70bac0d32d87527eb8ff5c2781fc.webp",
+      "thumbnailUrl": "./assets/thumbs/3ceb70bac0d32d87527eb8ff5c2781fc.webp",
       "platform": "META_AD",
       "daysRun": 73,
       "startAt": "2026-06-25"
@@ -248,7 +248,7 @@
       "line": "The biggest trends we're seeing in the lending market this year are greater appetite by investors for this type of credit product.",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/617bbfe7f1d920b677bcc25df807892f.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/617bbfe7f1d920b677bcc25df807892f.webp",
+      "thumbnailUrl": "./assets/thumbs/617bbfe7f1d920b677bcc25df807892f.webp",
       "platform": "META_AD",
       "daysRun": 60,
       "startAt": "2026-07-08"
@@ -260,7 +260,7 @@
       "line": "We created Templeview because we are investors.",
       "mediaType": "VIDEO",
       "mediaUrl": "https://cdn.generalcontext.com/adspy/media/5faa7958cc9c712a303c0cb5624f8ee9.mp4",
-      "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/5faa7958cc9c712a303c0cb5624f8ee9.webp",
+      "thumbnailUrl": "./assets/thumbs/5faa7958cc9c712a303c0cb5624f8ee9.webp",
       "platform": "META_AD",
       "daysRun": 59,
       "startAt": "2026-07-09"

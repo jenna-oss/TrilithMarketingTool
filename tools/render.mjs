@@ -64,6 +64,14 @@ const asOf = new Date(corpus.updatedAt);
 const asOfText = asOf.toLocaleDateString('en-GB', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
 });
+/* The same count on its own, for prose that needs the number without the
+ * whole phrase — the page description, and anywhere a sentence already
+ * supplies the words. Two TOTALS pairs would not work: replaceRegion matches
+ * the first open and close it finds. */
+const advertiserRegion = replaceRegion(html, 'ADVERTISERS', String(advertiserCount));
+html = advertiserRegion.html;
+if (advertiserRegion.wrote) console.log(`Advertisers: ${advertiserCount}.`);
+
 const stamp = replaceRegion(html, 'ASOF', asOfText);
 html = stamp.html;
 if (stamp.wrote) console.log(`As of: ${asOfText}`);
