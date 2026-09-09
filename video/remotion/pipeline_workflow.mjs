@@ -19,22 +19,11 @@ export const meta = {
   ],
 }
 
-/* Where the checkout lives. Passed in by the caller, because a workflow script
- * is sandboxed -- no process.env, no filesystem -- so it cannot discover its
- * own location. Default is the original Windows working copy; CI passes a Linux
- * path via args.root.
- *
- * Forward slashes throughout: they work on both platforms, and these strings
- * end up inside prose instructions to agents that run shell commands. */
 const PROJECT_ROOT = (typeof args !== 'undefined' && args && args.root)
   ? args.root
   : 'C:/Users/jenna/Downloads/NicheScraper/newsletter_video_pipeline'
 const REMOTION_ROOT = `${PROJECT_ROOT}/remotion`
 const HOOK_LIBRARY_PATH = `${PROJECT_ROOT}/hook_templates_1000.json`
-
-/* On CI the key is an environment variable on the runner, so there is no .env
- * to read. Locally there is. Say which, rather than sending an agent looking
- * for a file that will not be there. */
 const ENV_HINT = (typeof args !== 'undefined' && args && args.root)
   ? 'the ELEVENLABS_API_KEY environment variable (already set on this runner)'
   : `${PROJECT_ROOT}/.env (ELEVENLABS_API_KEY)`
@@ -149,13 +138,13 @@ const VOICEOVER_SCHEMA = {
 function componentReferenceBlock() {
   return `
 Reference material -- read these before writing anything, they are the actual conventions in use:
-- ${REMOTION_ROOT}//src/\MayweatherVideo.tsx
-- ${REMOTION_ROOT}//src/\JPMorganVideo.tsx
-- ${REMOTION_ROOT}//src/\DSCRVideo.tsx
-- ${REMOTION_ROOT}//src/\ConstructionVideo.tsx
-- ${REMOTION_ROOT}//src//components/\Card.tsx, GiantStat.tsx, BuildList.tsx, DocumentCard.tsx, BounceText.tsx
-- ${REMOTION_ROOT}//src/\tokens.ts (color palette), ${REMOTION_ROOT}//src/\fonts.ts (Fraunces font loading)
-- ${REMOTION_ROOT}//src/\Root.tsx (composition registry -- follow its exact pattern for TOTAL_S and <Composition>)
+- ${REMOTION_ROOT}/src/MayweatherVideo.tsx
+- ${REMOTION_ROOT}/src/JPMorganVideo.tsx
+- ${REMOTION_ROOT}/src/DSCRVideo.tsx
+- ${REMOTION_ROOT}/src/ConstructionVideo.tsx
+- ${REMOTION_ROOT}/src/components/Card.tsx, GiantStat.tsx, BuildList.tsx, DocumentCard.tsx, BounceText.tsx
+- ${REMOTION_ROOT}/src/tokens.ts (color palette), ${REMOTION_ROOT}/src/fonts.ts (Fraunces font loading)
+- ${REMOTION_ROOT}/src/Root.tsx (composition registry -- follow its exact pattern for TOTAL_S and <Composition>)
 Components not yet extracted into components/ (BoldStatementFullBleed, TwinSplit-style layouts, step-process visuals,
 the signal-pulse closer, opening full-bleed video/photo treatments) are currently defined locally inside each video's
 own .tsx file -- follow that same convention: define new bespoke full-bleed components inline in the new video file,
@@ -194,7 +183,7 @@ Then write a full beat-by-beat script: 8-13 beats, each a short natural spoken l
 by a cloned voice, so keep them punchy -- 8-14 words per beat is typical, not full paragraphs) with an
 estSeconds guess. The filledHook should be beat 1 or very close to it. The script should read as one
 connected story, not isolated facts -- reference the Mayweather/JPMorgan/DSCR/Construction videos' scripts
-in ${PROJECT_ROOT}//data/\script_*.json for the tone and pacing this account uses.`,
+in ${PROJECT_ROOT}/data/script_*.json for the tone and pacing this account uses.`,
   { schema: SCRIPT_SCHEMA, label: 'script' }
 )
 log(`Hook: [${script.hookCategory}] "${script.filledHook}"`)
@@ -269,7 +258,7 @@ Steps:
       - verticalCropOK: would a 9:16 COVER crop (filling the frame, cropping edges) cut off or squeeze out the
         interesting content? This does NOT gate approval -- it only decides the render mode.
    c. If relevant && visuallyInteresting: this candidate is APPROVED. Move it to
-      ${REMOTION_ROOT}//public/\${research.slug}\\beat_${beat.order}.mp4 (create the folder if needed) and stop.
+      ${REMOTION_ROOT}/public/${research.slug}/beat_${beat.order}.mp4 (create the folder if needed) and stop.
       Report cropMode as "cover" if verticalCropOK else "contain-white".
    d. If relevant is false OR visuallyInteresting is false, reject and try the next candidate. Up to 4 total attempts.
 3. If all attempts fail, report approved: false and do not download anything -- this beat will fall back to a
@@ -289,7 +278,7 @@ const PascalName = research.slug.split('-').map(s => s[0].toUpperCase() + s.slic
 const assembly = await agent(
   `${componentReferenceBlock()}
 
-Write a new Remotion composition file at ${REMOTION_ROOT}//src/\${PascalName}.tsx for the topic
+Write a new Remotion composition file at ${REMOTION_ROOT}/src/${PascalName}.tsx for the topic
 "${research.workingTitle}" (slug: ${research.slug}).
 
 Script (beat order, line, estimated seconds -- use estSeconds as the initial durationInFrames guess,
@@ -329,7 +318,7 @@ prefer headerAlign="left" on Card so its built-in maxWidth applies) rather than 
 Build the full <TransitionSeries> with varied transition types (slide/wipe/fade/flip/
 clockWipe in different directions, no two identical transitions back-to-back).
 
-Register the new composition in ${REMOTION_ROOT}//src/\Root.tsx following its exact existing pattern
+Register the new composition in ${REMOTION_ROOT}/src/Root.tsx following its exact existing pattern
 (a TOTAL_S constant summing scene seconds minus swipe overlaps, a new <Composition id="${PascalName.replace('Video','')}">).
 
 Then render it: cd ${REMOTION_ROOT} && npx remotion render src/index.ts ${PascalName.replace('Video', '')} out/${research.slug}.mp4
@@ -344,10 +333,10 @@ log(`Assembled and rendered ${assembly.compositionId} -> initial pass OK`)
 
 phase('Voiceover')
 const voiceover = await agent(
-  `Generate voiceover for the video at ${REMOTION_ROOT}//out/\${research.slug}.mp4 (composition
+  `Generate voiceover for the video at ${REMOTION_ROOT}/out/${research.slug}.mp4 (composition
 ${assembly.compositionId}, source ${assembly.tsxPath}).
 
-Copy ${REMOTION_ROOT}/\voiceover_TEMPLATE.py to ${REMOTION_ROOT}/\voiceover_${research.slug}.py and fill in
+Copy ${REMOTION_ROOT}/voiceover_TEMPLATE.py to ${REMOTION_ROOT}/voiceover_${research.slug}.py and fill in
 SLUG = "${research.slug}" and LINES with the beats below, UNCHANGED (do not rewrite them -- the template
 already handles making them TTS-safe). Do not skip the template's numeric_tts.spoken_text() import/usage
 or its post-generation speedup step -- both are required, not optional:
