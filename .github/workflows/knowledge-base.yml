@@ -74,7 +74,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The repo secret is named ANTHROPIC_API; the scripts read ANTHROPIC_API_KEY.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
           VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
           KB_MIRROR_LIMIT: '16'
         run: node tools/kb-mirror-published.mjs
@@ -88,6 +89,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The repo secret is named ANTHROPIC_API; the scripts read ANTHROPIC_API_KEY.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
           VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
         run: node tools/kb-summarise.mjs
