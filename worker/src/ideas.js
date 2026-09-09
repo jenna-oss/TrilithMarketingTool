@@ -21,6 +21,21 @@ const MODEL = 'claude-opus-5';
 const MAX_BRIEF_CHARS = 2000;
 const MAX_HISTORY_TURNS = 10;
 
+/* Attachments. The page sends images and PDFs base64-encoded and text files as
+ * plain text; the caps below are the decoded sizes, checked again here because
+ * a browser check only stops honest callers.
+ *
+ * The ceilings come from the API, not from taste: a request may not exceed
+ * 32MB, base64 inflates by a third, and an image is rejected over 5MB encoded.
+ * A PDF may run to 600 pages on a 1M-context model, so pages are not the
+ * binding constraint — bytes are. */
+const MAX_ATTACHMENTS = 5;
+const MAX_IMAGE_BYTES = 3.5 * 1024 * 1024;
+const MAX_PDF_BYTES = 8 * 1024 * 1024;
+const MAX_TEXT_CHARS = 100000;
+const MAX_ENCODED_TOTAL = 20 * 1024 * 1024;
+const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
 /* Each round is one model turn plus its tool calls. Enough to search both
  * corpora, follow a thread, and check coverage before answering — but bounded,
  * because a runaway loop here spends the API key. */
@@ -238,6 +253,7 @@ async function rpc(env, fn, args) {
 
 const clamp = (n, def, max) => Math.min(Math.max(Number(n) || def, 1), max);
 
+
 /* Turn an SDK error into something the page can act on.
  *
  * Deliberately not `err instanceof Anthropic.RateLimitError`: those classes are
@@ -411,6 +427,120 @@ function describe(name, input) {
   return { label, detail: bits.join(' · ') || 'everything' };
 }
 
+/* Decoded byte count of a base64 string, without decoding it. A 6MB PDF turned
+ * into a Uint8Array purely to measure it would double the memory for nothing,
+ * and a Worker has 128MB. */
+function decodedSize(b64) {
+  const pad = b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0;
+  return Math.floor((b64.length * 3) / 4) - pad;
+}
+
+/* Validate what the page sent and sort it into blocks the API understands.
+ *
+ * Throws rather than returning a partial set. Silently dropping the one file
+ * the question was about produces an answer that reads as if the model looked
+ * and found nothing, which is worse than an error — the user cannot tell the
+ * difference from the reply.
+ *
+ * The browser checks the same limits before uploading. This check is the one
+ * that counts: the page is static and anyone can POST here directly. */
+export function buildAttachments(raw) {
+  if (raw == null) return { blocks: [], texts: [] };
+  if (!Array.isArray(raw)) throw new Error('attachments must be an array');
+  if (raw.length > MAX_ATTACHMENTS) {
+    throw new Error(`Too many files — ${MAX_ATTACHMENTS} at a time.`);
+  }
+
+  const blocks = [];
+  const texts = [];
+  let encodedTotal = 0;
+
+  for (const a of raw) {
+    if (!a || typeof a !== 'object') throw new Error('each attachment must be an object');
+    const name = String(a.name ?? 'file').slice(0, 200);
+
+    if (a.kind === 'text') {
+      const text = String(a.text ?? '');
+      if (!text.trim()) throw new Error(`${name} is empty.`);
+      if (text.length > MAX_TEXT_CHARS) {
+        throw new Error(`${name} is too long — text files are capped at ${MAX_TEXT_CHARS.toLocaleString()} characters.`);
+      }
+      texts.push({ name, text });
+      continue;
+    }
+
+    const data = String(a.data ?? '');
+    /* Base64 with newlines in it is rejected by the API, and the error it
+     * returns does not say so. Catch it here where the message can. */
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(data) || data.length % 4 !== 0 || !data) {
+      throw new Error(`${name} did not arrive as valid base64.`);
+    }
+    const bytes = decodedSize(data);
+    encodedTotal += data.length;
+
+    if (a.kind === 'image') {
+      if (!IMAGE_TYPES.has(a.mediaType)) {
+        throw new Error(`${name}: unsupported image type. Use JPEG, PNG, GIF or WebP.`);
+      }
+      if (bytes > MAX_IMAGE_BYTES) {
+        throw new Error(`${name} is too large — images are capped at ${Math.round(MAX_IMAGE_BYTES / 1024 / 1024)}MB.`);
+      }
+      blocks.push({
+        type: 'image',
+        source: { type: 'base64', media_type: a.mediaType, data },
+      });
+    } else if (a.kind === 'document') {
+      if (a.mediaType !== 'application/pdf') {
+        throw new Error(`${name}: only PDFs are supported as documents.`);
+      }
+      if (bytes > MAX_PDF_BYTES) {
+        throw new Error(`${name} is too large — PDFs are capped at ${Math.round(MAX_PDF_BYTES / 1024 / 1024)}MB.`);
+      }
+      blocks.push({
+        type: 'document',
+        source: { type: 'base64', media_type: 'application/pdf', data },
+        title: name,
+      });
+    } else {
+      throw new Error(`${name}: unknown attachment kind.`);
+    }
+  }
+
+  if (encodedTotal > MAX_ENCODED_TOTAL) {
+    throw new Error(`Those files are too much at once — keep the batch under ${Math.round(MAX_ENCODED_TOTAL / 1024 / 1024)}MB.`);
+  }
+
+  return { blocks, texts };
+}
+
+/* Assemble the user turn. Images and PDFs go before the text, which is what the
+ * API expects and also how a person reads it: here is the thing, now here is
+ * the question about it. Text files are inlined into the prompt rather than
+ * sent as documents — a fenced block the model can quote back is more useful
+ * than an opaque attachment, and it costs nothing extra.
+ *
+ * Returns the bare string when nothing is attached, so the common request is
+ * byte-identical to what it was before this feature existed. */
+export function userContent(brief, attached) {
+  const { blocks, texts } = attached;
+  if (!blocks.length && !texts.length) return brief;
+
+  const text = texts.length
+    ? texts.map((t) => `--- Attached file: ${t.name} ---\n${t.text}`).join('\n\n') + `\n\n${brief}`
+    : brief;
+
+  /* Cache the attachments. The agent loop runs up to MAX_ROUNDS turns against
+   * the same first message, so without a breakpoint here a PDF is re-sent at
+   * full price on every round of a single question. */
+  const cached = blocks.length
+    ? blocks.map((b, i) => (i === blocks.length - 1
+        ? { ...b, cache_control: { type: 'ephemeral' } }
+        : b))
+    : blocks;
+
+  return [...cached, { type: 'text', text }];
+}
+
 export async function handleIdeas(request, env, headers, ctx) {
   /* Name the missing binding rather than both. A secret created with an empty
    * value looks present to `wrangler secret list` and to the version metadata,
@@ -451,6 +581,10 @@ export async function handleIdeas(request, env, headers, ctx) {
         .map((m) => ({ role: m.role, content: m.content.slice(0, 8000) }))
     : [];
 
+  let attached;
+  try { attached = buildAttachments(body.attachments); }
+  catch (err) { return json({ error: err.message }, 400, headers); }
+
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
   /* Write through a TransformStream kept alive by ctx.waitUntil, rather than
@@ -464,7 +598,7 @@ export async function handleIdeas(request, env, headers, ctx) {
   const send = (e, d) => writer.write(enc.encode(`event: ${e}\ndata: ${JSON.stringify(d)}\n\n`));
 
   const work = (async () => {
-      const messages = [...history, { role: 'user', content: brief }];
+      const messages = [...history, { role: 'user', content: userContent(brief, attached) }];
       let totals = { input: 0, output: 0, cacheRead: 0, searches: 0 };
 
       /* Emit immediately. The first round is usually thinking followed by tool

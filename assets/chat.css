@@ -86,6 +86,46 @@
 @keyframes chat-blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .chat .cursor::after { animation: none; } }
 
+/* Attachments — the tray above the composer while files are staged, and the
+   read-only chips under the message that carried them. Same chip either way;
+   only the tray's chips get a remove button. */
+.chat .attachments {
+  display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .5rem;
+}
+.chat .chip {
+  display: inline-flex; align-items: center; gap: .375rem;
+  font-family: var(--chat-sans); font-size: .75rem; color: var(--chat-body);
+  background: var(--chat-sunk); border: 1px solid var(--chat-rule);
+  border-radius: 999px; padding: .1875rem .625rem; max-width: 18rem;
+}
+.chat .chip .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat .chip .size { color: var(--chat-quiet); font-family: var(--chat-mono); font-size: .6875rem; flex: none; }
+.chat .chip .drop {
+  font-family: var(--chat-sans); font-size: .875rem; line-height: 1;
+  color: var(--chat-quiet); background: none; border: none;
+  padding: 0 0 .0625rem; cursor: pointer; flex: none;
+}
+.chat .chip .drop:hover { color: var(--chat-clay); }
+.chat .chip.pending .label { opacity: .6; }
+
+.chat .attach-error {
+  margin: .5rem 0 0; font-size: .75rem; color: var(--chat-clay);
+}
+
+/* Dragging a file anywhere over the composer highlights the whole footer, so
+   the drop target is the obvious thing rather than a 3mm strip. */
+.chat-dropzone.dragover { outline: 2px dashed var(--chat-accent); outline-offset: -4px; }
+
+.chat-composer .chat-attach {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; padding: 0; cursor: pointer;
+  color: var(--chat-body); background: transparent;
+  border: 1px solid var(--chat-rule-2); border-radius: 4px;
+}
+.chat-composer .chat-attach:hover { border-color: var(--chat-accent); color: var(--chat-ink); }
+.chat-composer .chat-attach:disabled { opacity: .5; cursor: not-allowed; }
+.chat-composer .chat-attach:focus-visible { outline: 2px solid var(--chat-accent); outline-offset: 2px; }
+
 .chat-composer { display: flex; gap: .625rem; align-items: flex-end; }
 .chat-composer textarea {
   flex: 1; font-family: var(--chat-sans); font-size: .9375rem; color: var(--chat-ink);

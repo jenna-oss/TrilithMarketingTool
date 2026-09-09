@@ -41,6 +41,8 @@
    *   buildPayload optional (brief, history) => payload, for pages that send
    *               more than free text — the planner turns 'plan 5 videos' into
    *               a planning-mode request
+   *   onSubmitted optional () => void, called once per send after the payload
+   *               is built — for clearing staged attachments
    *   onPlan      optional (wrapper, data) => void for planning-mode results
    *   setupNote   optional element revealed when workerUrl is empty
    */
@@ -95,7 +97,22 @@
       setBusy(true);
 
       const shown = payload.brief || ('Plan ' + payload.count + ' videos.');
-      addMessage('user', userLabel, shown);
+      const asked = addMessage('user', userLabel, shown);
+
+      /* Show what was attached under the message that carried it. Without this
+         the transcript reads as if the question were asked about nothing, and
+         scrolling back you cannot tell which turn the file belonged to. */
+      if (payload.attachments && payload.attachments.length) {
+        const tray = document.createElement('div');
+        tray.className = 'attachments';
+        payload.attachments.forEach((a) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = a.name;
+          tray.append(chip);
+        });
+        asked.wrapper.append(tray);
+      }
 
       const { wrapper, bubble } = addMessage('bot', botLabel, '');
       const searches = document.createElement('div');
@@ -206,6 +223,9 @@
       input.value = '';
       input.style.height = 'auto';
       const payload = opts.buildPayload ? opts.buildPayload(brief, history) : { brief, history };
+      /* After the payload is built, so a page that stages attachments can clear
+         its tray without the clearing being a side effect of building. */
+      if (opts.onSubmitted) opts.onSubmitted();
       run(payload, opts.userLabel || 'You', opts.botLabel || 'Answer');
     });
     }
