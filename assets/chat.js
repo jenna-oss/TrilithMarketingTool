@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  * Shared chat behaviour for both pages.
  *
- * The planner page mounts it full-width; the briefing mounts it inside a
+ * The plan page mounts it full-width; the briefing mounts it inside a
  * floating panel. Keeping one copy matters more than the few lines it saves:
  * two hand-maintained SSE parsers would drift, and the drift would show up as
  * one page answering differently from the other.
@@ -38,6 +38,9 @@
    *   input       the <textarea>
    *   button      the submit <button>
    *   starters    optional NodeList/array of clickable prompt buttons
+   *   buildPayload optional (brief, history) => payload, for pages that send
+   *               more than free text — the planner turns 'plan 5 videos' into
+   *               a planning-mode request
    *   onPlan      optional (wrapper, data) => void for planning-mode results
    *   setupNote   optional element revealed when workerUrl is empty
    */
@@ -51,9 +54,8 @@
     let busy = false;
     const extraDisable = [];
 
-    /* The composer is optional. The planner page drives run() from its own form
-     * and has no free-text box at all, so every reference to input/button/form
-     * below is guarded. */
+    /* The composer is optional — a page may drive run() from its own controls
+     * instead — so every reference to input/button/form below is guarded. */
     const hasComposer = Boolean(form && input && button);
 
     if (!workerUrl) {
@@ -203,7 +205,8 @@
       if (!brief || busy || !workerUrl) return;
       input.value = '';
       input.style.height = 'auto';
-      run({ brief, history }, opts.userLabel || 'You', opts.botLabel || 'Answer');
+      const payload = opts.buildPayload ? opts.buildPayload(brief, history) : { brief, history };
+      run(payload, opts.userLabel || 'You', opts.botLabel || 'Answer');
     });
     }
 
@@ -223,8 +226,7 @@
       addMessage,
       history,
       isBusy: () => busy,
-      /* Extra controls that should grey out while a request is in flight —
-         the planner's Propose button, for instance. */
+      /* Extra controls a page wants greyed out while a request is in flight. */
       disableWhileBusy: (el) => { extraDisable.push(el); },
     };
   }

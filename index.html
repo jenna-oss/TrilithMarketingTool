@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Brainstorm &amp; plan — Private Real Estate Lending</title>
+<title>Plan — Private Real Estate Lending</title>
 <script src="./assets/theme.js"></script>
 <link rel="stylesheet" href="./assets/nav.css">
 <link rel="stylesheet" href="./assets/chat.css">
@@ -42,44 +42,13 @@
     margin:0; background:var(--ground); color:var(--ink-body);
     font-family:var(--sans); font-size:16px; line-height:1.6;
     display:flex; flex-direction:column; -webkit-font-smoothing:antialiased;
-  }
+  }
 
   main { flex:1; overflow-y:auto; }
   .wrap { max-width:860px; margin:0 auto; padding:1.5rem; }
 
-  .intro { background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--emerald-bar);
-           border-radius:4px; padding:1rem 1.25rem; margin-bottom:1.25rem; }
-  .intro h2 { margin:0 0 .5rem; font-size:.9375rem; color:var(--ink); }
-  .intro p { margin:0 0 .5rem; font-size:.875rem; }
-  .intro p:last-child { margin-bottom:0; }
-
-  /* Planner — proposing a batch, reviewing it, locking it. */
-  .planner {
-    background:var(--card); border:1px solid var(--rule);
-    border-left:3px solid var(--clay); border-radius:4px;
-    padding:.875rem 1.25rem; margin-bottom:1.25rem;
-  }
-  .plan-form { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; font-size:.875rem; }
-  .plan-form label { color:var(--ink); font-weight:600; }
-  .plan-form input[type="number"] {
-    width:4rem; font-family:var(--sans); font-size:.875rem; color:var(--ink);
-    background:var(--card-sunk); border:1px solid var(--rule-strong);
-    border-radius:4px; padding:.375rem .5rem;
-  }
-  .plan-form input[type="text"] {
-    flex:1 1 16rem; font-family:var(--sans); font-size:.875rem; color:var(--ink);
-    background:var(--card-sunk); border:1px solid var(--rule-strong);
-    border-radius:4px; padding:.375rem .625rem;
-  }
-  .plan-form input:focus { outline:2px solid var(--accent); outline-offset:1px; }
-  .plan-form button {
-    font-family:var(--sans); font-size:.8125rem; font-weight:600; color:#F4F2E7;
-    background:var(--clay); border:none; border-radius:4px;
-    padding:.4375rem 1rem; cursor:pointer;
-  }
-  .plan-form button:disabled { opacity:.5; cursor:not-allowed; }
-  .plan-note { margin:.625rem 0 0; font-size:.75rem; color:var(--ink-quiet); }
-
+  /* A batch of concepts, when the conversation turns into one: the cards, the
+     drop checkboxes, and the bar that locks the set and writes it to disk. */
   .briefs { display:flex; flex-direction:column; gap:.625rem; margin:.75rem 0 0; }
   .brief {
     display:flex; gap:.75rem; align-items:flex-start;
@@ -114,16 +83,11 @@
     background:var(--card-sunk); border-radius:4px; padding:.625rem .75rem;
   }
   .locked-note code { font-family:var(--mono); font-size:.75rem; }
-
-
 
-  /* What the agent actually searched. An idea claiming a gap in the market is
-     only worth anything if you can see the query behind it. */
-
-
-
-  footer { border-top:1px solid var(--rule); background:var(--ground); padding:1rem 1.5rem 1.25rem; }
-
+  /* The composer sits below the scrolling conversation rather than inside it,
+     so a long transcript never pushes the box off screen. */
+  footer { border-top:1px solid var(--rule); background:var(--ground); padding:1rem 1.5rem 1.25rem; }
+  footer .wrap { padding:0; }
 </style>
 </head>
 <body class="chat">
@@ -162,40 +126,6 @@
 
 <main>
   <div class="wrap">
-    <p class="page-eyebrow">Production — plan</p>
-    <h2 class="page-title">Plan a batch of concepts</h2>
-    <p class="page-lede">
-      Say how many short-form videos you want and the agent proposes that many
-      concepts, each pairing a hook form borrowed from outside the category with a
-      topic drawn from competitor ads and Trilith&rsquo;s own writing. No two share a
-      hook or a topic. You drop whatever you do not want, and nothing is locked
-      until you confirm the set.
-    </p>
-    <p class="page-lede" style="margin-top:-1rem">
-      Questions about the underlying data live on
-      <a href="./briefing.html">Competitors</a>, where the ads and the numbers are on
-      screen next to the answer.
-    </p>
-
-    <div class="planner" id="planner">
-      <form class="plan-form" id="plan-form">
-        <label for="plan-count">Plan a batch of</label>
-        <input type="number" id="plan-count" min="1" max="12" value="5" aria-label="Number of short-form videos">
-        <label for="plan-count">short-form videos</label>
-        <input type="text" id="plan-focus" placeholder="Optional focus — e.g. brokers, DSCR, this month's news"
-               aria-label="Optional focus for the batch">
-        <button type="submit" id="plan-go">Propose</button>
-      </form>
-      <p class="plan-note">
-        Each concept is a hook and a topic for one vertical video, with the opening
-        line written out. Review the set, drop what you do not want, then lock it
-        for production.
-      </p>
-    </div>
-
-
-    <div id="transcript" aria-live="polite"></div>
-
     <div class="chat-setup" id="setup" hidden>
       <h3>Backend not configured yet</h3>
       <p style="font-size:.875rem;margin:0">
@@ -210,9 +140,21 @@
             <code>index.html</code>, then commit</li>
       </ol>
     </div>
+
+    <div id="transcript" aria-live="polite"></div>
   </div>
 </main>
 
+<footer>
+  <div class="wrap">
+    <form class="chat-composer" id="chat-form">
+      <textarea id="chat-input" rows="1" placeholder="Message the agent&hellip;"
+                autocomplete="off" aria-label="Your message"></textarea>
+      <button type="submit" id="chat-send">Send</button>
+    </form>
+    <p class="chat-hint">Enter sends; Shift+Enter adds a line.</p>
+  </div>
+</footer>
 
 <script src="./assets/chat.js"></script>
 <script>
@@ -221,41 +163,57 @@
    The agent lives at <WORKER_URL>/ideas. */
 const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
 
-const planForm = document.getElementById('plan-form');
-const planCount = document.getElementById('plan-count');
-const planFocus = document.getElementById('plan-focus');
-const planGo = document.getElementById('plan-go');
-
 const chat = AikoChat.create({
   workerUrl: WORKER_URL,
   transcript: document.getElementById('transcript'),
+  form: document.getElementById('chat-form'),
+  input: document.getElementById('chat-input'),
+  button: document.getElementById('chat-send'),
   setupNote: document.getElementById('setup'),
-  userLabel: 'Plan request',
-  botLabel: 'Proposed batch',
+  userLabel: 'You',
+  botLabel: 'Aiko',
+  buildPayload,
   onPlan: renderPlan,
 });
-
-/* Propose greys out while a request is in flight. */
-chat.disableWhileBusy(planGo);
 const render = AikoChat.render;
 
-if (!WORKER_URL) {
-  planGo.disabled = planCount.disabled = planFocus.disabled = true;
+/* The greeting differs on every load, so the page does not read like a
+   screenshot of itself. Time of day comes from the browser clock; the rest is
+   picked at random. */
+function greet() {
+  const h = new Date().getHours();
+  const part = h < 5 ? 'evening' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  const openers = ['Hello', 'Hello there', 'Hi', 'Hi there', 'Hey'];
+  const invites = [
+    'Would you like to begin planning videos?',
+    'Shall we plan some videos?',
+    'Want to start planning this week’s videos?',
+    'Ready to work up a few video concepts?',
+    'Where would you like to start — a question about the category, or a batch of concepts?',
+    'What are we making videos about today?',
+    'Fancy planning a batch of short-form videos?',
+    'Shall we pull some ideas out of the ad corpus?',
+  ];
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  return pick(openers) + ', good ' + part + '! ' + pick(invites);
 }
 
-planForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  if (chat.isBusy() || !WORKER_URL) return;
-  const count = Math.min(Math.max(parseInt(planCount.value, 10) || 5, 1), 12);
-  planCount.value = count;
-  const focus = planFocus.value.trim();
-  const brief = focus
-    ? `Plan ${count} short-form videos. Focus: ${focus}`
-    : `Plan ${count} short-form videos.`;
-  /* No history: a batch should be planned against the corpora, not against
-     whatever was being discussed a moment ago. */
-  chat.run({ mode: 'plan', count, brief, history: [] }, 'Plan request', 'Proposed batch');
-});
+chat.addMessage('bot', 'Aiko', greet());
+
+/* Most messages are free text. One that asks for a specific number of videos
+   still goes through planning mode, so the answer comes back as briefs you can
+   drop and lock rather than as prose. */
+function buildPayload(brief, history) {
+  const asksForBatch = /\b(plan|propose|brainstorm|draft|come up with|give me|make me|generate)\b/i.test(brief);
+  const n = brief.match(/\b(\d{1,2})\b(?=[^.\n]{0,40}\b(?:videos?|concepts?|ideas?|scripts?)\b)/i);
+  if (asksForBatch && n) {
+    const count = Math.min(Math.max(parseInt(n[1], 10), 1), 12);
+    /* No history: a batch should be planned against the corpora, not against
+       whatever was being discussed a moment ago. */
+    return { mode: 'plan', count, brief, history: [] };
+  }
+  return { brief, history };
+}
 
 function renderPlan(wrapper, data) {
   const briefs = data.briefs || [];
@@ -381,7 +339,6 @@ function renderPlan(wrapper, data) {
   wrapper.append(list, bar);
   list.scrollIntoView({ block: 'nearest' });
 }
-
 
 if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
 </script>
