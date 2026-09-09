@@ -1,17 +1,17 @@
 {
-  "fetchedAt": "2026-09-09T01:06:22.636Z",
+  "fetchedAt": "2026-09-09T01:24:16.541Z",
   "note": "Rebuilt on every run of .github/workflows/daily-creator-pull.yml from the hooks harvested that day. Spyglass HOOK/USP aggregation returns empty for these creators because it is tuned to paid campaigns, so the patterns are read off the organic hooks themselves. Every quote is verified against a harvested hook before it is written.",
   "patterns": [
     {
-      "slug": "dropped-into-a-conversation-already-running",
-      "label": "starts mid conversation already underway",
-      "description": "The line begins as if the camera arrived late to a discussion that was happening anyway. The missing first half creates a gap the viewer stays to close, and the eavesdropping frame feels unrehearsed.",
+      "slug": "question-asked-to-someone-offscreen",
+      "label": "opens as a question to an expert",
+      "description": "The first line is the interviewer's question, so the viewer arrives mid-conversation and the answer is obviously seconds away. Borrowed authority does the work: someone else is on the hook to deliver.",
       "creatorCount": 4,
       "examples": [
         {
-          "creator": "Jerry Norton",
-          "quote": "Okay, so the next thing I need to talk about some earnest money, man,",
-          "views": "6628"
+          "creator": "Sean Pan",
+          "quote": "Does it matter if you intend to have like housemates and stuff like that?",
+          "views": "8.6K"
         },
         {
           "creator": "Michael Llanas",
@@ -19,104 +19,32 @@
           "views": "1110"
         },
         {
-          "creator": "Sean Pan",
-          "quote": "Does it matter if you intend to have like housemates and stuff like that?",
-          "views": "8.6K"
+          "creator": "Ravi Sharma",
+          "quote": "So how do you adapt post budget around building wealth with property?",
+          "views": "4580"
+        },
+        {
+          "creator": "Jerry Norton",
+          "quote": "What would a package deal look like if I bought this and Iowa?",
+          "views": "3257"
+        }
+      ]
+    },
+    {
+      "slug": "starts-mid-thought",
+      "label": "starts mid-sentence, already talking",
+      "description": "The clip begins as if the viewer walked in late — a fragment, a connective word, an unfinished phrase. The missing beginning creates the pull, and the informality reads as unedited and real rather than scripted.",
+      "creatorCount": 3,
+      "examples": [
+        {
+          "creator": "Jerry Norton",
+          "quote": "Okay, so the next thing I need to talk about some earnest money, man,",
+          "views": "6628"
         },
         {
           "creator": "Logan Fullmer",
           "quote": "Why do I care?",
           "views": "3091"
-        }
-      ]
-    },
-    {
-      "slug": "says-the-belief-out-loud",
-      "label": "voices a belief the audience holds",
-      "description": "Opens by stating the fear, habit, or objection the viewer is already carrying, so recognition happens before any teaching does. Being described accurately buys the creator the right to correct you.",
-      "creatorCount": 3,
-      "examples": [
-        {
-          "creator": "Michael Llanas",
-          "quote": "Most up to investors when they're looking at their first up to deal, everyone's always scared of the due on sale clause.",
-          "views": "2170"
-        },
-        {
-          "creator": "Sean Pan",
-          "quote": "Real estate investors love throwing around terms like cash on cash return.",
-          "views": "5.8K"
-        },
-        {
-          "creator": "Scott Betley",
-          "quote": "I got a buyer right now with a 3 % down payment and they want to wait a year because they think buying a home right now is stupid.",
-          "views": "4580"
-        }
-      ]
-    },
-    {
-      "slug": "result-number-stated-up-front",
-      "label": "leads with the number they made",
-      "description": "Opens with a concrete figure or ranking already achieved, so the claim is proven before it is explained. The specificity of the number is the credential, and the unanswered 'how' carries the viewer forward.",
-      "creatorCount": 2,
-      "examples": [
-        {
-          "creator": "Sean Pan",
-          "quote": "I bought this 4plex for $250,000 and this is how much I make from it.",
-          "views": "59.8K"
-        },
-        {
-          "creator": "Jeremy Werden",
-          "quote": "Five years ago, we turned this into North Carolina's number one Airbnb.",
-          "views": "7318"
-        }
-      ]
-    },
-    {
-      "slug": "here-is-where-i-am-standing",
-      "label": "anchors you to a physical place",
-      "description": "Opens by planting the viewer at a specific location, then implies the lesson lives there. The place itself is the promise, and 'right here' makes the information feel obtainable rather than theoretical.",
-      "creatorCount": 2,
-      "examples": [
-        {
-          "creator": "Jerry Norton",
-          "quote": "So Jared and I are out here at a house in Maryville that Jared made an offer on.",
-          "views": "4938"
-        },
-        {
-          "creator": "Logan Fullmer",
-          "quote": "One of the best places in all the land to buy distressed property is right here, your county courthouse.",
-          "views": "2666"
-        }
-      ]
-    },
-    {
-      "slug": "verdict-before-the-reasoning",
-      "label": "gives the ruling before the reason",
-      "description": "Delivers a flat instruction or prohibition with no setup at all, holding back the entire justification. The viewer either disagrees or wants the missing 'why', and both reactions cost the same five seconds.",
-      "creatorCount": 2,
-      "examples": [
-        {
-          "creator": "Theoni Rapo",
-          "quote": "If the house that you like on Zillow is still on the market, ask for a seller credit.",
-          "views": "211040"
-        },
-        {
-          "creator": "Jeremy Werden",
-          "quote": "Do not buy a lakefront or beachfront property unless you consider this.",
-          "views": "4175"
-        }
-      ]
-    },
-    {
-      "slug": "bare-topic-label",
-      "label": "states the tactic as a headline",
-      "description": "No framing, no promise, no character, just the subject stated flatly like a search result. It filters instantly for people who already want that exact thing and wastes no words on anyone else.",
-      "creatorCount": 2,
-      "examples": [
-        {
-          "creator": "Logan Fullmer",
-          "quote": "How to find houses for cheap.",
-          "views": "2773"
         },
         {
           "creator": "Michael Llanas",
@@ -126,67 +54,159 @@
       ]
     },
     {
-      "slug": "real-call-in-progress",
-      "label": "opens on a live call or offer",
-      "description": "The hook is an actual working line being spoken to a real counterparty, not to the audience. Viewers stay because something is genuinely at stake in the next sentence and the outcome is unknown.",
-      "creatorCount": 1,
-      "examples": [
-        {
-          "creator": "Jerry Norton",
-          "quote": "Hi Peter, my name is Jerry Norton calling you about your property on Liberty Road.",
-          "views": "6128"
-        }
-      ]
-    },
-    {
-      "slug": "guess-before-i-tell-you",
-      "label": "invites you to guess first",
-      "description": "Withholds all substance and instead hands the viewer a game to play, whether a verdict to call or an outcome to predict. Curiosity is manufactured purely by the absence of information.",
-      "creatorCount": 1,
-      "examples": [
-        {
-          "creator": "Scott Betley",
-          "quote": "Alright, Realtor vs Lender, Fact or Myth?",
-          "views": "6617"
-        }
-      ]
-    },
-    {
-      "slug": "casts-you-in-the-scene",
-      "label": "assigns the viewer a role",
-      "description": "Uses second person to hand the viewer an identity or a possession in the opening breath, before any topic is named. You are not being told about a situation, you are placed inside one.",
-      "creatorCount": 1,
-      "examples": [
-        {
-          "creator": "Erick Brice",
-          "quote": "You're 20 years old.",
-          "views": "39.7K"
-        }
-      ]
-    },
-    {
-      "slug": "names-a-program-you-have-not-heard-of",
-      "label": "names a rule most people missed",
-      "description": "Opens by naming a specific piece of legislation or program and framing it as news the viewer probably missed. The proper noun signals insider information and the question format makes ignorance feel checkable.",
-      "creatorCount": 1,
+      "slug": "named-rule-you-have-not-heard-of",
+      "label": "names a rule or program by name",
+      "description": "The hook drops the official name of a piece of legislation or a program the viewer probably cannot define, creating an information gap that feels urgent because it is already law or already proposed. The specificity signals insider knowledge rather than opinion.",
+      "creatorCount": 2,
       "examples": [
         {
           "creator": "Scott Betley",
           "quote": "Hey Kyle, have you heard about the MOVE Act that Congress just proposed that can help homeowners keep their lower interest rates?",
           "views": "4370"
+        },
+        {
+          "creator": "Scott Kuru",
+          "quote": "If the government's new SMSF property rules have got you thinking, \"Fine, I can't borrow for residential anymore. I'll just buy commercial.\"",
+          "views": "1529"
         }
       ]
     },
     {
-      "slug": "absurd-plan-posed-as-a-question",
-      "label": "asks if a strange plan works",
-      "description": "Lays out an oddly specific, slightly ridiculous scheme in full and ends on a genuine yes-or-no question. The detail makes it sound like someone actually did it, so the answer feels worth waiting for.",
+      "slug": "if-this-is-you-then-act",
+      "label": "opens with an if-clause that filters",
+      "description": "A conditional opening sorts the audience in the first three words, so anyone who fits feels personally addressed and cannot scroll. The payoff is attached directly to the condition, so the instruction arrives inside the hook itself.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Theoni Rapo",
+          "quote": "If the house that you like on Zillow is still on the market, ask for a seller credit.",
+          "views": "211040"
+        },
+        {
+          "creator": "Scott Kuru",
+          "quote": "If you own property in Australia, you need to understand just how much the tax office can actually see about you,",
+          "views": "8925"
+        }
+      ]
+    },
+    {
+      "slug": "dollar-figure-as-proof",
+      "label": "leads with the exact dollar number",
+      "description": "The opening line puts a hard, oddly specific figure on the table before any teaching happens, so the claim reads as a receipt rather than a promise. The number also implies the rest of the video explains how it happened.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Sean Pan",
+          "quote": "I bought this 4plex for $250,000 and this is how much I make from it.",
+          "views": "59.8K"
+        },
+        {
+          "creator": "Jack Henderson",
+          "quote": "We just finished building it, and we made a sneaky, \"one and a half million bucks\" along the way.",
+          "views": "11008"
+        }
+      ]
+    },
+    {
+      "slug": "ranked-best-claim",
+      "label": "claims a number one or best",
+      "description": "The hook stakes a superlative — the best place, the number one property — which is both instantly checkable and instantly arguable, so viewers stay either to verify or to disagree.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Jeremy Werden",
+          "quote": "Five years ago, we turned this into North Carolina's number one Airbnb.",
+          "views": "7318"
+        },
+        {
+          "creator": "Logan Fullmer",
+          "quote": "One of the best places in all the land to buy distressed property is right here, your county courthouse.",
+          "views": "2666"
+        }
+      ]
+    },
+    {
+      "slug": "point-at-the-thing-on-screen",
+      "label": "points at something in frame",
+      "description": "A short deictic line — see this, this is — forces the eye to the visual and makes the viewer look for what is unusual about it. It works because the sentence is incomplete without the image.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Jack Henderson",
+          "quote": "You see this little house here?",
+          "views": "7508"
+        },
+        {
+          "creator": "Erick Brice",
+          "quote": "This is your house This is your house Hey",
+          "views": "226K"
+        }
+      ]
+    },
+    {
+      "slug": "name-the-panic-everyone-feels",
+      "label": "names what everyone is panicking about",
+      "description": "The hook opens on a collective emotional state — freaking out, scared, asking if it is dead — which validates the feeling before correcting it. The viewer stays because their own worry has just been said out loud.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Ravi Sharma",
+          "quote": "Prices are falling and people are freaking out",
+          "views": "2414"
+        },
+        {
+          "creator": "Michael Llanas",
+          "quote": "Most up to investors when they're looking at their first up to deal, everyone's always scared of the due on sale clause.",
+          "views": "2170"
+        }
+      ]
+    },
+    {
+      "slug": "live-deal-status-update",
+      "label": "reports a real deal in progress",
+      "description": "The line announces something that just happened or is happening right now on an actual property, with names and places attached. It earns attention as documentary access rather than instruction.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Jerry Norton",
+          "quote": "So Jared and I are out here at a house in Maryville that Jared made an offer on.",
+          "views": "4938"
+        },
+        {
+          "creator": "Jack Henderson",
+          "quote": "Another council approval has just come through for one of our Henderson equity factory deals.",
+          "views": "4571"
+        }
+      ]
+    },
+    {
+      "slug": "casts-the-viewer-in-a-scene",
+      "label": "drops you into a hypothetical scene",
+      "description": "The hook assigns the viewer a role or a future — your age, your night — in the second person, so they are inside the story before they know what it is about. Curiosity about their own assigned situation carries the next beat.",
+      "creatorCount": 2,
+      "examples": [
+        {
+          "creator": "Erick Brice",
+          "quote": "You're 20 years old.",
+          "views": "39.7K"
+        },
+        {
+          "creator": "Emeline SIRON - Experte investissement immobilier",
+          "quote": "Cette nuit, tu vas gagner de l'argent en dormant.",
+          "views": "5678"
+        }
+      ]
+    },
+    {
+      "slug": "do-not-do-this",
+      "label": "opens by forbidding something (single example)",
+      "description": "A flat prohibition or denial of a thing the viewer assumes is fine, with the reason deliberately withheld behind a word like unless. The negative command is harder to ignore than advice because it implies a mistake already in motion.",
       "creatorCount": 1,
       "examples": [
         {
           "creator": "Jeremy Werden",
-          "quote": "Should you buy a camper, renovate it, and put it in your parents' backyard and then rent it out to complete strangers on rental platforms such as Airbnb?",
-          "views": "5159"
+          "quote": "Do not buy a lakefront or beachfront property unless you consider this.",
+          "views": "4175"
         }
       ]
     }

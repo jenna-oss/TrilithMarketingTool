@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T01:13:25.153Z",
+  "fetchedAt": "2026-09-09T01:23:01.877Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -445,14 +445,14 @@
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3fd66d8b3b00c4f059c2eabb84f0059f.mp4"
         },
         {
-          "id": "141f1fe4-a6d6-459e-8cf1-255a2ce0cf40",
-          "hook": "Oh my god, interest only, loans are gone, and debt -to -income ratios, and no one can ever buy again.",
+          "id": "a0a6678b-19d9-4752-94cd-44babc78a63f",
+          "hook": "Post -budget, everyone's asking whether Australian property investing is actually dead.",
           "hookSource": "hook",
           "category": "Commentary",
-          "views": "4370",
+          "views": "1829",
           "postedAt": "2026-09-02",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e248c5606f199773b7b02fb2285acd15.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e248c5606f199773b7b02fb2285acd15.mp4"
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c99b6e0df05878a34796fac854d029f7.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c99b6e0df05878a34796fac854d029f7.mp4"
         }
       ]
     },
@@ -492,6 +492,126 @@
           "postedAt": "2026-09-02",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3405490adcadbddc544781dc4e1b9ef4.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3405490adcadbddc544781dc4e1b9ef4.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "jack-henderson",
+      "spyglassId": "859b0447-1bcb-4d99-966d-b2cdd4bc459f",
+      "name": "Jack Henderson",
+      "handle": "@jackchenderson",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_jackchenderson.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/jackchenderson",
+      "followers": "261.2K",
+      "angle": "Australian investor-developer who documents his own portfolio deals — council approvals, subdivisions and small-scale builds — framing each project as a repeatable 'equity factory' with hard profit numbers attached.",
+      "productLines": [
+        "ground-up",
+        "portfolio"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "0254fc9e-3b8f-4aae-9315-83a3d098dd1d",
+          "hook": "Another council approval has just come through for one of our Henderson equity factory deals.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "4571",
+          "postedAt": "2026-09-08",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/519345ff8d21cdd565d457a6e7b077cc.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/519345ff8d21cdd565d457a6e7b077cc.mp4"
+        },
+        {
+          "id": "685f3679-85ad-431a-a9c2-141446233fc6",
+          "hook": "You see this little house here?",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "7508",
+          "postedAt": "2026-09-07",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/74af6464a913e4410e457a95b392326e.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/74af6464a913e4410e457a95b392326e.mp4"
+        },
+        {
+          "id": "6a7b29bf-9eb3-4a1b-a083-23c1b9195217",
+          "hook": "We just finished building it, and we made a sneaky, \"one and a half million bucks\" along the way.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "11008",
+          "postedAt": "2026-09-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/ad976fd43a4d432f4b24b5d2fa0a4c66.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/ad976fd43a4d432f4b24b5d2fa0a4c66.mp4"
+        },
+        {
+          "id": "0593edb0-7358-4b95-8c8e-0203bde069ba",
+          "hook": "See this yam here?",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "7318",
+          "postedAt": "2026-09-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6fccf8895ba359ac8bc6d75a0b41bee6.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6fccf8895ba359ac8bc6d75a0b41bee6.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "emeline-siron-experte-investissement-immobilier",
+      "spyglassId": "f55076a6-ba13-4224-9ced-5597242e55ff",
+      "name": "Emeline SIRON - Experte investissement immobilier",
+      "handle": "@emelinesiron",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_emelinesiron.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/emelinesiron",
+      "followers": "85.8K",
+      "angle": "Teaches French investors how to build cash-flowing rental income through heavy-renovation shared-housing (colocation) projects, using budget breakdowns and before/after transformation reveals to prove value-add returns.",
+      "productLines": [
+        "fix-and-flip",
+        "brrrr"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "eb196dcb-dba6-4f5f-88ef-d087d314802d",
+          "hook": "Cette nuit, tu vas gagner de l'argent en dormant.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "5678",
+          "postedAt": "2026-09-08",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/de5eec07ef374dfd6cc5a9e1aa3c67fa.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/de5eec07ef374dfd6cc5a9e1aa3c67fa.mp4"
+        },
+        {
+          "id": "9fa4f777-c384-4e15-8405-76162b072543",
+          "hook": "< 40K € de travaux pour transformer cette épave en colocation de 3 chambres",
+          "hookSource": "title",
+          "category": "Before and After",
+          "views": "20739",
+          "postedAt": "2026-09-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/108d5a6a66a998290c8af91e93014841.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/108d5a6a66a998290c8af91e93014841.mp4"
+        },
+        {
+          "id": "49473700-6f86-4d74-97e4-17899f5b3de1",
+          "hook": "AVANT / APRÈS : Transformation d’un salon de colocation",
+          "hookSource": "title",
+          "category": "Before and After",
+          "views": "17717",
+          "postedAt": "2026-09-03",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/367816fe2c25d9fa586c75b5437174d7.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/367816fe2c25d9fa586c75b5437174d7.mp4"
+        },
+        {
+          "id": "0da5fcc0-8c9f-47e4-bc64-0cd7bd9b08f5",
+          "hook": "Ce que j’aurais aimé qu’on me dise :",
+          "hookSource": "title",
+          "category": "Text Overlay",
+          "views": "24332",
+          "postedAt": "2026-09-02",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/fa5c8170f72d6cd076f8219b59b8c001.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/fa5c8170f72d6cd076f8219b59b8c001.mp4"
         }
       ]
     }
