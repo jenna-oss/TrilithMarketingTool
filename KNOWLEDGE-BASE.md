@@ -277,7 +277,8 @@ and the backfill vectorises what is waiting.
 | `search_hooks` | `kb_search_hooks` | hook forms by category and topic |
 
 They sit alongside the five existing tools on the `/ideas` route, and every
-search is streamed to the page as it runs.
+search is streamed to the page as it runs. The wiring between the page, the
+Worker and Postgres is documented in [PLAN-PAGE.md](PLAN-PAGE.md).
 
 `kb.retrieve` also exists — one call across several corpora returning the §29
 normalised context object under a hard token budget. The Worker does not use it;

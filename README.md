@@ -92,8 +92,10 @@ npm run kb
 
 Full documentation, including the ranking formula, what is deliberately
 switched off and why, and the limits of the data:
-[KNOWLEDGE-BASE.md](KNOWLEDGE-BASE.md). How to get material in:
-[kb/README.md](kb/README.md).
+[KNOWLEDGE-BASE.md](KNOWLEDGE-BASE.md). How the Plan page, the Worker and
+Postgres connect — the request path, the twelve tools, the streaming protocol,
+and every secret and what breaks without it: [PLAN-PAGE.md](PLAN-PAGE.md). How to
+get material in: [kb/README.md](kb/README.md).
 
 Refreshed daily at 14:00 UTC by `.github/workflows/knowledge-base.yml`, which
 writes only to Postgres and never to git.
