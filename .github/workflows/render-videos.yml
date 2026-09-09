@@ -148,8 +148,23 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           TOPIC: ${{ matrix.topic }}
           MAX_TURNS: ${{ inputs.max_turns }}
+          # The Workflow tool returns immediately with a task id and runs in the
+          # background, so the agent has nothing to block on and says it will
+          # report back later. Claude Code then waits 600s for background work
+          # and terminates it — which is exactly what happened: the pipeline was
+          # rendering happily and was killed at ten minutes.
+          #
+          # 0 waits indefinitely. The bound that matters is the job's own
+          # timeout-minutes, which is a real deadline rather than one that
+          # silently truncates a working render.
+          CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0'
         run: |
           set -o pipefail
+          # A marker to date agent-written files against. `-newer package.json`
+          # matched every file in the repo, because checkout stamps them all at
+          # the same moment — so the artifact was fifteen pre-existing sources
+          # around a 208-byte log.
+          touch /tmp/render-start
           # A headless run has no terminal to answer a permission prompt on, so
           # the tools the pipeline needs are granted explicitly and by name. An
           # allowlist rather than a blanket bypass: it is auditable here, and
@@ -208,8 +223,8 @@ jobs:
           mkdir -p artifact
           cp render.log artifact/ 2>/dev/null || true
           find video/remotion/out -name '*.mp4' -exec cp {} artifact/ \; 2>/dev/null || true
-          find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer video/remotion/package.json -exec cp {} artifact/ \; 2>/dev/null || true
-          find video/remotion/src -maxdepth 1 -name '*.tsx' -newer video/remotion/package.json -exec cp {} artifact/ \; 2>/dev/null || true
+          find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
+          find video/remotion/src -maxdepth 1 -name '*.tsx' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
           echo "--- artifact contents ---"; ls -la artifact/
 
       # Storage is what makes a render survive. The artifact below expires in
