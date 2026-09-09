@@ -135,6 +135,73 @@ If a cached Chromium already exists but its build number lags the npm package, p
 at it instead of downloading another: set `PW_CHROMIUM_PATH` to the `chrome.exe`
 path. CI does not need this.
 
+## Creator automation
+
+`.github/workflows/daily-creator-pull.yml`, 13:00 UTC daily, an hour after the ad
+pull so the two do not race for the same push. `creators.html` fetches its JSON in
+the browser, so there is no render step — rewriting the data files is the publish.
+
+| Stage | Script | Does |
+|---|---|---|
+| Harvest | `tools/pull-creators.mjs` | Organic clips per pinned creator, relevance screen, discovery |
+| Mine | `tools/creator-hooks.mjs` | Rebuilds the hook library from that day's hooks |
+
+Needs `SPYGLASS_API_KEY` and `ANTHROPIC_API_KEY` as repository secrets. Each script
+skips itself, without failing, when its key is absent.
+
+### Why this one needs a model
+
+Two judgments on this page cannot be made with a keyword rule.
+
+**The corpus drifts off-thesis.** Spyglass returns a creator's *recent* posts, not
+their *real estate* posts. On 2026-09-08, Sean Pan's most recent organic videos were
+tax-free shopping in Japan, index funds, and compound interest — none of them
+publishable on a page premised on residential real estate investing. Every candidate
+clip is screened before it lands, and without the Anthropic key the harvest keeps the
+existing clips rather than publishing unscreened ones.
+
+**Spyglass has no pattern data for organic posts.** Its `HOOK`/`USP` aggregation is
+tuned to paid campaigns and comes back empty for these creators, which is why the
+library was hand-mined at first. `creator-hooks.mjs` reproduces that reading each run.
+
+### Guards
+
+- **Organic only, strictly.** The inverse of `pull-creatives.mjs`, and stricter: a row
+  whose paid/organic marker cannot be read is treated as **paid** and dropped. The
+  creative wall assumes the opposite, because there a misread costs one card and here
+  it puts an ad on a page about what people post for free.
+- **Clips are replaced, never emptied.** A creator whose harvest fails, or who has
+  fewer than two on-thesis clips that day, keeps yesterday's. An empty card is worse
+  than a stale one.
+- **Quotes are verified before publishing.** Every hook the model puts in the library
+  must match a harvested hook exactly, and be attributed to the creator who actually
+  said it. Anything else is dropped — a reworded quote under a real person's name is a
+  fabricated citation.
+- **Caption fallbacks never enter the library.** When Spyglass returns no hook, the
+  caption's first line is shown on the card and marked `hookSource:"title"`. The miner
+  skips those: a caption headline is not a spoken opening.
+- **Discovery is capped.** Creators publish automatically once at least two of their
+  recent clips pass the screen, gated on 25K+ followers and a creator-category match,
+  at most 2 per run, to a roster ceiling of 16.
+
+### Known gap: discovery is unproven
+
+New creators are found with a search call, and `searchBrands` is documented only on
+the Spyglass **MCP** surface — tied to a Claude account and unreachable from a runner.
+No REST equivalent is documented anywhere we have. `pull-creators.mjs` therefore tries
+the plausible spellings, logs which one answered, and treats total failure as
+survivable: the roster refreshes but does not grow.
+
+**Until a run prints a `discovery route ... answered` line, assume discovery is off.**
+If none of the routes work, put the real path in `SEARCH_ROUTES` — everything else in
+the job runs without it.
+
+### Cost
+
+Spyglass bills credits per row returned. The ceiling is 12 rows per creator per day
+against a roster capped at 16. The hook-pattern job stayed *weekly* for this reason,
+so if credits get tight, this schedule is the first thing to loosen.
+
 ## Tools
 
 `tools/recency-pull.js` — a no-install version of the same sweep for ad-hoc checks,

@@ -339,12 +339,15 @@
   <div class="note">
     <h3>Where this came from</h3>
     <p>
-      Spyglass creator search, 2026-08-17, checked by hand. Off-thesis names were dropped.
-      One-time pass: it does not refresh with the rest of the site.
+      Refreshed daily from the Spyglass corpus. Clips are organic posts only, screened for
+      residential real estate relevance before they land here, and creators are added
+      automatically once enough of their recent posts pass that screen.
+      <span id="refreshed"></span>
     </p>
     <p>
-      The hook patterns were read off these clips by hand. Spyglass returns nothing for
-      organic posts.
+      The hook library is rebuilt from the same day's clips. Spyglass returns no pattern
+      data for organic posts, so the patterns are read off the hooks themselves, and every
+      quote is checked against a harvested hook before it is published.
     </p>
     <p>
       Clips link to the creators' own posts. Internal reference only — not for republishing.
@@ -369,13 +372,26 @@ let active = 'all';
 
 fetch('./data/education-creators.json')
   .then((r) => r.ok ? r.json() : null)
-  .then((json) => { data = json; render(); })
+  .then((json) => { data = json; render(); stamp(json); })
   .catch(() => { document.getElementById('empty').hidden = false; document.getElementById('empty').textContent = 'Could not load creator data.'; });
 
 fetch('./data/creator-hook-patterns.json')
   .then((r) => r.ok ? r.json() : null)
   .then((json) => { renderPatterns(json); })
   .catch(() => {});
+
+/* A page that refreshes daily should say when it last did. If the job stops,
+   the date going stale is the only symptom anyone would see here. */
+function stamp(json) {
+  const el = document.getElementById('refreshed');
+  if (!el || !json || !json.fetchedAt) return;
+  const d = new Date(json.fetchedAt);
+  if (Number.isNaN(d.getTime())) return;
+  /* UTC, because the job stamps UTC. Formatting in the reader's zone turns a
+     midnight-UTC stamp into the previous day west of Greenwich, which reads as
+     a refresh that did not happen. */
+  el.textContent = ` Last refreshed ${d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}.`;
+}
 
 function renderPatterns(json) {
   const el = document.getElementById('patterns');

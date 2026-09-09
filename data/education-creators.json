@@ -4,6 +4,7 @@
   "creators": [
     {
       "slug": "scott-betley",
+      "spyglassId": "604efde5-dd59-40b9-b5e2-2a62624a4658",
       "name": "Scott Betley",
       "handle": "@thatmortgageguy_",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_thatmortgageguy_.jpg",
@@ -11,7 +12,10 @@
       "profileUrl": "https://instagram.com/thatmortgageguy_",
       "followers": "193K",
       "angle": "Mortgage qualification specifically — the rent-vs-mortgage paradox, down payment assistance programs, live open-house commentary on what a listing actually costs.",
-      "productLines": ["dscr", "multifamily"],
+      "productLines": [
+        "dscr",
+        "multifamily"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -46,6 +50,7 @@
     },
     {
       "slug": "theoni-rapo",
+      "spyglassId": "3140aa97-e611-448f-9605-fb981ef986cc",
       "name": "Theoni Rapo",
       "handle": "@theonithelender",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_theonithelender.jpg",
@@ -53,7 +58,9 @@
       "profileUrl": "https://instagram.com/theonithelender",
       "followers": "35.5K",
       "angle": "DSCR and bank-statement loans specifically, in a distinctly casual voice — leads with the loan program as a contrarian shortcut rather than a technical product.",
-      "productLines": ["dscr"],
+      "productLines": [
+        "dscr"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -88,6 +95,7 @@
     },
     {
       "slug": "jeremy-werden",
+      "spyglassId": "ae8cb29d-31ab-477e-93e6-b5c00362e9d0",
       "name": "Jeremy Werden",
       "handle": "@jeremywerden",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_jeremywerden.jpg",
@@ -95,7 +103,10 @@
       "profileUrl": "https://instagram.com/jeremywerden",
       "followers": "106K",
       "angle": "Short-term-rental deal breakdowns and creative financing in a high-rate market — seller financing and subject-to framed as leverage when buyers sit on the sidelines.",
-      "productLines": ["bridge", "portfolio"],
+      "productLines": [
+        "bridge",
+        "portfolio"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -130,6 +141,7 @@
     },
     {
       "slug": "sean-pan",
+      "spyglassId": "caf2e33a-723b-4176-862b-1fa43ffa9a8a",
       "name": "Sean Pan",
       "handle": "@seanjpan",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_seanjpan.jpg",
@@ -137,7 +149,11 @@
       "profileUrl": "https://instagram.com/seanjpan",
       "followers": "963K",
       "angle": "Buy-and-hold rentals and house hacking, taught as arithmetic — cash-on-cash return, real P&L on owned properties, deal-analysis discipline.",
-      "productLines": ["dscr", "portfolio", "multifamily"],
+      "productLines": [
+        "dscr",
+        "portfolio",
+        "multifamily"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -172,6 +188,7 @@
     },
     {
       "slug": "jerry-norton",
+      "spyglassId": "398ff3b9-626e-4a5b-b973-20b1d16fca5d",
       "name": "Jerry Norton",
       "handle": "@flippingmastery",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_flippingmastery.jpg",
@@ -179,7 +196,10 @@
       "profileUrl": "https://instagram.com/flippingmastery",
       "followers": "118K",
       "angle": "Fix-and-flip mechanics and deal structuring — how a flipper prices an offer, how OPM (other people's money) deals split, why sequencing matters before scaling.",
-      "productLines": ["fix-and-flip", "bridge"],
+      "productLines": [
+        "fix-and-flip",
+        "bridge"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -214,6 +234,7 @@
     },
     {
       "slug": "logan-fullmer",
+      "spyglassId": "16447998-df95-48c0-b36c-527c8a19024f",
       "name": "Logan Fullmer",
       "handle": "@logan_fullmer",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_logan_fullmer.jpg",
@@ -221,7 +242,11 @@
       "profileUrl": "https://instagram.com/logan_fullmer",
       "followers": "184K",
       "angle": "Ranks every way to make money in real estate, worst to best, and argues the case for each — a listicle structure that carries real mechanics (owner financing, messy-title investing, commercial vs. residential).",
-      "productLines": ["portfolio", "multifamily", "bridge"],
+      "productLines": [
+        "portfolio",
+        "multifamily",
+        "bridge"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -256,6 +281,7 @@
     },
     {
       "slug": "michael-llanas",
+      "spyglassId": "ab46d9f4-082c-4ade-a813-a637ac6c1850",
       "name": "Michael Llanas",
       "handle": "@turnupthehustle",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_turnupthehustle.jpg",
@@ -263,7 +289,11 @@
       "profileUrl": "https://instagram.com/turnupthehustle",
       "followers": "194K",
       "angle": "Creative financing explained through real deals — subject-to, BRRRR refinance timing, and structuring a purchase for a seller who cannot sell traditionally.",
-      "productLines": ["brrrr", "bridge", "dscr"],
+      "productLines": [
+        "brrrr",
+        "bridge",
+        "dscr"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -291,6 +321,7 @@
     },
     {
       "slug": "erick-brice",
+      "spyglassId": "5690290",
       "name": "Erick Brice",
       "handle": "@iameroc",
       "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_iameroc.jpg",
@@ -298,7 +329,10 @@
       "profileUrl": "https://instagram.com/iameroc",
       "followers": "111K",
       "angle": "Loan-program mechanics specifically — FHA house-hacking qualification, bank-statement and non-traditional-income mortgages, told as step-by-step numbers.",
-      "productLines": ["dscr", "multifamily"],
+      "productLines": [
+        "dscr",
+        "multifamily"
+      ],
       "audience": "borrower",
       "videos": [
         {
@@ -326,8 +360,17 @@
     }
   ],
   "consideredAndSkipped": [
-    { "name": "Keegan Shivers", "why": "301K followers but content is personal-brand realtor life (listings, day-in-the-life), not investing or lending education." },
-    { "name": "Emeline Siron", "why": "French-language real estate investment content — large following (85.6K) but wrong market and language for this audience." },
-    { "name": "Seth Williams / REtipster", "why": "Land investing specifically, not residential — adjacent but off-thesis for this page." }
+    {
+      "name": "Keegan Shivers",
+      "why": "301K followers but content is personal-brand realtor life (listings, day-in-the-life), not investing or lending education."
+    },
+    {
+      "name": "Emeline Siron",
+      "why": "French-language real estate investment content — large following (85.6K) but wrong market and language for this audience."
+    },
+    {
+      "name": "Seth Williams / REtipster",
+      "why": "Land investing specifically, not residential — adjacent but off-thesis for this page."
+    }
   ]
 }
