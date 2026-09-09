@@ -22,7 +22,7 @@ on:
         type: string
         default: ''
       only:
-        description: 'Render one video by slot number (blank = all of them)'
+        description: 'Slots to render, e.g. 2 or 2,3 (blank = all of them)'
         type: string
         default: ''
       max_turns:
@@ -73,13 +73,17 @@ jobs:
           const plan = plans[0];
 
           let slots = (plan.slots || []).map((s, i) => ({ ...s, slot: i + 1 }));
+          /* A list, not a single number. Re-rendering a slot that already has a
+           * video costs a full agent run and overwrites the file, so "render
+           * the ones I have not done yet" has to be expressible. */
           const only = (process.env.ONLY || '').trim();
           if (only) {
-            const n = parseInt(only, 10);
-            if (!Number.isInteger(n) || n < 1 || n > slots.length) {
-              throw new Error(`only=${only} is out of range; this plan has ${slots.length} videos`);
+            const wanted = only.split(',').map((p) => parseInt(p.trim(), 10));
+            const bad = wanted.filter((n) => !Number.isInteger(n) || n < 1 || n > slots.length);
+            if (bad.length) {
+              throw new Error(`only=${only}: ${bad.join(', ')} out of range; this plan has ${slots.length} videos`);
             }
-            slots = [slots[n - 1]];
+            slots = [...new Set(wanted)].map((n) => slots[n - 1]);
           }
 
           /* The pipeline takes one `topic` string. A locked slot is richer than
