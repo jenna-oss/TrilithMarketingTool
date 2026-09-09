@@ -17,6 +17,7 @@
 
 import { handleIdeas } from './ideas.js';
 import { handleUpload } from './upload.js';
+import { rpc } from './db.js';
 
 /* Only the published pages may call this. The key lives here, so an open
  * endpoint would let anyone spend it. */
@@ -71,6 +72,24 @@ export default {
     /* The only write endpoint. Guarded by a shared token inside the handler,
      * because the origin check above stops browsers and nothing else. */
     if (path === '/kb/upload') return handleUpload(request, env, headers, ctx);
+
+    /* Fetch a stored plan by id, so a session can be resumed in another browser
+     * or on another machine. Read-only, and it returns nothing for an id that
+     * does not exist rather than saying which — the ids are the only thing
+     * standing between one person's plan and another's. */
+    if (path === '/plan') {
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ error: 'body must be JSON' }, 400, headers); }
+      const id = String(body.session_id ?? '').slice(0, 64);
+      if (!id) return json({ error: 'session_id is required' }, 400, headers);
+      try {
+        const plan = await rpc(env, 'kb_plan_load', { p_session_id: id });
+        return json({ plan: plan ?? null }, 200, headers);
+      } catch {
+        return json({ error: 'could not load that plan' }, 502, headers);
+      }
+    }
 
     /* The retired ask endpoint. Anything still POSTing here gets told where to
      * go rather than a bare 404 that looks like an outage. */

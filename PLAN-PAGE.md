@@ -194,6 +194,30 @@ parsers.
 
 ---
 
+## Where the plan lives
+
+The session is carried with each request and mirrored in three places, each for
+a different reason:
+
+| | Holds | Survives |
+| --- | --- | --- |
+| `localStorage` | the live plan | a reload; not a cleared browser |
+| `kb.planning_sessions` | the same plan, written every turn | anything — it is the durable copy |
+| `video-briefs-<date>.json` | the locked set, on export | it is a file |
+
+The panel shows a **Resume link** carrying `?session=<id>`. Opening it anywhere
+loads the stored copy, which is how a plan started on one machine is picked up
+on another. Arriving by that link makes the server copy win; an ordinary reload
+prefers the local copy, so it stays instant and works offline.
+
+`kb.planning_sessions` is addressed by id and nothing else — no table grants for
+anon, two `SECURITY DEFINER` functions as the whole surface — because the id is
+the only thing separating one person's plan from another's.
+
+Nothing in it is embedded or reachable from a search tool. Spec section 4D keeps
+session context out of the retrieval corpus, and it stays out; "not retrieved
+against" is not the same as "not stored".
+
 ## Configuration
 
 Everything that must be set, and what breaks if it is not.

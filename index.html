@@ -83,6 +83,11 @@
     font-size:.8125rem; font-weight:600; letter-spacing:.02em;
     margin:0; margin-right:auto; color:var(--ink-body);
   }
+  .plan-panel header a {
+    font-size:.6875rem; color:var(--ink-quiet); text-decoration:none;
+    border-bottom:1px dotted var(--rule-strong);
+  }
+  .plan-panel header a:hover { color:var(--emerald); }
   .plan-panel header button {
     font-size:.6875rem; color:var(--ink-quiet); background:none;
     border:none; cursor:pointer; padding:0;
@@ -191,6 +196,7 @@
     <section class="plan-panel" id="plan-panel" hidden aria-label="This week's plan">
       <header>
         <h2 id="plan-title"></h2>
+        <a id="plan-resume" hidden title="Open this plan on another machine">Resume link</a>
         <button type="button" id="plan-reset" title="Clear the plan and start again">Start over</button>
       </header>
       <p class="plan-goal" id="plan-goal" hidden></p>
@@ -278,6 +284,7 @@ const planActions = document.getElementById('plan-actions');
 const planExport = document.getElementById('plan-export');
 const planNote = document.getElementById('plan-note');
 const planReset = document.getElementById('plan-reset');
+const planResume = document.getElementById('plan-resume');
 
 /* ---------------------------------------------------------------------------
  * Attachments.
@@ -634,14 +641,48 @@ function loadPlan() {
 }
 
 function loadSession() {
+  /* A ?session= link wins over whatever this browser remembers. That is how a
+     plan started on one machine is picked up on another — the Worker stores it
+     against this id after every turn. */
+  const fromUrl = new URLSearchParams(location.search).get('session');
   try {
+    if (fromUrl) { localStorage.setItem(SESSION_KEY, fromUrl); return fromUrl; }
     let id = localStorage.getItem(SESSION_KEY);
     if (!id) {
       id = 'plan-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
       localStorage.setItem(SESSION_KEY, id);
     }
     return id;
-  } catch { return null; }
+  } catch { return fromUrl || null; }
+}
+
+/* Pull the stored copy when arriving by link, or when this browser has nothing
+   local. The server copy is authoritative in exactly those two cases; otherwise
+   local wins, so an ordinary reload stays instant and works offline. */
+async function hydratePlan() {
+  if (!WORKER_URL || !sessionId) return;
+  const arrivedByLink = new URLSearchParams(location.search).has('session');
+  if (!arrivedByLink && plan.target_count !== null) return;
+
+  try {
+    const res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/plan', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    if (!res.ok) return;
+    const { plan: stored } = await res.json();
+    if (stored && (stored.target_count !== null || (stored.slots || []).length)) {
+      plan = {
+        goal: stored.goal ?? null,
+        target_count: stored.target_count ?? null,
+        slots: stored.slots || [],
+        rejected: stored.rejected || [],
+      };
+      savePlan();
+      drawPlan();
+    }
+  } catch { /* offline or not reachable — the local copy stands */ }
 }
 
 function savePlan() {
@@ -705,6 +746,11 @@ function drawPlan() {
     li.append(num, body);
     planSlots.append(li);
   });
+
+  planResume.hidden = !sessionId;
+  if (sessionId) {
+    planResume.href = location.origin + location.pathname + '?session=' + encodeURIComponent(sessionId);
+  }
 
   planActions.hidden = n === 0;
   planExport.disabled = n === 0;
@@ -904,10 +950,14 @@ planReset.addEventListener('click', () => {
   if (!window.confirm('Clear the plan and start again? Locked topics will be lost.')) return;
   plan = { goal: null, target_count: null, slots: [], rejected: [] };
   savePlan();
-  drawPlan();
+  /* A new id, or "start over" would overwrite the plan just abandoned and the
+     resume link for it would stop working. */
+  try { localStorage.removeItem(SESSION_KEY); } catch {}
+  location.search = '';
 });
 
 drawPlan();
+hydratePlan();
 
 if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
 </script>

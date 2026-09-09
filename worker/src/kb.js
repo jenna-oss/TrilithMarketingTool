@@ -195,14 +195,32 @@ export const KB_TOOLS = [
 
 /* --- execution ----------------------------------------------------------- */
 
+/* Every knowledge-base search records itself here (spec section 38). The rows
+ * are collected on ctx and written once per turn by the caller rather than one
+ * round trip per search — the log is not worth adding latency to the thing the
+ * user is waiting for.
+ *
+ * result_ids are the chunk or row ids actually returned, which is what makes
+ * the section 39 question answerable later: did a retrieved candidate reach the
+ * final plan? Without the ids that is unanswerable, and a query log alone would
+ * not have told anyone. */
+function record(ctx, entry) {
+  if (!ctx || !Array.isArray(ctx.searchLog)) return;
+  ctx.searchLog.push({ session_id: ctx.sessionId || null, ...entry });
+}
+
+const idsOf = (rows, key = 'chunk_id') =>
+  (rows || []).map((r) => r?.[key] ?? r?.id).filter(Boolean).slice(0, 40);
+
 /* Chunk ids are the traceability spine (spec section 30): every passage the
  * planner is given can be pointed back at a document and a timestamp. They are
  * returned to the model and never rendered to the reader. */
-export async function runKbTool(env, name, input) {
+export async function runKbTool(env, name, input, ctx = {}) {
   const { brandId } = await context(env);
   if (!brandId) throw new Error('no brand configured in the knowledge base');
 
   if (name === 'search_transcripts') {
+    const started = Date.now();
     const embedding = await embedQuery(env, input.query);
     const rows = await rpc(env, 'kb_search_transcripts', {
       p_brand_id: brandId,
@@ -213,6 +231,13 @@ export async function runKbTool(env, name, input) {
       p_content_type: input.content_type || null,
       p_intent: input.intent || 'SUPPORT',
       p_limit: clamp(input.limit, 5, 20),
+    });
+    record(ctx, {
+      tool: 'search_transcripts', query: input.query, intent: input.intent || 'SUPPORT',
+      filters: { date_from: input.date_from, date_to: input.date_to, content_type: input.content_type },
+      result_ids: idsOf(rows), result_count: rows.length,
+      top_score: rows[0]?.relevance ?? null,
+      latency_ms: Date.now() - started, degraded: !embedding,
     });
     return {
       degraded: !embedding,
@@ -232,6 +257,7 @@ export async function runKbTool(env, name, input) {
   }
 
   if (name === 'search_research') {
+    const started = Date.now();
     const embedding = await embedQuery(env, input.query);
     const rows = await rpc(env, 'kb_search_research', {
       p_brand_id: brandId,
@@ -242,6 +268,13 @@ export async function runKbTool(env, name, input) {
       p_source: input.source || null,
       p_intent: input.intent || 'SUPPORT',
       p_limit: clamp(input.limit, 5, 20),
+    });
+    record(ctx, {
+      tool: 'search_research', query: input.query, intent: input.intent || 'SUPPORT',
+      filters: { date_from: input.date_from, date_to: input.date_to, source: input.source },
+      result_ids: idsOf(rows), result_count: rows.length,
+      top_score: rows[0]?.relevance ?? null,
+      latency_ms: Date.now() - started, degraded: !embedding,
     });
     return {
       degraded: !embedding,
@@ -260,6 +293,7 @@ export async function runKbTool(env, name, input) {
   }
 
   if (name === 'search_previous_content') {
+    const started = Date.now();
     const embedding = await embedQuery(env, input.query);
     const rows = await rpc(env, 'kb_search_previous_content', {
       p_brand_id: brandId,
@@ -269,6 +303,13 @@ export async function runKbTool(env, name, input) {
       p_date_to: input.date_to || null,
       p_platform: input.platform || null,
       p_limit: clamp(input.limit, 10, 30),
+    });
+    record(ctx, {
+      tool: 'search_previous_content', query: input.query, intent: 'REPETITION',
+      filters: { platform: input.platform, date_from: input.date_from },
+      result_ids: idsOf(rows, 'id'), result_count: rows.length,
+      top_score: rows[0]?.relevance ?? null,
+      latency_ms: Date.now() - started, degraded: !embedding,
     });
     return {
       degraded: !embedding,
@@ -287,6 +328,7 @@ export async function runKbTool(env, name, input) {
   }
 
   if (name === 'check_repetition') {
+    const started = Date.now();
     const embedding = await embedQuery(env, [input.topic, input.angle].filter(Boolean).join(' — '));
     const rows = await rpc(env, 'kb_assess_repetition', {
       p_brand_id: brandId,
@@ -296,6 +338,16 @@ export async function runKbTool(env, name, input) {
       p_limit: clamp(input.limit, 5, 25),
     });
     const row = rows[0] || { assessment: 'new', matches: [] };
+    record(ctx, {
+      tool: 'check_repetition',
+      query: [input.topic, input.angle].filter(Boolean).join(' — '),
+      intent: 'REPETITION',
+      filters: { assessment: row.assessment },
+      result_ids: (row.matches || []).map((m) => m.id).filter(Boolean).slice(0, 40),
+      result_count: (row.matches || []).length,
+      top_score: row.top_similarity ?? null,
+      latency_ms: Date.now() - started, degraded: !embedding,
+    });
     return {
       assessment: row.assessment,
       matches: row.matches,
@@ -309,6 +361,7 @@ export async function runKbTool(env, name, input) {
   }
 
   if (name === 'search_content_ideas') {
+    const started = Date.now();
     const embedding = await embedQuery(env, input.query);
     const rows = await rpc(env, 'kb_search_content_ideas', {
       p_brand_id: brandId,
@@ -316,6 +369,13 @@ export async function runKbTool(env, name, input) {
       p_embedding: embedding,
       p_status: input.status === undefined ? 'unused' : input.status || null,
       p_limit: clamp(input.limit, 10, 30),
+    });
+    record(ctx, {
+      tool: 'search_content_ideas', query: input.query, intent: 'RECALL',
+      filters: { status: input.status },
+      result_ids: idsOf(rows, 'id'), result_count: rows.length,
+      top_score: rows[0]?.relevance ?? null,
+      latency_ms: Date.now() - started, degraded: !embedding,
     });
     return { results: rows };
   }
@@ -330,6 +390,7 @@ export async function runKbTool(env, name, input) {
       p_source_ids: Array.isArray(input.source_ids) ? input.source_ids : [],
       p_source_type: 'planning_session',
       p_status: 'proposed',
+      p_session_id: ctx.sessionId || null,
       p_embedding: embedding,
     });
     return { saved: true, id };

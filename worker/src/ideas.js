@@ -330,7 +330,7 @@ async function runTool(env, name, input, ctx = {}) {
     return result;
   }
 
-  if (KB_TOOL_NAMES.has(name)) return runKbTool(env, name, input);
+  if (KB_TOOL_NAMES.has(name)) return runKbTool(env, name, input, ctx);
 
   if (name === 'search_competitor_ads') {
     const rows = await rpc(env, 'adspy_search_ads', {
@@ -688,6 +688,10 @@ export async function handleIdeas(request, env, headers, ctx) {
   const plan = normalisePlan(body.plan);
   const sessionId = String(body.session_id ?? '').slice(0, 64) || null;
 
+  /* Spec section 38. Collected across the turn and written once at the end:
+   * a round trip per search would add latency to the thing being waited on. */
+  const searchLog = [];
+
   let attached;
   try { attached = buildAttachments(body.attachments); }
   catch (err) { return json({ error: err.message }, 400, headers); }
@@ -802,7 +806,7 @@ export async function handleIdeas(request, env, headers, ctx) {
           const results = [];
           for (const call of calls) {
             const { label, detail } = describe(call.name, call.input || {});
-            const toolCtx = { plan, texts: attached.texts, sessionId };
+            const toolCtx = { plan, texts: attached.texts, sessionId, searchLog };
             try {
               const rows = await runTool(env, call.name, call.input || {}, toolCtx);
               totals.searches += 1;
@@ -869,6 +873,33 @@ export async function handleIdeas(request, env, headers, ctx) {
         /* The authoritative state, sent every turn whether or not it changed.
          * A page that missed a mid-turn plan_state event still ends up correct. */
         send('plan_state', plan);
+
+        /* Persist the plan and the search log. Both are best-effort: a failure
+         * here must not turn a good answer into an error the user sees, because
+         * the answer has already been streamed and is not coming back. */
+        if (sessionId) {
+          try {
+            await rpc(env, 'kb_plan_save', {
+              p_session_id: sessionId,
+              payload: {
+                brand_slug: 'trilith',
+                goal: plan.goal,
+                target_count: plan.target_count,
+                slots: plan.slots,
+                rejected: plan.rejected,
+              },
+            });
+          } catch (err) { console.error('plan save failed:', err?.message); }
+        }
+
+        if (searchLog.length) {
+          try {
+            const brandId = await rpc(env, 'kb_brand_id', { p_slug: 'trilith' });
+            await rpc(env, 'kb_log_retrievals', {
+              payload: searchLog.map((e) => ({ ...e, brand_id: brandId })),
+            });
+          } catch (err) { console.error('retrieval log failed:', err?.message); }
+        }
         send('done', { model: MODEL, usage: totals, plan_complete: planIsComplete(plan) });
       } catch (err) {
         /* Surfaces in `wrangler tail`. The page gets a sanitised message; the
