@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 16 migrations applied to the Supabase project
+The `kb` schema is defined by 17 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 17 | `kb_upload_rpcs` | `kb_upload_document` and `kb_upload_chunks` — the only write path anon can reach, contained to the `upload:` source-key namespace |
 
 Three of these — 8, 10 and 13 — are corrections to earlier ones in the same
 batch, kept as separate migrations rather than folded back so the reasoning
