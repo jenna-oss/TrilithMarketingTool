@@ -56,6 +56,12 @@ const MAX_ROSTER = 16;
 const MAX_NEW_PER_RUN = 2;
 const MIN_ON_THESIS_VIDEOS = 2;
 
+/* Caps candidates EXAMINED, not added. Vetting one costs a 12-row media call
+ * whether or not it passes, so without this a day when nothing qualifies is
+ * the most expensive day there is: every candidate the search returned gets
+ * fetched and screened, and the roster still does not grow. */
+const MAX_CANDIDATES_CHECKED = 6;
+
 /* The filter buttons on creators.html are built from these, so an invented
  * value would render as a raw slug chip. */
 const PRODUCT_LINES = ['dscr', 'fix-and-flip', 'bridge', 'ground-up', 'portfolio', 'brrrr', 'multifamily'];
@@ -310,9 +316,14 @@ if (screenReady && updated.length < MAX_ROSTER) {
       }
       await sleep(PAUSE_MS);
     }
-    console.log(`\n  ${candidates.length} discovery candidates past the guardrails`);
+    const shortlist = candidates.slice(0, MAX_CANDIDATES_CHECKED);
+    console.log(`
+  ${candidates.length} candidates past the guardrails; vetting ${shortlist.length}`);
+    if (candidates.length > shortlist.length) {
+      console.log(`  ${candidates.length - shortlist.length} left unvetted — they are reconsidered tomorrow.`);
+    }
 
-    for (const cand of candidates) {
+    for (const cand of shortlist) {
       if (added.length >= MAX_NEW_PER_RUN || updated.length + added.length >= MAX_ROSTER) break;
       try {
         const list = await creatorMedia(cand.id);

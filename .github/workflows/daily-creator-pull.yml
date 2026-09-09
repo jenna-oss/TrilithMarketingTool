@@ -51,7 +51,8 @@ jobs:
         id: creators
         env:
           SPYGLASS_API_KEY: ${{ secrets.SPYGLASS_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The repo secret is named ANTHROPIC_API; the scripts read ANTHROPIC_API_KEY.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
         run: node tools/pull-creators.mjs
 
       # Rebuilt from whatever was just harvested, so the library and the clips
@@ -65,7 +66,8 @@ jobs:
         id: hooks
         continue-on-error: true
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The repo secret is named ANTHROPIC_API; the scripts read ANTHROPIC_API_KEY.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
         run: node tools/creator-hooks.mjs
 
       - name: Commit and push
