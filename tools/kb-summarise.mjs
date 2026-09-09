@@ -90,7 +90,10 @@ for (const doc of docs) {
         null,
         1
       ),
-      maxTokens: 4096,
+      /* The largest reply of the three: a summary, up to eight key points, six
+       * topics, and every insight with its citations. 4096 would truncate a
+       * long document and lose the insights, which are the valuable half. */
+      maxTokens: 8192,
     });
   } catch (err) {
     failed += 1;

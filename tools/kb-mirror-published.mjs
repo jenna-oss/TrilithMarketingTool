@@ -85,7 +85,8 @@ for (let i = 0; i < pages.length; i += BATCH) {
         null,
         1
       ),
-      maxTokens: 4096,
+      /* Raised with kb-seed-hooks: same failure shape, one long batch away. */
+      maxTokens: 8192,
     });
   } catch (err) {
     failed += batch.length;

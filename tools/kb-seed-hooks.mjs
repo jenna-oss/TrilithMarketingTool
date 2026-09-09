@@ -29,7 +29,11 @@ if (!hasKey()) {
 }
 
 const LIMIT = Number(process.env.KB_HOOK_LIMIT || 40);
-const BATCH = 10;
+/* Six, not ten. A batch of ten adapted hooks — each a category, a template, an
+ * example and topics — overran a 4096-token reply on the first real run and
+ * lost the whole batch. The reply grows with the batch, so the batch is the
+ * lever; the ceiling below is the safety net, not the fix. */
+const BATCH = 6;
 
 const SYSTEM = `You adapt advertising hook patterns into reusable templates for a private real estate lender that finances property investors — fix-and-flip, bridge, DSCR, ground-up, BRRRR, multifamily. The audience is investors and the brokers who serve them.
 
@@ -89,7 +93,7 @@ for (let i = 0; i < patterns.length; i += BATCH) {
         null,
         1
       ),
-      maxTokens: 4096,
+      maxTokens: 8192,
     });
   } catch (err) {
     failed += batch.length;
