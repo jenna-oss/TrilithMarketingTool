@@ -688,21 +688,9 @@
   }
 
   /* ============================================================
-     Method + footer
+     Long tail + footer
      ============================================================ */
 
-  .method {
-    background: var(--card-sunk);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: var(--s4);
-  }
-  .method h3 { font-size: .9375rem; margin-bottom: var(--s2); }
-  .method p { margin: 0 0 var(--s2); font-size: .875rem; color: var(--ink-body); }
-  .method p:last-child { margin-bottom: 0; }
-  .method strong { color: var(--ink); }
-  /* Used both inside .method and standalone in the long-tail section,
-     so it is deliberately not scoped to a parent. */
   .dark-list {
     font-family: var(--mono);
     font-size: .8125rem;
@@ -712,73 +700,6 @@
     line-height: 1.8;
   }
   .dark-list i { font-style: normal; opacity: .75; }
-
-  /* ============================================================
-     Strategy — the closing argument. Dark ground so it reads as a
-     conclusion rather than another evidence section.
-     ============================================================ */
-
-  .strategy {
-    background: var(--panel);
-    color: var(--ink-on-panel);
-    position: relative;
-    overflow: hidden;
-    border-top: none;
-  }
-  .strategy::before {
-    content: ""; position: absolute; border-radius: 50%;
-    width: 520px; height: 520px; left: -220px; bottom: -260px;
-    background: #ffffff07; pointer-events: none;
-  }
-  .strategy .wrap { position: relative; z-index: 1; }
-  .strategy h2 { color: var(--cream-text); }
-  .strategy .sec-head p { color: var(--sage); }
-
-  .concl { display: grid; gap: 0; margin-top: var(--s5); }
-  .concl-item {
-    display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    gap: var(--s3);
-    padding: var(--s4) 0;
-    border-top: 1px solid var(--rule-on-panel);
-  }
-  .concl-item:last-child { border-bottom: 1px solid var(--rule-on-panel); }
-  .concl-item .n {
-    font-family: var(--mono);
-    font-size: 1.5rem;
-    color: var(--emerald-bar);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-  .concl-item h3 { color: var(--cream-text); font-size: 1.125rem; margin-bottom: var(--s2); }
-  .concl-item p { margin: 0 0 var(--s2); color: var(--sage); max-width: 68ch; font-size: .9375rem; }
-  .concl-item p:last-child { margin-bottom: 0; }
-  .concl-item .proof {
-    font-family: var(--mono);
-    font-size: .75rem;
-    color: var(--ink-on-panel-quiet);
-    border-left: 2px solid var(--emerald-bar);
-    padding-left: var(--s2);
-    font-variant-numeric: tabular-nums;
-  }
-  .concl-item strong { color: var(--cream-text); }
-
-  .verdict {
-    margin-top: var(--s6);
-    border: 1px solid var(--rule-on-panel);
-    border-left: 3px solid var(--emerald-bar);
-    border-radius: 4px;
-    padding: var(--s4);
-    background: #ffffff05;
-  }
-  .verdict h3 { color: var(--cream-text); font-size: 1rem; margin-bottom: var(--s2); }
-  .verdict p { margin: 0 0 var(--s3); color: var(--sage); max-width: 68ch; font-size: .9375rem; }
-  .verdict p:last-child { margin-bottom: 0; }
-  .verdict strong { color: var(--cream-text); }
-
-  @media (max-width: 760px) {
-    .concl-item { grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--s2); }
-  }
 
   footer {
     background: var(--panel-deep);
@@ -864,7 +785,7 @@
       </p>
       <p class="as-of">
         Ad data as of <!-- AUTO:ASOF:START -->8 September 2026<!-- AUTO:ASOF:END -->,
-        refreshed daily. The strategy conclusions are dated analysis and are not.
+        refreshed daily.
       </p>
       <p style="margin:var(--s4) 0 0">
         <a class="ask-link" href="./">Ask &amp; brainstorm &rarr;</a>
