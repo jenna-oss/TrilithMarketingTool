@@ -364,6 +364,14 @@ run and skip work already done.
 
 ## What this will not tell you
 
+**The website corpus counts every page twice.** `content.documents` holds 80
+rows for 41 real pages — each one crawled as both `trilithfunding.com` and
+`www.trilithfunding.com`. The mirror into `published_content` canonicalises on
+the `www` form, so repetition detection sees each piece once. `search_trilith_content`
+does not: it still returns both copies of a passage, which inflates any count
+taken from it and wastes half of every result set. Fixing that means
+de-duplicating the content harvest, which is outside this schema.
+
 **An empty result is not an empty world.** It means nothing in *our* corpus
 matched. The corpus is whatever has been dropped in `kb/files/` and listed in
 `kb/sources.json` — nothing arrives on its own.
