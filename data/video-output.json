@@ -1,0 +1,46 @@
+{
+  "_comment": "Written by hand from four finished cuts uploaded to the public `videos` bucket on 2026-09-09. Every field here is read off the file itself: duration and dimensions from ffprobe, opening_line transcribed from the first on-screen caption, producedAt from the source file's date. Fields the pipeline normally fills — hook_form, hook_source, evidence, product, audience — are absent rather than guessed; output.html skips absent fields, so the detail view stays honest.",
+  "generatedAt": "2026-09-09",
+  "videos": [
+    {
+      "id": "manual-construction",
+      "topic": "Construction loans without experience",
+      "opening_line": "You don't need experience to get a construction loan.",
+      "duration": "0:54",
+      "producedAt": "2026-08-25",
+      "status": "draft",
+      "videoUrl": "https://kugnlobgsguxggnqiseh.supabase.co/storage/v1/object/public/videos/manual/construction_voice.mp4",
+      "thumbnailUrl": "./assets/thumbs/video-construction.webp"
+    },
+    {
+      "id": "manual-dscr",
+      "topic": "Why a DSCR loan gets declined",
+      "opening_line": "Not the market. Not your credit. A hard rule banks don't explain.",
+      "duration": "1:01",
+      "producedAt": "2026-08-25",
+      "status": "draft",
+      "videoUrl": "https://kugnlobgsguxggnqiseh.supabase.co/storage/v1/object/public/videos/manual/dscr_voice.mp4",
+      "thumbnailUrl": "./assets/thumbs/video-dscr.webp"
+    },
+    {
+      "id": "manual-jpmorgan",
+      "topic": "JPMorgan Chase's $750B housing bet",
+      "opening_line": "Big banks don't gamble. This is your cue.",
+      "duration": "0:50",
+      "producedAt": "2026-08-24",
+      "status": "draft",
+      "videoUrl": "https://kugnlobgsguxggnqiseh.supabase.co/storage/v1/object/public/videos/manual/jpmorgan_voice.mp4",
+      "thumbnailUrl": "./assets/thumbs/video-jpmorgan.webp"
+    },
+    {
+      "id": "manual-mayweather",
+      "topic": "Mayweather's $3B real estate deal",
+      "opening_line": "Floyd Mayweather just put $100 million into a real estate deal worth $3 billion.",
+      "duration": "0:48",
+      "producedAt": "2026-08-24",
+      "status": "draft",
+      "videoUrl": "https://kugnlobgsguxggnqiseh.supabase.co/storage/v1/object/public/videos/manual/mayweather_voice.mp4",
+      "thumbnailUrl": "./assets/thumbs/video-mayweather.webp"
+    }
+  ]
+}
