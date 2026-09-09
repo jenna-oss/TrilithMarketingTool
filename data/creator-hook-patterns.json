@@ -1,140 +1,193 @@
 {
-  "fetchedAt": "2026-08-21T00:00:00.000Z",
-  "note": "Not a Spyglass-computed insight -- Spyglass's own HOOK/USP aggregation returns empty for these creators, likely because it is tuned to paid ad campaigns rather than organic creator content. These patterns were derived by hand from the real hook quotes in data/education-creators.json: every quote below is verbatim, and a pattern was only kept if at least two independent creators used it, unless noted as single-example. Patterns are ordered by how many different creators converged on them -- convergence across people who do not know each other is the signal that a form actually works for this genre, not just a stylistic tic.",
+  "fetchedAt": "2026-09-09T01:06:22.636Z",
+  "note": "Rebuilt on every run of .github/workflows/daily-creator-pull.yml from the hooks harvested that day. Spyglass HOOK/USP aggregation returns empty for these creators because it is tuned to paid campaigns, so the patterns are read off the organic hooks themselves. Every quote is verified against a harvested hook before it is written.",
   "patterns": [
     {
-      "slug": "real-numbers-on-my-own-deal",
-      "label": "Real numbers on my own deal",
-      "description": "Opens with a specific dollar figure from a named, actual transaction -- never a hypothetical or an industry average. The number is the hook; the lesson follows.",
+      "slug": "dropped-into-a-conversation-already-running",
+      "label": "starts mid conversation already underway",
+      "description": "The line begins as if the camera arrived late to a discussion that was happening anyway. The missing first half creates a gap the viewer stays to close, and the eavesdropping frame feels unrehearsed.",
+      "creatorCount": 4,
+      "examples": [
+        {
+          "creator": "Jerry Norton",
+          "quote": "Okay, so the next thing I need to talk about some earnest money, man,",
+          "views": "6628"
+        },
+        {
+          "creator": "Michael Llanas",
+          "quote": "I really want to deep dive into owner financing because I know that's what you specialize in",
+          "views": "1110"
+        },
+        {
+          "creator": "Sean Pan",
+          "quote": "Does it matter if you intend to have like housemates and stuff like that?",
+          "views": "8.6K"
+        },
+        {
+          "creator": "Logan Fullmer",
+          "quote": "Why do I care?",
+          "views": "3091"
+        }
+      ]
+    },
+    {
+      "slug": "says-the-belief-out-loud",
+      "label": "voices a belief the audience holds",
+      "description": "Opens by stating the fear, habit, or objection the viewer is already carrying, so recognition happens before any teaching does. Being described accurately buys the creator the right to correct you.",
       "creatorCount": 3,
       "examples": [
-        { "creator": "Sean Pan", "quote": "I bought this 4plex for $250,000 and this is how much I make from it.", "views": "59.8K" },
-        { "creator": "Michael Llanas", "quote": "The seller for this house wants to sell it for $210,000 because it's worth $210,000.", "views": "5.5K" },
-        { "creator": "Jeremy Werden", "quote": "We just sold this Lakehouse Airbnb and I want to walk you guys through the numbers and share why we did it.", "views": "9.4K" }
+        {
+          "creator": "Michael Llanas",
+          "quote": "Most up to investors when they're looking at their first up to deal, everyone's always scared of the due on sale clause.",
+          "views": "2170"
+        },
+        {
+          "creator": "Sean Pan",
+          "quote": "Real estate investors love throwing around terms like cash on cash return.",
+          "views": "5.8K"
+        },
+        {
+          "creator": "Scott Betley",
+          "quote": "I got a buyer right now with a 3 % down payment and they want to wait a year because they think buying a home right now is stupid.",
+          "views": "4580"
+        }
       ]
     },
     {
-      "slug": "contrarian-warning-and-redirect",
-      "label": "Contrarian warning, then a redirect",
-      "description": "States what not to do in absolute terms -- never, don't wait -- then pivots immediately to the alternative. The prohibition is the hook; the redirect is the payoff.",
+      "slug": "result-number-stated-up-front",
+      "label": "leads with the number they made",
+      "description": "Opens with a concrete figure or ranking already achieved, so the claim is proven before it is explained. The specificity of the number is the credential, and the unanswered 'how' carries the viewer forward.",
       "creatorCount": 2,
       "examples": [
-        { "creator": "Logan Fullmer", "quote": "Never ever ever buy single family rentals for income. Do this instead.", "views": "6.7K" },
-        { "creator": "Theoni Rapo", "quote": "If you've been waiting on the real estate market to crash so that you can buy a house, you need to listen to this.", "views": "6K" }
+        {
+          "creator": "Sean Pan",
+          "quote": "I bought this 4plex for $250,000 and this is how much I make from it.",
+          "views": "59.8K"
+        },
+        {
+          "creator": "Jeremy Werden",
+          "quote": "Five years ago, we turned this into North Carolina's number one Airbnb.",
+          "views": "7318"
+        }
       ]
     },
     {
-      "slug": "behind-the-scenes-in-the-moment",
-      "label": "Behind the scenes, in the moment",
-      "description": "Filmed as it happens, present tense, physically at the location -- the UPS store, the open house. The setting itself is the hook before any lesson is stated.",
+      "slug": "here-is-where-i-am-standing",
+      "label": "anchors you to a physical place",
+      "description": "Opens by planting the viewer at a specific location, then implies the lesson lives there. The place itself is the promise, and 'right here' makes the information feel obtainable rather than theoretical.",
       "creatorCount": 2,
       "examples": [
-        { "creator": "Jerry Norton", "quote": "I just pulled up to the UPS store and I'm about to go in and overnight closing docs for this house that we're buying in Tulsa, Oklahoma.", "views": "8.9K" },
-        { "creator": "Scott Betley", "quote": "Y'all, we went to another open house.", "views": "128K" }
+        {
+          "creator": "Jerry Norton",
+          "quote": "So Jared and I are out here at a house in Maryville that Jared made an offer on.",
+          "views": "4938"
+        },
+        {
+          "creator": "Logan Fullmer",
+          "quote": "One of the best places in all the land to buy distressed property is right here, your county courthouse.",
+          "views": "2666"
+        }
       ]
     },
     {
-      "slug": "binary-judgment-format",
-      "label": "Binary judgment format",
-      "description": "Names a strategy or property type, then sorts it into one of two labelled buckets on the spot -- moneymaker or money pit, underrated or overrated. Built as a repeatable series rather than a one-off.",
-      "creatorCount": 1,
-      "examples": [
-        { "creator": "Logan Fullmer", "quote": "Moneymaker or Money Pit?", "views": "10.4K" },
-        { "creator": "Logan Fullmer", "quote": "Underrated or overrated? Wholesaling.", "views": "6.7K" }
-      ]
-    },
-    {
-      "slug": "loan-program-reveal",
-      "label": "Loan-program reveal",
-      "description": "Introduces a specific named loan product as something most buyers do not know exists -- the hook is the existence of the program, not an argument for using it.",
-      "creatorCount": 3,
-      "examples": [
-        { "creator": "Theoni Rapo", "quote": "Laziest way you can buy an investment property in 2026 is with something called a DSCR loan.", "views": "10.2K" },
-        { "creator": "Scott Betley", "quote": "If you're hoping to purchase a home in 2025 and you're wondering if you can use down payment assistance or grant programs to cover the down payment on the house, this is the video for you.", "views": "269K" },
-        { "creator": "Erick Brice", "quote": "Buying a multi-family property is one of the quickest ways to building wealth through real estate!", "views": "19.1K" }
-      ]
-    },
-    {
-      "slug": "myth-bust-legality-correction",
-      "label": "Myth-bust / legality correction",
-      "description": "Opens by naming a misconception people actually voice out loud -- often \"is this illegal\" or \"is this a scam\" -- and corrects it on camera.",
-      "creatorCount": 1,
-      "examples": [
-        { "creator": "Michael Llanas", "quote": "He doesn't believe me that subject to is not illegal.", "views": "51.1K" }
-      ]
-    },
-    {
-      "slug": "framework-mental-model",
-      "label": "Framework / mental model",
-      "description": "Reduces a deal or process to a simple structural rule -- a ratio, a role count -- rather than a story. The rule is stated as fact, not as advice.",
-      "creatorCount": 1,
-      "examples": [
-        { "creator": "Jerry Norton", "quote": "As a flipper, I try to be all into the project at 70% of what I can resell it for.", "views": "12.3K" },
-        { "creator": "Jerry Norton", "quote": "When I think about a deal or a transaction, there are really three people in the transaction.", "views": "2.9K" }
-      ]
-    },
-    {
-      "slug": "jargon-translation",
-      "label": "Jargon translation",
-      "description": "Names an industry term investors throw around, admits it sounds intimidating, then defines it in one plain sentence.",
-      "creatorCount": 1,
-      "examples": [
-        { "creator": "Sean Pan", "quote": "Real estate investors love throwing around terms like cash on cash return.", "views": "5.8K" }
-      ]
-    },
-    {
-      "slug": "ranked-list",
-      "label": "Ranked list",
-      "description": "Enumerates every option in a category and orders them worst to best, arguing the case for each placement rather than just naming them.",
-      "creatorCount": 1,
-      "examples": [
-        { "creator": "Logan Fullmer", "quote": "Best ways to make money in real estate.", "views": "140K" }
-      ]
-    },
-    {
-      "slug": "rent-vs-mortgage-paradox",
-      "label": "Rent-vs-mortgage paradox",
-      "description": "Compares what someone already pays in rent to what they are being told they cannot afford in a mortgage -- the contradiction is the hook.",
-      "creatorCount": 1,
-      "examples": [
-        { "creator": "Scott Betley", "quote": "I can't tell you how many homebuyers come to me confused about why they can't qualify for a $2,000 mortgage payment when they're paying three to $4,000 a month in rent.", "views": "26.3K" }
-      ]
-    },
-    {
-      "slug": "second-person-case-study",
-      "label": "Second-person case study",
-      "description": "Addresses the viewer directly as a specific persona -- an age, a struggle, a situation -- then walks through that persona's exact path rather than speaking in generalities.",
+      "slug": "verdict-before-the-reasoning",
+      "label": "gives the ruling before the reason",
+      "description": "Delivers a flat instruction or prohibition with no setup at all, holding back the entire justification. The viewer either disagrees or wants the missing 'why', and both reactions cost the same five seconds.",
       "creatorCount": 2,
       "examples": [
-        { "creator": "Erick Brice", "quote": "You're 20 years old.", "views": "39.7K" },
-        { "creator": "Scott Betley", "quote": "Just a quick PSA to anyone who is struggling to save for a down payment on a home right now.", "views": "9.1K" }
+        {
+          "creator": "Theoni Rapo",
+          "quote": "If the house that you like on Zillow is still on the market, ask for a seller credit.",
+          "views": "211040"
+        },
+        {
+          "creator": "Jeremy Werden",
+          "quote": "Do not buy a lakefront or beachfront property unless you consider this.",
+          "views": "4175"
+        }
       ]
     },
     {
-      "slug": "hypothetical-capital-scenario",
-      "label": "Hypothetical capital scenario",
-      "description": "Poses a specific hypothetical amount of money and situation, then answers with one specific move -- not a menu of options.",
-      "creatorCount": 1,
+      "slug": "bare-topic-label",
+      "label": "states the tactic as a headline",
+      "description": "No framing, no promise, no character, just the subject stated flatly like a search result. It filters instantly for people who already want that exact thing and wastes no words on anyone else.",
+      "creatorCount": 2,
       "examples": [
-        { "creator": "Jeremy Werden", "quote": "If I had $50,000 right now and I can only do one deal, what I would do personally, I would apply for a $1 million loan.", "views": "13K" }
+        {
+          "creator": "Logan Fullmer",
+          "quote": "How to find houses for cheap.",
+          "views": "2773"
+        },
+        {
+          "creator": "Michael Llanas",
+          "quote": "The calling listings that have been on the market for a long time.",
+          "views": "1002"
+        }
       ]
     },
     {
-      "slug": "persona-intro-voice-first",
-      "label": "Persona intro, voice-first",
-      "description": "Opens by establishing the creator's distinct persona or nickname before any content -- the hook is who is talking, not yet what they are saying.",
+      "slug": "real-call-in-progress",
+      "label": "opens on a live call or offer",
+      "description": "The hook is an actual working line being spoken to a real counterparty, not to the audience. Viewers stay because something is genuinely at stake in the next sentence and the outcome is unknown.",
       "creatorCount": 1,
       "examples": [
-        { "creator": "Theoni Rapo", "quote": "Hey bestie, Theoni the lender here, also known as not your daddy's lender, but I'm also not your daddy's best friend either.", "views": "5.9K" }
+        {
+          "creator": "Jerry Norton",
+          "quote": "Hi Peter, my name is Jerry Norton calling you about your property on Liberty Road.",
+          "views": "6128"
+        }
       ]
     },
     {
-      "slug": "personal-result-lifestyle-proof",
-      "label": "Personal result / lifestyle proof",
-      "description": "States a big personal financial outcome -- portfolio value, quitting a job, freedom to travel -- as the hook, before explaining how it was built.",
+      "slug": "guess-before-i-tell-you",
+      "label": "invites you to guess first",
+      "description": "Withholds all substance and instead hands the viewer a game to play, whether a verdict to call or an outcome to predict. Curiosity is manufactured purely by the absence of information.",
       "creatorCount": 1,
       "examples": [
-        { "creator": "Sean Pan", "quote": "We built a $4.7 million rental portfolio that let me leave my corporate job and travel the world by the time I was 29 years old.", "views": "5.4K" }
+        {
+          "creator": "Scott Betley",
+          "quote": "Alright, Realtor vs Lender, Fact or Myth?",
+          "views": "6617"
+        }
+      ]
+    },
+    {
+      "slug": "casts-you-in-the-scene",
+      "label": "assigns the viewer a role",
+      "description": "Uses second person to hand the viewer an identity or a possession in the opening breath, before any topic is named. You are not being told about a situation, you are placed inside one.",
+      "creatorCount": 1,
+      "examples": [
+        {
+          "creator": "Erick Brice",
+          "quote": "You're 20 years old.",
+          "views": "39.7K"
+        }
+      ]
+    },
+    {
+      "slug": "names-a-program-you-have-not-heard-of",
+      "label": "names a rule most people missed",
+      "description": "Opens by naming a specific piece of legislation or program and framing it as news the viewer probably missed. The proper noun signals insider information and the question format makes ignorance feel checkable.",
+      "creatorCount": 1,
+      "examples": [
+        {
+          "creator": "Scott Betley",
+          "quote": "Hey Kyle, have you heard about the MOVE Act that Congress just proposed that can help homeowners keep their lower interest rates?",
+          "views": "4370"
+        }
+      ]
+    },
+    {
+      "slug": "absurd-plan-posed-as-a-question",
+      "label": "asks if a strange plan works",
+      "description": "Lays out an oddly specific, slightly ridiculous scheme in full and ends on a genuine yes-or-no question. The detail makes it sound like someone actually did it, so the answer feels worth waiting for.",
+      "creatorCount": 1,
+      "examples": [
+        {
+          "creator": "Jeremy Werden",
+          "quote": "Should you buy a camper, renovate it, and put it in your parents' backyard and then rent it out to complete strangers on rental platforms such as Airbnb?",
+          "views": "5159"
+        }
       ]
     }
   ]

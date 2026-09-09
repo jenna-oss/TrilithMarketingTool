@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T00:59:51.818Z",
+  "fetchedAt": "2026-09-09T01:05:16.981Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -19,32 +19,44 @@
       "audience": "borrower",
       "videos": [
         {
-          "hook": "I can't tell you how many homebuyers come to me confused about why they can't qualify for a $2,000 mortgage payment when they're paying three to $4,000 a month in rent.",
+          "id": "4aef3bad-f08e-4910-b394-7d6194fc9994",
+          "hook": "Hey Kyle, have you heard about the MOVE Act that Congress just proposed that can help homeowners keep their lower interest rates?",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "26.3K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/114af897faeaada9320f88ec15b33d3e.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/114af897faeaada9320f88ec15b33d3e.mp4"
+          "views": "4370",
+          "postedAt": "2026-09-01",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8862786d71b19aa8d0fbecf2d577bf65.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8862786d71b19aa8d0fbecf2d577bf65.mp4"
         },
         {
-          "hook": "Just a quick PSA to anyone who is struggling to save for a down payment on a home right now.",
+          "id": "015931e0-1d28-4b68-bd07-f710b50505dc",
+          "hook": "Alright, Realtor vs Lender, Fact or Myth?",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "9.1K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/56d89994d635eca3c832d3950aaeec19.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/56d89994d635eca3c832d3950aaeec19.mp4"
+          "views": "6617",
+          "postedAt": "2026-08-27",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/0af49ccd935d40883c7ff1621f55912f.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/0af49ccd935d40883c7ff1621f55912f.mp4"
         },
         {
-          "hook": "Y'all, we went to another open house.",
+          "id": "a99b152b-624e-4c0d-b8d7-d855089c9fdd",
+          "hook": "I got a buyer right now with a 3 % down payment and they want to wait a year because they think buying a home right now is stupid.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "128K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/223860623c8e4726dc911a0b260285f5.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/223860623c8e4726dc911a0b260285f5.mp4"
+          "views": "4580",
+          "postedAt": "2026-08-24",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/a721121eae46268791fb7a3263bbb521.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/a721121eae46268791fb7a3263bbb521.mp4"
         },
         {
-          "hook": "If you're hoping to purchase a home in 2025 and you're wondering if you can use down payment assistance or grant programs to cover the down payment on the house, this is the video for you.",
+          "id": "14c741f3-5955-4238-abb3-ba9e35f2a5d1",
+          "hook": "Y'all guess what happened?",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "269K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d29bad897c1241411a0bcc45f793cc09.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d29bad897c1241411a0bcc45f793cc09.mp4"
+          "views": "118851",
+          "postedAt": "2026-08-11",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/741c706e095fa60f8932697ebd496cda.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/741c706e095fa60f8932697ebd496cda.mp4"
         }
       ]
     },
@@ -64,32 +76,24 @@
       "audience": "borrower",
       "videos": [
         {
-          "hook": "Okay, so there's a way that you can buy a house with business bank statements when you own a small business",
+          "id": "99fe3816-d17a-405e-a1e8-51df28718a57",
+          "hook": "If the house that you like on Zillow is still on the market, ask for a seller credit.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "2.4K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/39601c1dc9622f591690c8038d7f8e16.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/39601c1dc9622f591690c8038d7f8e16.mp4"
+          "views": "211040",
+          "postedAt": "2026-08-14",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d39334bd7b931196fe90055dbb7deefe.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d39334bd7b931196fe90055dbb7deefe.mp4"
         },
         {
-          "hook": "Laziest way you can buy an investment property in 2026 is with something called a DSCR loan.",
+          "id": "1b0b5440-937a-4e66-b33e-277a61e29e6a",
+          "hook": "When a seller accepts your offer for a house, there are typically three things that you pay for within a week of that offer being accepted.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "10.2K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d01d54d6c99c0d6b422028b76bf92e08.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d01d54d6c99c0d6b422028b76bf92e08.mp4"
-        },
-        {
-          "hook": "Hey bestie, Theoni the lender here, also known as not your daddy's lender, but I'm also not your daddy's best friend either.",
-          "category": "Text Overlay",
-          "views": "5.9K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1cd3b4a43ee32de74f6e119c05060614.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1cd3b4a43ee32de74f6e119c05060614.mp4"
-        },
-        {
-          "hook": "If you've been waiting on the real estate market to crash so that you can buy a house, you need to listen to this.",
-          "category": "Commentary",
-          "views": "6K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/9bff0961d76f55288d5759d72721e41c.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/9bff0961d76f55288d5759d72721e41c.mp4"
+          "views": "102313",
+          "postedAt": "2026-07-27",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/573fb670dc5a837dd9db40c6c7fdf1f8.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/573fb670dc5a837dd9db40c6c7fdf1f8.mp4"
         }
       ]
     },
@@ -110,32 +114,44 @@
       "audience": "borrower",
       "videos": [
         {
-          "hook": "We just sold this Lakehouse Airbnb and I want to walk you guys through the numbers and share why we did it.",
+          "id": "7e7442fc-73ee-419c-a5fc-debd81f06de0",
+          "hook": "Do not buy a lakefront or beachfront property unless you consider this.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "9.4K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f0d06f1c4cb38c67e591a88c7480b582.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f0d06f1c4cb38c67e591a88c7480b582.mp4"
+          "views": "4175",
+          "postedAt": "2026-08-21",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c779f47db84d926e773f53ac7578ec0f.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c779f47db84d926e773f53ac7578ec0f.mp4"
         },
         {
-          "hook": "If I had $50,000 right now and I can only do one deal, what I would do personally, I would apply for a $1 million loan.",
+          "id": "deadd310-3fbb-4c54-ac73-6e9c81b087f7",
+          "hook": "Five years ago, we turned this into North Carolina's number one Airbnb.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "7318",
+          "postedAt": "2026-08-20",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e84e7ec8d7b45813412331c9f6ef31da.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e84e7ec8d7b45813412331c9f6ef31da.mp4"
+        },
+        {
+          "id": "238bcd99-75fe-4615-8d0e-5757b06b6a8b",
+          "hook": "Should you buy a camper, renovate it, and put it in your parents' backyard and then rent it out to complete strangers on rental platforms such as Airbnb?",
+          "hookSource": "hook",
           "category": "Storytime",
-          "views": "13K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/72a595d18cc03b190881fe86429be0e3.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/72a595d18cc03b190881fe86429be0e3.mp4"
+          "views": "5159",
+          "postedAt": "2026-08-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2af7c14a6b1d8a57682642c87f4e4d8d.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2af7c14a6b1d8a57682642c87f4e4d8d.mp4"
         },
         {
-          "hook": "All right, what the heck is going on here?",
+          "id": "bf9cc717-25a2-4e89-b9c9-06e3c1f735c6",
+          "hook": "Your rental property does not need an oversized closet that nobody's using.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "13.9K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/9f8f7809a55f0c9b0820cc762ca164e7.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/9f8f7809a55f0c9b0820cc762ca164e7.mp4"
-        },
-        {
-          "hook": null,
-          "category": "Explainer",
-          "views": "18.9K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e60769e9f888ff2ee9ba384cbb154067.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e60769e9f888ff2ee9ba384cbb154067.mp4"
+          "views": "7061",
+          "postedAt": "2026-07-31",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/895c018f93729a0979ead4aa4e9c66fd.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/895c018f93729a0979ead4aa4e9c66fd.mp4"
         }
       ]
     },
@@ -203,32 +219,44 @@
       "audience": "borrower",
       "videos": [
         {
-          "hook": "As a flipper, I try to be all into the project at 70% of what I can resell it for.",
+          "id": "66e96c7b-8e16-4e18-9aff-c07422d32e47",
+          "hook": "What would a package deal look like if I bought this and Iowa?",
+          "hookSource": "hook",
           "category": "Commentary",
-          "views": "12.3K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/110ec8e8174e91230a008cacae3aa142.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/110ec8e8174e91230a008cacae3aa142.mp4"
+          "views": "3257",
+          "postedAt": "2026-08-29",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e7f048c52f4c7674e5384db4e32bd71c.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e7f048c52f4c7674e5384db4e32bd71c.mp4"
         },
         {
-          "hook": "Do the math with me.",
+          "id": "e1103dce-e66a-463e-bed3-1a866f8466de",
+          "hook": "Okay, so the next thing I need to talk about some earnest money, man,",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "6628",
+          "postedAt": "2026-08-28",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/cb227b72df1dfa42a85c4b3e45929f9b.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/cb227b72df1dfa42a85c4b3e45929f9b.mp4"
+        },
+        {
+          "id": "2bbd9065-7849-49bb-b8b4-c4c6707c99d0",
+          "hook": "Hi Peter, my name is Jerry Norton calling you about your property on Liberty Road.",
+          "hookSource": "hook",
           "category": "Commentary",
-          "views": "11.2K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/5c7a8da6e3812a87ac26e4462ee751b2.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/5c7a8da6e3812a87ac26e4462ee751b2.mp4"
+          "views": "6128",
+          "postedAt": "2026-08-27",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c82b4418564a6f1fa79caa48f9380ad9.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c82b4418564a6f1fa79caa48f9380ad9.mp4"
         },
         {
-          "hook": "I just pulled up to the UPS store and I'm about to go in and overnight closing docs for this house that we're buying in Tulsa, Oklahoma.",
-          "category": "Explainer",
-          "views": "8.9K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1a767b83a872e9da4238fc15a5b9e30e.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1a767b83a872e9da4238fc15a5b9e30e.mp4"
-        },
-        {
-          "hook": "When I think about a deal or a transaction, there are really three people in the transaction.",
-          "category": "Explainer",
-          "views": "2.9K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/879376db65ec446d7c51c410cbfa1cf8.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/879376db65ec446d7c51c410cbfa1cf8.mp4"
+          "id": "41ab2337-d649-40e9-b7c1-7115633597a1",
+          "hook": "So Jared and I are out here at a house in Maryville that Jared made an offer on.",
+          "hookSource": "hook",
+          "category": "Vlog",
+          "views": "4938",
+          "postedAt": "2026-08-20",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/112c79e4ea0ceaafc4115af43bd489bf.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/112c79e4ea0ceaafc4115af43bd489bf.mp4"
         }
       ]
     },
@@ -250,32 +278,44 @@
       "audience": "borrower",
       "videos": [
         {
-          "hook": "Best ways to make money in real estate.",
-          "category": "Explainer",
-          "views": "140K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8e265737c159b28f792d17c8396e2363.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8e265737c159b28f792d17c8396e2363.mp4"
+          "id": "d6495c54-f3bd-4b27-a141-b9e72bd9163c",
+          "hook": "A married couple deeply in love, three kids, one house, then they died the same day.",
+          "hookSource": "title",
+          "category": "Storytime",
+          "views": "4484",
+          "postedAt": "2026-09-07",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/bf6131eb744c7cbbeee9474d2a816798.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/bf6131eb744c7cbbeee9474d2a816798.mp4"
         },
         {
-          "hook": "Moneymaker or Money Pit?",
+          "id": "e8a01c52-bc8a-46f2-a249-aaa448e7513d",
+          "hook": "How to find houses for cheap.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "10.4K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/0d5fc160d8a2b7f731f7e7fb5ff04cc5.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/0d5fc160d8a2b7f731f7e7fb5ff04cc5.mp4"
+          "views": "2773",
+          "postedAt": "2026-09-07",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e22b28347f6f31fe2af63613f8d10a8f.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e22b28347f6f31fe2af63613f8d10a8f.mp4"
         },
         {
-          "hook": "Underrated or overrated? Wholesaling.",
+          "id": "d81cd64d-d5e5-49ca-a4ec-6051cd436846",
+          "hook": "Why do I care?",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "6.7K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/627b6f8ac012dcfb90e01994aaa16b4d.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/627b6f8ac012dcfb90e01994aaa16b4d.mp4"
+          "views": "3091",
+          "postedAt": "2026-09-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/54ba651e7722369db2e051da54f10de4.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/54ba651e7722369db2e051da54f10de4.mp4"
         },
         {
-          "hook": "Never ever ever buy single family rentals for income. Do this instead.",
-          "category": "Text Overlay",
-          "views": "6.7K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8696863b9f9b8c0445e4faa0d57b2df9.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8696863b9f9b8c0445e4faa0d57b2df9.mp4"
+          "id": "f40f1719-4f66-4a84-acdb-5587b7f2b85b",
+          "hook": "One of the best places in all the land to buy distressed property is right here, your county courthouse.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "2666",
+          "postedAt": "2026-09-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/44b8bd59b61d8a20c24f28c36b0f9cc2.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/44b8bd59b61d8a20c24f28c36b0f9cc2.mp4"
         }
       ]
     },
@@ -297,25 +337,34 @@
       "audience": "borrower",
       "videos": [
         {
-          "hook": "He doesn't believe me that subject to is not illegal.",
-          "category": "Explainer",
-          "views": "51.1K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/760963d0d52e7568d416c483efa8ca2b.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/760963d0d52e7568d416c483efa8ca2b.mp4"
+          "id": "49c068f9-5484-4eb7-b208-10f323a1cd60",
+          "hook": "The calling listings that have been on the market for a long time.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "1002",
+          "postedAt": "2026-09-01",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/0b9e5040cf2d8d91b63299c4427dfd14.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/0b9e5040cf2d8d91b63299c4427dfd14.mp4"
         },
         {
-          "hook": "The seller for this house wants to sell it for $210,000 because it's worth $210,000.",
-          "category": "Explainer",
-          "views": "5.5K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1d11ff4bcb807a476a580e4d14f61580.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1d11ff4bcb807a476a580e4d14f61580.mp4"
+          "id": "0a6f11d0-e777-4c41-8786-4ff99f4527d0",
+          "hook": "I really want to deep dive into owner financing because I know that's what you specialize in",
+          "hookSource": "hook",
+          "category": "Interview",
+          "views": "1110",
+          "postedAt": "2026-08-31",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/19620af0ced4a89bfbb9d0e1b7064492.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/19620af0ced4a89bfbb9d0e1b7064492.mp4"
         },
         {
-          "hook": "I love BRRRR deals.",
+          "id": "7e052757-9c82-4d77-99c5-5c38c77d85c6",
+          "hook": "Most up to investors when they're looking at their first up to deal, everyone's always scared of the due on sale clause.",
+          "hookSource": "hook",
           "category": "Explainer",
-          "views": "1.2K",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3f673660981347052f2b98f6314ec051.jpg",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3f673660981347052f2b98f6314ec051.mp4"
+          "views": "2170",
+          "postedAt": "2026-08-29",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/81d081762809f30e5d14966f42a87c9b.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/81d081762809f30e5d14966f42a87c9b.mp4"
         }
       ]
     },
