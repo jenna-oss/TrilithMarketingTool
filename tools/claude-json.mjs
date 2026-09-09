@@ -30,20 +30,52 @@ export function hasKey() {
  *
  * Prefilling the assistant turn with an opening brace is the usual fix, and it
  * is NOT available here: claude-opus-5 rejects assistant prefill outright with
- * "This model does not support assistant message prefill" (400). So the system
- * prompt asks for bare JSON and this unwraps whatever comes back — fenced
- * block first, then the outermost braces, so a stray sentence either side does
- * not cost us the run. */
+ * "This model does not support assistant message prefill" (400).
+ *
+ * So the system prompt asks for bare JSON and this unwraps whatever arrives.
+ * Naive approaches both failed against real replies: JSON.parse on the whole
+ * body dies on any trailing text, and first-brace-to-last-brace spans a
+ * trailing second object and dies the same way ("Unexpected non-whitespace
+ * character after JSON"). Scanning for the first BALANCED object is what
+ * survives, so quotes and escapes have to be tracked -- a brace inside a hook
+ * quotation must not close the object. */
+function firstJsonObject(text) {
+  const open = text.indexOf('{');
+  if (open === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = open; i < text.length; i += 1) {
+    const ch = text[i];
+
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+
+    if (ch === '"') inString = true;
+    else if (ch === '{') depth += 1;
+    else if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return text.slice(open, i + 1);
+    }
+  }
+  return null;
+}
+
 function extractJson(text) {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   const body = (fenced ? fenced[1] : text).trim();
   try {
     return JSON.parse(body);
   } catch (err) {
-    const open = body.indexOf('{');
-    const close = body.lastIndexOf('}');
-    if (open === -1 || close <= open) throw err;
-    return JSON.parse(body.slice(open, close + 1));
+    const obj = firstJsonObject(body);
+    if (!obj) throw err;
+    return JSON.parse(obj);
   }
 }
 
