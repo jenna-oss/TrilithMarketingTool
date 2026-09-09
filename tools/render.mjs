@@ -13,6 +13,7 @@
  * ------------------------------------------------------------------------ */
 
 import { readFile, writeFile } from 'node:fs/promises';
+import { WALL_BRANDS, TOP_UP_TO, topUpAds } from './wall-brands.mjs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -105,20 +106,13 @@ try {
   creatives = JSON.parse(await readFile(join(ROOT, 'data', 'creatives.json'), 'utf8'));
 } catch { /* not harvested yet */ }
 
-/* The board lenders, in wall order, with the prefix that matches our corpus. */
-const WALL_BRANDS = [
-  { slug: 'kiavi',  label: 'Kiavi',        corpus: 'kiavi' },
-  { slug: 'lima',   label: 'Lima One',     corpus: 'lima one' },
-  { slug: 'visio',  label: 'Visio',        corpus: 'visio lending' },
-  { slug: 'anchor', label: 'Anchor',       corpus: 'anchor loans' },
-  { slug: 'silver', label: 'New Silver',   corpus: 'new silver' },
-  { slug: 'rcn',    label: 'RCN',          corpus: 'rcn capital' },
-  { slug: 'l1',     label: 'LendingOne',   corpus: 'lendingone' },
-  { slug: 'renovo', label: 'Renovo',       corpus: 'renovo financial' },
-  { slug: 'temple', label: 'Temple View',  corpus: 'temple view capital' },
-];
-
-const TOP_UP_TO = 3;
+/* Artwork for the Ad Library top-ups, harvested separately by
+ * tools/adlib-thumbs.mjs. Absent until that has run, and absent for any ad it
+ * could not reach — both cases fall back to the date plate. */
+let adlibThumbs = {};
+try {
+  adlibThumbs = JSON.parse(await readFile(join(ROOT, 'data', 'adlib-thumbs.json'), 'utf8')).thumbs ?? {};
+} catch { /* not harvested yet */ }
 
 if (creatives?.cards?.length) {
   const cards = [...creatives.cards];
@@ -132,10 +126,7 @@ if (creatives?.cards?.length) {
     const have = cards.filter((c) => c.slug === b.slug).length;
     if (have >= TOP_UP_TO) continue;
 
-    const mine = ads
-      .filter((x) => String(x.advertiser).toLowerCase().startsWith(b.corpus))
-      .sort((x, y) => Date.parse(y.started || 0) - Date.parse(x.started || 0))
-      .slice(0, TOP_UP_TO - have);
+    const mine = topUpAds(ads, b, TOP_UP_TO - have);
 
     for (const ad of mine) {
       cards.push({
@@ -145,7 +136,7 @@ if (creatives?.cards?.length) {
         line: ad.copy.replace(/\s+/g, ' ').trim().slice(0, 150),
         mediaType: 'AD LIBRARY',
         mediaUrl: `https://www.facebook.com/ads/library/?id=${ad.libraryId}`,
-        thumbnailUrl: null,
+        thumbnailUrl: adlibThumbs[ad.libraryId] ?? null,
         daysRun: null,
         started: ad.started || null,
       });
