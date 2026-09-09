@@ -171,7 +171,11 @@
               detail.textContent = data.detail;
               const n = document.createElement('span');
               n.className = 'n';
-              n.textContent = data.failed ? '' : ('→ ' + data.count);
+              /* summary for tools that do not return rows — "locked · 2 to go"
+                 says more than a count would, and a count would say 0. */
+              const outcome = data.summary != null ? data.summary : data.count;
+              n.textContent = data.failed ? '' : ('→ ' + outcome
+                + (data.degraded ? ' · keyword only' : ''));
               row.append(tag, detail, n);
               searches.append(row);
               row.scrollIntoView({ block: 'end' });

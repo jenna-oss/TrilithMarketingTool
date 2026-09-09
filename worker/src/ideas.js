@@ -457,6 +457,45 @@ function toApiBlocks(content) {
 
 /* A short human-readable form of what was searched, for the transparency strip
  * in the UI. The model's own arguments, not a paraphrase. */
+/* The strip renders "→ N". Only some tools return a bare array: the
+ * knowledge-base tools wrap their rows in an object, and reporting
+ * Array.isArray(rows) ? rows.length : 0 for those meant a search that found ten
+ * passages displayed as one that found none — the transparency strip stating
+ * the opposite of what happened.
+ *
+ * Tools that do not return rows at all get a short outcome instead of a number,
+ * because "→ 0" on a call that locked video three is worse than no number. */
+function toolOutcome(name, rows) {
+  if (Array.isArray(rows)) return { count: rows.length };
+  if (rows && Array.isArray(rows.results)) {
+    return { count: rows.results.length, degraded: Boolean(rows.degraded) };
+  }
+  if (!rows || typeof rows !== 'object') return { count: 0 };
+
+  switch (name) {
+    case 'check_repetition':
+      return {
+        summary: rows.assessment
+          + (rows.matches?.length ? ` · ${rows.matches.length} prior` : ''),
+        degraded: Boolean(rows.note),
+      };
+    case 'set_video_count':
+      return { summary: `${rows.target_count} video${rows.target_count === 1 ? '' : 's'}` };
+    case 'lock_video':
+      return { summary: rows.complete ? 'locked · plan complete' : `locked · ${rows.remaining} to go` };
+    case 'unlock_video':
+      return { summary: 'cleared' };
+    case 'reject_idea':
+      return { summary: 'noted' };
+    case 'save_idea':
+      return { summary: 'saved' };
+    case 'remember_file':
+      return { summary: rows.status === 'stored' ? `${rows.chunks} passages` : String(rows.status || 'done') };
+    default:
+      return { count: Array.isArray(rows) ? rows.length : 0 };
+  }
+}
+
 function describe(name, input) {
   if (KB_TOOL_NAMES.has(name)) return describeKbTool(name, input);
 
@@ -469,6 +508,12 @@ function describe(name, input) {
   if (input.since || input.started_since) bits.push(`since ${input.since || input.started_since}`);
   if (input.insight_type) bits.push(`type: ${input.insight_type}`);
   if (input.group_by) bits.push(`by ${input.group_by}`);
+  /* Plan tools carry no query, so without these the strip said "everything" —
+   * which is exactly wrong for a call that sets the batch to five. */
+  if (input.count !== undefined) bits.push(`${input.count} video${input.count === 1 ? '' : 's'}`);
+  if (input.slot !== undefined) bits.push(`slot ${input.slot}`);
+  if (input.topic) bits.push(`topic: ${input.topic}`);
+  if (input.name) bits.push(input.name);
   const label = {
     set_video_count: 'Batch size',
     lock_video: 'Locking a video',
@@ -761,7 +806,7 @@ export async function handleIdeas(request, env, headers, ctx) {
             try {
               const rows = await runTool(env, call.name, call.input || {}, toolCtx);
               totals.searches += 1;
-              send('tool', { label, detail, count: Array.isArray(rows) ? rows.length : 0 });
+              send('tool', { label, detail, ...toolOutcome(call.name, rows) });
               /* The page mirrors the plan, so it must learn about a change the
                * moment it happens rather than at the end of the turn — a locked
                * video that appears only after the answer finishes reads as if
