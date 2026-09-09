@@ -160,11 +160,19 @@ jobs:
           # anything up, and the failure is the quiet kind: rather than
           # stopping, it falls back on what it already knows and produces
           # facts whose citations nobody can check.
-          claude -p \
-            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch" \
-            --max-turns "$MAX_TURNS" \
-            --output-format text \
-            "Run the video pipeline for one topic.
+          # stream-json, not text. In text mode the CLI prints its result
+          # once, at the end, so for the whole run the log stays empty and then
+          # everything lands at once. Combined with GitHub only publishing a
+          # step's log when the step finishes, an unattended render was a black
+          # box with a spinner on it.
+          #
+          # The raw stream goes to render.log for the artifact; a readable
+          # digest goes to stdout. jq may fail without taking the step with it,
+          # and claude's own exit status decides pass or fail — a formatting
+          # problem must not look like a failed render, and a failed render must
+          # not be hidden by a working formatter.
+          set +e
+          claude -p             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch"             --max-turns "$MAX_TURNS"             --output-format stream-json --verbose             "Run the video pipeline for one topic.
 
           Use the Workflow tool exactly once:
 
@@ -179,7 +187,18 @@ jobs:
           and nothing else. If it fails, print the error and stop.
 
           TOPIC:
-          $TOPIC" 2>&1 | tee render.log
+          $TOPIC" 2>&1 | tee render.log | { jq -r --unbuffered '
+              if .type == "assistant" then
+                (.message.content // [])[]
+                | if .type == "text" then (.text // "")[0:400]
+                  elif .type == "tool_use" then "  -> " + (.name // "tool")
+                  else empty end
+              elif .type == "result" then
+                "=== " + (.subtype // "done") + " in " + (((.duration_ms // 0) / 1000) | floor | tostring) + "s ==="
+              else empty end' 2>/dev/null || cat; }
+          status=${PIPESTATUS[0]}
+          set -e
+          exit "$status"
 
       # always(): a failed render's log is the only way to learn why, and it is
       # exactly what you want when nobody watched it happen.
