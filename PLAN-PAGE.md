@@ -52,13 +52,25 @@ whole reason the Worker exists.
 ```jsonc
 POST <WORKER_URL>/ideas
 {
-  "brief":   "what should we make about DSCR this week",
-  "history": [ … up to 10 prior turns … ],
+  "brief":       "what should we make about DSCR this week",
+  "history":     [ … up to 10 prior turns … ],
   "attachments": [ … images, PDFs, text staged in the composer … ],
-  "mode":    "plan",   // optional — returns structured concepts instead of prose
-  "count":   5         // plan mode only, 1–12
+  "session_id":  "plan-m1x8q2-7fa93b",
+  "plan": {                       // the session, carried both ways
+    "goal": "build authority on DSCR",
+    "target_count": 3,
+    "slots": [ { "status": "locked", "topic": "…", "angle": "…" }, … ],
+    "rejected": [ { "topic": "…", "reason": "…" } ]
+  }
 }
 ```
+
+There used to be a `mode: "plan"` here, switched on by a regex spotting a number
+near the word "videos", and it sent `history: []` — planning threw the
+conversation away to run. "Make it four instead" arrived as a brand new batch
+with no memory of the three already settled. The plan object replaced it: the
+agent moves the state with tools, so the count and the topics are negotiated
+rather than guessed at from the phrasing.
 
 `attachments` are read **once, for this message**. They are not stored and not
 retrievable later — that is what the upload path below is for, and confusing the
@@ -71,7 +83,7 @@ knowledge base landed; progressive retrieval spends rounds deliberately — a
 broad pass, a deeper one on whatever mattered, a repetition check — and six left
 no room to do that and still answer.
 
-Twelve tools, across four corpora:
+Eighteen tools: twelve that search, five that move the session, one that proposes a batch.
 
 | Tool | Corpus | Retrieval |
 | --- | --- | --- |
@@ -87,6 +99,12 @@ Twelve tools, across four corpora:
 | `check_repetition` | `kb` | similarity + trigram |
 | `search_hooks` | `kb` | structured filter |
 | `save_idea` | `kb` | write |
+| `set_video_count` | session | fixes the batch size, creates the slots |
+| `lock_video` | session | fixes one topic — only once the person agreed to it |
+| `unlock_video` | session | clears a slot |
+| `reject_idea` | session | records a turn-down, read back on later turns |
+| `remember_file` | `kb` | write — puts an attached text file in the library |
+| `submit_plan` | — | proposes a reviewable batch of candidates |
 
 The seven `kb` tools each embed their query with Voyage first, then call a
 `public.kb_*` wrapper. The five older ones go straight to Postgres — those
@@ -103,9 +121,15 @@ Server-sent events, `event:` / `data:` frames split on a blank line, parsed by
 | `tool` | one search, as it runs — label and arguments |
 | `token` | a fragment of the answer |
 | `note` | a status line (round limits, degraded retrieval) |
-| `plan` | the structured concept set, in plan mode |
+| `plan` | a proposed batch of candidates, from `submit_plan` |
+| `plan_state` | the session after a change — mid-turn as things are agreed, and again at the end |
 | `error` | a readable failure |
-| `done` | token usage, and the end |
+| `done` | token usage, and whether the plan is complete |
+
+`plan_state` is sent the moment a topic is locked rather than at the end of the
+turn, because a locked video that only appears after the answer finishes reads
+as though nothing was recorded. It is also sent once more at the end regardless,
+so a page that missed an event still converges.
 
 **`tool` events are the point.** Every search is shown on the page while it
 runs, so an idea claiming a gap in the market can be checked against the queries
