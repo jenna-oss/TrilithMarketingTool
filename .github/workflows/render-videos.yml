@@ -1,0 +1,195 @@
+name: Render videos
+
+# Turns a locked plan into finished videos.
+#
+# Briefs come from kb.planning_sessions, not from a file in this repo. That is
+# the point of living in the same repo as the planner: locking a plan on the
+# Plan page is what makes it renderable, with nobody copying JSON between two
+# places. It also keeps a forward-looking content plan out of git history.
+#
+# The pipeline's stages are agents, not code — each is given prose instructions
+# and does the work itself, writing a Remotion component, running the render,
+# reading the error, fixing it. So this runs Claude Code headless, not a script.
+#
+# One job per video, fail-fast off: video 2 failing must not take 1 and 3 with
+# it. Nothing is published — the artifacts are for review.
+
+on:
+  workflow_dispatch:
+    inputs:
+      session_id:
+        description: 'Planning session to render. Blank = the most recently completed plan.'
+        type: string
+        default: ''
+      only:
+        description: 'Render one video by slot number (blank = all of them)'
+        type: string
+        default: ''
+      max_turns:
+        description: 'Cap on agent turns per video — the runaway guard'
+        type: string
+        default: '120'
+
+concurrency:
+  group: render-videos
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+      session: ${{ steps.build.outputs.session }}
+      count: ${{ steps.build.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SESSION_ID: ${{ inputs.session_id }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          node - <<'EOF' >> "$GITHUB_OUTPUT"
+          const base = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+          if (!base || !key) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set');
+
+          const res = await fetch(`${base}/rest/v1/rpc/kb_plans_ready`, {
+            method: 'POST',
+            headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+            body: JSON.stringify({ p_session_id: (process.env.SESSION_ID || '').trim() || null }),
+          });
+          if (!res.ok) throw new Error(`kb_plans_ready failed (${res.status})`);
+
+          const plans = await res.json();
+          if (!plans.length) {
+            throw new Error('No completed plan found. Lock every slot on the Plan page first.');
+          }
+          const plan = plans[0];
+
+          let slots = (plan.slots || []).map((s, i) => ({ ...s, slot: i + 1 }));
+          const only = (process.env.ONLY || '').trim();
+          if (only) {
+            const n = parseInt(only, 10);
+            if (!Number.isInteger(n) || n < 1 || n > slots.length) {
+              throw new Error(`only=${only} is out of range; this plan has ${slots.length} videos`);
+            }
+            slots = [slots[n - 1]];
+          }
+
+          /* The pipeline takes one `topic` string. A locked slot is richer than
+           * that, and the angle is what makes a video specific rather than
+           * generic, so the whole brief goes in rather than the title alone. */
+          const include = slots.map((s) => ({
+            slot: s.slot,
+            name: String(s.topic).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48),
+            topic: [
+              s.topic,
+              plan.goal ? `BATCH GOAL: ${plan.goal}` : null,
+              s.angle ? `ANGLE: ${s.angle}` : null,
+              s.hook ? `OPENING LINE (use this, spoken to camera): ${s.hook}` : null,
+              s.evidence ? `EVIDENCE ALREADY GATHERED: ${s.evidence}` : null,
+              s.product ? `PRODUCT: ${s.product}` : null,
+              s.audience ? `AUDIENCE: ${s.audience}` : null,
+              (s.source_ids || []).length ? `SOURCES: ${s.source_ids.join(' , ')}` : null,
+            ].filter(Boolean).join('\n\n'),
+          }));
+
+          console.log(`matrix=${JSON.stringify({ include })}`);
+          console.log(`session=${plan.session_id}`);
+          console.log(`count=${include.length}`);
+          EOF
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Remotion brings its own headless Chrome, but not ffmpeg, and the
+      # Voiceover stage muxes narration onto the render with it.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: |
+          npm --prefix video/remotion ci || npm --prefix video/remotion install --no-audit --no-fund
+          pip install -r video/requirements.txt
+
+      # The pipeline is driven through Claude Code's Workflow tool, so the CLI
+      # is the runtime here, not a helper.
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Render video ${{ matrix.slot }} — ${{ matrix.name }}
+        env:
+          # The repo secret is named ANTHROPIC_API; the CLI reads ANTHROPIC_API_KEY.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          TOPIC: ${{ matrix.topic }}
+          MAX_TURNS: ${{ inputs.max_turns }}
+        run: |
+          set -o pipefail
+          # A headless run has no terminal to answer a permission prompt on, so
+          # the tools the pipeline needs are granted explicitly and by name. An
+          # allowlist rather than a blanket bypass: it is auditable here, and
+          # anything the pipeline was not built to reach is still refused.
+          claude -p \
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch" \
+            --max-turns "$MAX_TURNS" \
+            --output-format text \
+            "Run the video pipeline for one topic.
+
+          Use the Workflow tool exactly once:
+
+            Workflow({
+              scriptPath: 'video/remotion/pipeline_workflow.mjs',
+              args: { root: '$GITHUB_WORKSPACE/video', topic: <the topic below> }
+            })
+
+          Pass args.root exactly as given — the script is sandboxed and cannot
+          find its own location. Do not edit the workflow script. When it
+          finishes, print the absolute path of the finished mp4 on its own line
+          and nothing else. If it fails, print the error and stop.
+
+          TOPIC:
+          $TOPIC" 2>&1 | tee render.log
+
+      # always(): a failed render's log is the only way to learn why, and it is
+      # exactly what you want when nobody watched it happen.
+      - name: Collect output
+        if: always()
+        run: |
+          mkdir -p artifact
+          cp render.log artifact/ 2>/dev/null || true
+          find video/remotion/out -name '*.mp4' -exec cp {} artifact/ \; 2>/dev/null || true
+          find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer video/remotion/package.json -exec cp {} artifact/ \; 2>/dev/null || true
+          find video/remotion/src -maxdepth 1 -name '*.tsx' -newer video/remotion/package.json -exec cp {} artifact/ \; 2>/dev/null || true
+          echo "--- artifact contents ---"; ls -la artifact/
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: video-${{ matrix.slot }}-${{ matrix.name }}
+          path: artifact/
+          retention-days: 14
+          if-no-files-found: warn

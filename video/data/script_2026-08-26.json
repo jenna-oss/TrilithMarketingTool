@@ -1,0 +1,110 @@
+{
+  "generatedAt": "2026-08-26T00:00:00+00:00",
+  "topic": {
+    "title": "The Loan Cap Most Investors Hit at Exactly 10 Properties",
+    "url": "https://gustancho.com/fannie-mae-5-10-financed-properties/",
+    "source": "Gustan Cho Associates"
+  },
+  "selectedHook": {
+    "pattern": "hidden-rule-reveal",
+    "hook": "Most investors hit a wall at exactly 10 properties — and most don't know why until they're there. It's not the market. It's not your credit. It's a hard rule most banks never explain up front."
+  },
+  "sourcedFacts": [
+    { "fact": "Fannie Mae caps conventional financing at 10 total financed properties per borrower, including their own primary residence", "source": "Gustan Cho Associates; LocalMortgage" },
+    { "fact": "DSCR loans have no cap on the number of financed properties -- each property is qualified on its own", "source": "Pinnacle Funding Network; Lendmire" },
+    { "fact": "A DSCR loan qualifies a property based on whether its own rental income covers its own mortgage payment, not the borrower's personal income or tax returns", "source": "Ridge Street Capital; New Silver" },
+    { "fact": "Most DSCR lenders look for a ratio of about 1.0 to 1.25 -- meaning the rent covers 100% to 125% of the mortgage payment -- though the exact minimum varies by lender", "source": "New Silver; Zeitro; Truss Financial Group" },
+    { "fact": "DSCR loans don't use the borrower's debt-to-income ratio, so self-employed investors who write off income on tax returns can still qualify based on the property's rent", "source": "Pinnacle Funding Network" }
+  ],
+  "workingTitle": "The Loan Cap Most Investors Hit at Exactly 10 Properties",
+  "product": "dscr",
+  "audience": "borrower",
+  "beats": [
+    {
+      "order": 1,
+      "beatType": "cold_open",
+      "line": "Most investors hit a wall at exactly 10 properties — and most don't know why until they're there.",
+      "usesFacts": [0],
+      "estSeconds": 3
+    },
+    {
+      "order": 2,
+      "beatType": "hook",
+      "line": "It's not the market. It's not your credit. It's a hard rule most banks never explain up front.",
+      "usesFacts": [0],
+      "estSeconds": 4
+    },
+    {
+      "order": 3,
+      "beatType": "real_lesson",
+      "line": "Fannie Mae caps conventional mortgages at 10 total financed properties per borrower — including the home you live in.",
+      "usesFacts": [0],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 4,
+      "beatType": "real_lesson",
+      "line": "Hit that number, and your bank can't write you an eleventh conventional loan. Not won't — legally can't.",
+      "usesFacts": [0],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 5,
+      "beatType": "real_artifact_evidence",
+      "line": "This is why serious investors move to DSCR loans once they scale past a handful of properties.",
+      "usesFacts": [1],
+      "estSeconds": 4
+    },
+    {
+      "order": 6,
+      "beatType": "number_walkthrough",
+      "line": "A DSCR loan doesn't look at your personal income or your tax returns. It asks one question: does the property's rent cover its own mortgage payment?",
+      "usesFacts": [2],
+      "estSeconds": 5
+    },
+    {
+      "order": 7,
+      "beatType": "number_walkthrough",
+      "line": "Most DSCR lenders want that ratio around 1.0 to 1.25 — the rent covering 100% to 125% of the payment.",
+      "usesFacts": [3],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 8,
+      "beatType": "staged_reveal",
+      "line": "Because each property is judged on its own, there's no 10-property ceiling. The eleventh loan doesn't carry the weight of the first ten.",
+      "usesFacts": [1],
+      "estSeconds": 5
+    },
+    {
+      "order": 9,
+      "beatType": "real_artifact_evidence",
+      "line": "It also means self-employed investors who write off income on paper — the same write-offs that help at tax time — don't get penalized when qualifying for the loan.",
+      "usesFacts": [4],
+      "estSeconds": 5.5
+    },
+    {
+      "order": 10,
+      "beatType": "transparency_note",
+      "line": "DSCR loans usually cost more than a conventional mortgage in rate and down payment — the tradeoff for skipping the personal-income underwriting.",
+      "usesFacts": [],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 11,
+      "beatType": "recap",
+      "line": "10 properties is where conventional financing legally stops. DSCR is how investors keep scaling past it.",
+      "usesFacts": [0, 1],
+      "estSeconds": 4
+    },
+    {
+      "order": 12,
+      "beatType": "cta",
+      "line": "If you're getting close to that number — or already past it — this is the financing conversation to have before your next deal, not after your tenth loan gets denied.",
+      "usesFacts": [],
+      "estSeconds": 5.5
+    }
+  ],
+  "totalEstSeconds": 54,
+  "factCheckWarnings": []
+}

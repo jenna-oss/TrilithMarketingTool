@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-08-23T00:00:00+00:00",
+  "topic": {
+    "title": "Floyd Mayweather's $100M Equity Stake in a $3B NYC Real Estate Portfolio",
+    "url": "https://www.credaily.com/briefs/money-mayweather-invests-100m-in-3b-jv-with-go-partners/",
+    "source": "CRE Daily"
+  },
+  "selectedHook": {
+    "pattern": "leverage-reveal",
+    "hook": "Floyd Mayweather just put $100 million into a real estate deal worth $3 billion. That's not because he owns all of it -- it's leverage at a scale most people never see, and the same math applies whether you're investing $10,000 or $100 million."
+  },
+  "sourcedFacts": [
+    { "fact": "Floyd Mayweather invested $100 million in equity into a joint venture with Go Partners", "source": "CRE Daily; Bisnow; The Real Deal" },
+    { "fact": "The joint venture's real estate portfolio is valued at about $3 billion", "source": "CRE Daily; Bisnow" },
+    { "fact": "Go Partners is a joint venture between Meyer Orbach (Orbach Affordable Housing Solutions) and Josh Gotlib (Black Spruce Management)", "source": "CRE Daily" },
+    { "fact": "Mayweather's investment vehicle for the deal is Vada Properties, based in Trump Tower in New York City", "source": "Bisnow; CRE Daily" },
+    { "fact": "The portfolio's anchor property is The Copper, twin residential towers (41 and 48 stories) in Murray Hill with 761 units, about 20% of them affordable housing", "source": "Bisnow" },
+    { "fact": "Go Partners bought The Copper for $850 million in 2021", "source": "Bisnow" },
+    { "fact": "The rest of the portfolio -- properties from the late Sheldon Solow's holdings, including One and Two Sutton Place North, One East River Place, 265 East 66th Street, and 685 First Avenue -- was assembled for about $1.7 billion between late 2022 and April 2023", "source": "CRE Daily; Bisnow" },
+    { "fact": "Mayweather earned $560 million over his undefeated professional boxing career", "source": "Bisnow" },
+    { "fact": "Mayweather's specific ownership percentage in the joint venture has not been publicly disclosed", "source": "cross-checked across all sources -- not stated anywhere" },
+    { "fact": "$100 million is approximately 3.3% of a $3 billion portfolio", "source": "derived from facts 0 and 1" }
+  ],
+  "workingTitle": "The Real Math Behind Floyd Mayweather's $3 Billion Real Estate Stake",
+  "beats": [
+    {
+      "order": 1,
+      "beatType": "cold_open",
+      "line": "Floyd Mayweather just put $100 million into a real estate deal worth $3 billion.",
+      "usesFacts": [0, 1],
+      "estSeconds": 2.5
+    },
+    {
+      "order": 2,
+      "beatType": "hook",
+      "line": "$100 million into a $3 billion portfolio — that's not because he owns all of it. It's leverage at a scale most people never see.",
+      "usesFacts": [0, 1, 9],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 3,
+      "beatType": "real_person_proof",
+      "line": "The deal is a joint venture with Go Partners — real estate investors Meyer Orbach and Josh Gotlib — through Mayweather's own firm, Vada Properties.",
+      "usesFacts": [2, 3],
+      "estSeconds": 4
+    },
+    {
+      "order": 4,
+      "beatType": "number_walkthrough",
+      "line": "The portfolio's anchor is The Copper, twin towers in Murray Hill with 761 units — bought for $850 million in 2021.",
+      "usesFacts": [4, 5],
+      "estSeconds": 4
+    },
+    {
+      "order": 5,
+      "beatType": "number_walkthrough",
+      "line": "The rest came from the late Sheldon Solow's holdings — four more Manhattan buildings assembled for about $1.7 billion.",
+      "usesFacts": [6],
+      "estSeconds": 4
+    },
+    {
+      "order": 6,
+      "beatType": "number_walkthrough",
+      "line": "Combined, that's a $3 billion portfolio of New York City real estate.",
+      "usesFacts": [1],
+      "estSeconds": 3
+    },
+    {
+      "order": 7,
+      "beatType": "staged_reveal",
+      "line": "$100 million is about 3% of that total. The other 97% comes from other equity partners and mortgage debt on the properties themselves.",
+      "usesFacts": [9],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 8,
+      "beatType": "real_lesson",
+      "line": "That's the same leverage principle behind a $20,000 down payment on a $400,000 house — just multiplied to an institutional scale.",
+      "usesFacts": [],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 9,
+      "beatType": "real_artifact_evidence",
+      "line": "Mayweather earned $560 million across his undefeated boxing career — real estate is how he's putting a fraction of that to work.",
+      "usesFacts": [7],
+      "estSeconds": 4
+    },
+    {
+      "order": 10,
+      "beatType": "transparency_note",
+      "line": "His exact ownership stake in the joint venture has never been made public — only the $100 million contribution and the portfolio's total value.",
+      "usesFacts": [8],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 11,
+      "beatType": "recap",
+      "line": "$100 million in. $3 billion portfolio. Roughly 3% of the total — the rest is leverage, not personal cash.",
+      "usesFacts": [0, 1, 9],
+      "estSeconds": 4
+    },
+    {
+      "order": 12,
+      "beatType": "cta",
+      "line": "You don't need $100 million to use this. Understanding how equity partners and debt combine is what lets any investor control more than their own cash could buy.",
+      "usesFacts": [],
+      "estSeconds": 5
+    }
+  ],
+  "totalEstSeconds": 45,
+  "factCheckWarnings": [
+    "Mayweather's exact ownership percentage in the Go Partners JV is not publicly disclosed -- the script only states his $100M contribution and the portfolio's $3B total value, and explicitly flags the ownership stake as undisclosed (beat 10) rather than implying he owns 3% of the equity or any other specific share."
+  ]
+}

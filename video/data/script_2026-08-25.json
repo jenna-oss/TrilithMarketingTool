@@ -1,0 +1,112 @@
+{
+  "generatedAt": "2026-08-25T00:00:00+00:00",
+  "topic": {
+    "title": "Why America's Biggest Bank Just Bet $750 Billion on Housing",
+    "url": "https://www.rismedia.com/2026/08/04/jpmorgan-announces-750-billion-investment-housing-market/",
+    "source": "RISMedia"
+  },
+  "selectedHook": {
+    "pattern": "contrarian-institutional-signal",
+    "hook": "Mortgage rates are stuck near 6.5% and everyone's worried about affordability. This week, JPMorgan -- America's biggest bank -- just committed $750 billion to housing through 2035. Banks don't make bets that size on a hunch."
+  },
+  "sourcedFacts": [
+    { "fact": "On August 3, 2026, JPMorganChase announced it will invest more than $750 billion in the U.S. housing market through 2035", "source": "RISMedia; Benzinga; HECMWorld" },
+    { "fact": "That's roughly a 40% increase in the firm's housing capital deployment compared to the past decade", "source": "RISMedia" },
+    { "fact": "The commitment includes financing for 1 million affordable housing units", "source": "RISMedia" },
+    { "fact": "It also includes helping 500,000 homebuyers purchase homes", "source": "RISMedia" },
+    { "fact": "JPMorganChase plans to increase mortgage lending by more than 40% and hire 850 new home lending advisers", "source": "RISMedia; Benzinga" },
+    { "fact": "The $750 billion covers capital the bank expects to lend, invest, or deploy across residential mortgages, multifamily and commercial real estate finance, development projects, equity investments, and grants", "source": "RISMedia" },
+    { "fact": "JPMorganChase will chair the U.S. Chamber of Commerce's newly formed Housing Advisory Council", "source": "RISMedia" },
+    { "fact": "The announcement comes amid ongoing housing affordability challenges and mortgage rates near 6.5%", "source": "general market context" },
+    { "fact": "$750 billion deployed through 2035 (roughly 9 years from 2026) works out to about $83 billion per year", "source": "derived from fact 0" }
+  ],
+  "workingTitle": "Why America's Biggest Bank Just Bet $750 Billion on Housing",
+  "beats": [
+    {
+      "order": 1,
+      "beatType": "cold_open",
+      "line": "America's largest bank just committed $750 billion to housing — this week.",
+      "usesFacts": [0],
+      "estSeconds": 2.5
+    },
+    {
+      "order": 2,
+      "beatType": "hook",
+      "line": "Mortgage rates are still near 6.5%. Affordability is the worst it's been in years. And JPMorgan just made its biggest housing bet in a decade.",
+      "usesFacts": [0, 7],
+      "estSeconds": 5
+    },
+    {
+      "order": 3,
+      "beatType": "number_walkthrough",
+      "line": "$750 billion, deployed through 2035 — about $83 billion a year, roughly 40% more than the bank's pace over the last ten years.",
+      "usesFacts": [0, 1, 8],
+      "estSeconds": 5
+    },
+    {
+      "order": 4,
+      "beatType": "number_walkthrough",
+      "line": "Part of that money finances 1 million affordable housing units.",
+      "usesFacts": [2],
+      "estSeconds": 3
+    },
+    {
+      "order": 5,
+      "beatType": "number_walkthrough",
+      "line": "Another slice helps 500,000 people become homeowners.",
+      "usesFacts": [3],
+      "estSeconds": 3
+    },
+    {
+      "order": 6,
+      "beatType": "real_artifact_evidence",
+      "line": "The bank is also increasing mortgage lending over 40% and hiring 850 new home lending advisers to handle it.",
+      "usesFacts": [4],
+      "estSeconds": 4
+    },
+    {
+      "order": 7,
+      "beatType": "staged_reveal",
+      "line": "Banks don't deploy three-quarters of a trillion dollars on a hunch. This is a long-term bet that housing demand isn't going away — rates or not.",
+      "usesFacts": [0, 5],
+      "estSeconds": 5
+    },
+    {
+      "order": 8,
+      "beatType": "real_lesson",
+      "line": "When affordability fears are loudest is often exactly when institutional capital moves in — they're pricing the next decade, not this news cycle.",
+      "usesFacts": [],
+      "estSeconds": 5
+    },
+    {
+      "order": 9,
+      "beatType": "real_artifact_evidence",
+      "line": "JPMorgan is also now chairing the U.S. Chamber of Commerce's new Housing Advisory Council — shaping policy, not just writing checks.",
+      "usesFacts": [6],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 10,
+      "beatType": "recap",
+      "line": "$750 billion. 1 million units financed. 500,000 buyers helped. Announced this week, not a decade from now.",
+      "usesFacts": [0, 2, 3],
+      "estSeconds": 4
+    },
+    {
+      "order": 11,
+      "beatType": "real_lesson",
+      "line": "This isn't a one-off headline — it's the largest bank in the country underwriting the next decade of housing with three-quarters of a trillion dollars.",
+      "usesFacts": [0],
+      "estSeconds": 5
+    },
+    {
+      "order": 12,
+      "beatType": "cta",
+      "line": "When the biggest players in finance move this much capital into an asset class, that's the signal serious investors pay attention to — real estate is still where the smart money is going.",
+      "usesFacts": [],
+      "estSeconds": 5.5
+    }
+  ],
+  "totalEstSeconds": 51.5,
+  "factCheckWarnings": []
+}

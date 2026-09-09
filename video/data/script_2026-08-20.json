@@ -1,0 +1,212 @@
+{
+  "generatedAt": "2026-08-21T03:01:26.488114+00:00",
+  "generationMethod": "llm (claude-haiku-4-5-20251001) -- unattended",
+  "topic": {
+    "title": "The Framework Behind a 75-Unit Portfolio: How Aaron Murphy Replaced His Income in 11 Years",
+    "url": "https://www.biggerpockets.com/blog/deal-diary-aaron-murphy",
+    "source": "BiggerPockets Blog",
+    "loan_encouragement": {
+      "verdict": "moderate_yes",
+      "audienceScope": "broad",
+      "reason": "This is a case study in general real estate investing mechanics—house hacking, BRRRR, vertical integration, and scaling a rental portfolio—that illustrate replicable concepts any residential investor could apply. However, the article itself is a profile/interview rather than market or product data, so connecting these principles to actual loan products or timing requires scripting work beyond what the source material directly supports."
+    }
+  },
+  "selectedHook": {
+    "pattern": "second-person-contrarian",
+    "hook": "You're waiting for a six-figure salary before you start investing. Aaron Murphy ran the numbers on a $30,000 salary and found real estate was the only path that worked mathematically.",
+    "rationale": "This hook directly confronts the viewer's most likely barrier to action (perceived need for high income) with a named, quantified fact (Aaron's actual $30,000 salary analysis) that proves the assumption wrong. It's psychologically the most disruptive because it invalidates the excuse most viewers tell themselves, making them want to see how he actually did it. The other hooks are strong but rely on explaining pivots or unusual tactics; this one targets the core hesitation keeping people from starting at all."
+  },
+  "sourcedFacts": [
+    {
+      "fact": "Aaron Murphy put down $11,900, about 3.5%, on his first house hack",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "His first mortgage was about $2,000 with four rooms renting for $700 each",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "D.C. home prices were around $700,000 when he started looking",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "His second deal was a $96,000 triplex where he put about 20% down, roughly $19,000, then another $20,000 in renovations",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "He eventually got total rent up to $1,900 a month across the three units on his second property",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "From a cash-out refinance on the triplex, he pulled out $50,000, which became half the seed money for his BRRRR portfolio",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "He bought his first house hack in 2016",
+      "source": "Article narrative"
+    },
+    {
+      "fact": "Eleven years later (approximately 2027), he and his wife have replaced both of their incomes and built a 75-unit portfolio",
+      "source": "Article narrative"
+    },
+    {
+      "fact": "He ran numbers on real estate on a $30,000 salary and found real estate was the only path that looked mathematically achievable",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "A typical BRRRR deal involves buying for around $100,000, putting in $30,000 to $40,000 in renovations, and adding another $20,000 for closing costs on both ends",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "All in on typical BRRRR deals, he's usually around $150,000 to $160,000 all in, and appraising properties between $200,000 and $220,000",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "He's kept at least one renovation going every four to six weeks since 2022",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "On his first two BRRRR deals, he went a combined $65,000 over budget using third-party contractors",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "On his third deal, he ended up working alongside day laborers for four to five months to finish it",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "His in-house crew now works exclusively on his properties five days a week",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "He and his wife moved into a $99,000 row house in Baltimore's 21202 ZIP code in 2022",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "At the current pace of one renovation every four to six weeks, in 10 years he could have 200 to 250 properties",
+      "source": "Aaron Murphy, full-time real estate investor"
+    },
+    {
+      "fact": "The portfolio consists of 75 units, mostly single-family and townhomes with some duplexes and triplexes mixed in, all long-term rentals across Baltimore and the surrounding counties",
+      "source": "Aaron Murphy, full-time real estate investor"
+    }
+  ],
+  "workingTitle": "The Math Behind Building a 75-Unit Portfolio on a Starting Salary",
+  "beats": [
+    {
+      "order": 1,
+      "beatType": "cold_open",
+      "line": "Aaron Murphy's first mortgage was $2,000 a month.",
+      "usesFacts": [
+        1
+      ],
+      "estSeconds": 2
+    },
+    {
+      "order": 2,
+      "beatType": "hook",
+      "line": "You're waiting for a six-figure salary before you start investing. Aaron Murphy ran the numbers on a $30,000 salary and found real estate was the only path that worked mathematically.",
+      "usesFacts": [
+        8
+      ],
+      "estSeconds": 4
+    },
+    {
+      "order": 3,
+      "beatType": "real_person_proof",
+      "line": "He started with a house hack in 2016—put down $11,900 on his first property and rented out four rooms at $700 each.",
+      "usesFacts": [
+        0,
+        1,
+        6
+      ],
+      "estSeconds": 3
+    },
+    {
+      "order": 4,
+      "beatType": "number_walkthrough",
+      "line": "His second deal: a $96,000 triplex. He put down 20%—about $19,000.",
+      "usesFacts": [
+        3
+      ],
+      "estSeconds": 2.5
+    },
+    {
+      "order": 5,
+      "beatType": "number_walkthrough",
+      "line": "Then another $20,000 in renovations to get three units rented.",
+      "usesFacts": [
+        3
+      ],
+      "estSeconds": 2
+    },
+    {
+      "order": 6,
+      "beatType": "number_walkthrough",
+      "line": "Total monthly rent across those three units: $1,900.",
+      "usesFacts": [
+        4
+      ],
+      "estSeconds": 2
+    },
+    {
+      "order": 7,
+      "beatType": "number_walkthrough",
+      "line": "A cash-out refi on that triplex pulled $50,000—which became half the seed for scaling into BRRRR deals.",
+      "usesFacts": [
+        5
+      ],
+      "estSeconds": 2.5
+    },
+    {
+      "order": 8,
+      "beatType": "number_walkthrough",
+      "line": "On a typical BRRRR, he buys for $100K, puts in $30-$40K in renovations, adds $20K in closing costs both ends. All in: $150-$160K.",
+      "usesFacts": [
+        9,
+        10
+      ],
+      "estSeconds": 3.5
+    },
+    {
+      "order": 9,
+      "beatType": "staged_reveal",
+      "line": "The real lesson: starting capital and leverage, not income level, determine whether a real estate strategy can work. Low down payments and forced appreciation through renovation let small starting amounts compound into portfolios.",
+      "usesFacts": [
+        0,
+        3,
+        8
+      ],
+      "estSeconds": 4
+    },
+    {
+      "order": 10,
+      "beatType": "real_artifact_evidence",
+      "line": "Aaron's path is documented: 2016 start, 75 units by 2027—built through sequential BRRRR deals, each one refinanced to fund the next without waiting for six-figure income.",
+      "usesFacts": [
+        6,
+        7,
+        17
+      ],
+      "estSeconds": 3
+    },
+    {
+      "order": 11,
+      "beatType": "recap",
+      "line": "$11,900 down on the first deal. $50,000 pulled from one refi to scale. No six-figure paycheck required.",
+      "usesFacts": [
+        0,
+        5
+      ],
+      "estSeconds": 3
+    },
+    {
+      "order": 12,
+      "beatType": "cta",
+      "line": "Want to understand how leverage and forced appreciation work in real estate investing? Start by learning the numbers behind different financing strategies.",
+      "usesFacts": [],
+      "estSeconds": 3
+    }
+  ],
+  "totalEstSeconds": 34.5,
+  "factCheckWarnings": []
+}

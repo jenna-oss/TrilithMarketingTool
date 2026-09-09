@@ -15,3 +15,20 @@ data/sql/
 # so the .gitkeep negation would silently do nothing.
 kb/files/*/*
 !kb/files/*/.gitkeep
+
+# --- video pipeline (video/) --------------------------------------------
+# node_modules and the Chrome it downloads are ~326MB; the rendered output and
+# the stock footage are both regenerated per run by the Assets stage.
+video/remotion/node_modules/
+video/remotion/out/
+video/remotion/_voiceover/
+video/remotion/_voiceover_*/
+video/remotion/public/*/
+!video/remotion/public/fonts/
+video/.env
+
+# The lockfile is the exception to the blanket package-lock rule above. Renders
+# run unattended, so the install has to be reproducible: without it `npm ci`
+# degrades to `npm install` and a transitive dependency can change under a
+# pipeline nobody is watching.
+!video/remotion/package-lock.json

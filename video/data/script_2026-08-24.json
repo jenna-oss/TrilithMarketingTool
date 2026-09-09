@@ -1,0 +1,111 @@
+{
+  "generatedAt": "2026-08-24T00:00:00+00:00",
+  "topic": {
+    "title": "The Real Estate Lesson Behind Arnold Schwarzenegger's First Property",
+    "url": "https://ark7.com/blog/portfolio-performance/arnold-schwarzeneggers-real-estate-portfolio/",
+    "source": "Ark7 fact-check analysis"
+  },
+  "selectedHook": {
+    "pattern": "surprising-origin",
+    "hook": "Before he was a movie star, Arnold Schwarzenegger was already a real estate millionaire. He didn't buy a mansion first — he bought a small apartment building and lived in one unit while tenants paid the mortgage."
+  },
+  "sourcedFacts": [
+    { "fact": "After moving to California in 1968, Schwarzenegger put his bodybuilding and side-business earnings into rental property instead of a personal home", "source": "Ark7 analysis" },
+    { "fact": "He bought an apartment building in Santa Monica, lived in one unit, and rented out the rest", "source": "Commercial Property Advisors; general biographical accounts" },
+    { "fact": "Widely circulated numbers about the exact purchase price, down payment, and a '4 to 6 to 12 to 36 units' size progression are flagged as unverified/unsourced by fact-checking analysis", "source": "Ark7 analysis" },
+    { "fact": "He later traded up into larger apartment buildings and, eventually, commercial properties over time", "source": "Ark7 analysis" },
+    { "fact": "One of his best-documented deals: 812 Main St, a 21,600 sq ft commercial building in Venice Beach, bought for about $12 million in the 1980s", "source": "Ark7 analysis" },
+    { "fact": "He sold that building in 2013 for at least triple what he paid", "source": "Ark7 analysis" }
+  ],
+  "workingTitle": "The Real Estate Lesson Behind Arnold Schwarzenegger's First Property",
+  "beats": [
+    {
+      "order": 1,
+      "beatType": "cold_open",
+      "line": "Before he was a movie star, Arnold Schwarzenegger was already a real estate millionaire.",
+      "usesFacts": [0],
+      "estSeconds": 2.5
+    },
+    {
+      "order": 2,
+      "beatType": "hook",
+      "line": "He didn't buy a mansion first. He bought a small apartment building — and lived in one unit while tenants paid the mortgage.",
+      "usesFacts": [0, 1],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 3,
+      "beatType": "real_lesson",
+      "line": "That's house hacking: buy a small multi-unit property, live in one unit, let the rent from the others cover the loan.",
+      "usesFacts": [1],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 4,
+      "beatType": "real_lesson",
+      "line": "It meant his housing cost was close to zero while he built equity in a real asset — instead of just paying a landlord.",
+      "usesFacts": [1],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 5,
+      "beatType": "real_person_proof",
+      "line": "He funded it with income from bodybuilding and side businesses — not a windfall, just consistent income redirected into an asset.",
+      "usesFacts": [0],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 6,
+      "beatType": "real_lesson",
+      "line": "From there, the pattern was reinvest and trade up — sell, roll the equity into something bigger, repeat.",
+      "usesFacts": [3],
+      "estSeconds": 4
+    },
+    {
+      "order": 7,
+      "beatType": "number_walkthrough",
+      "line": "One of his documented deals: a 21,600 square foot commercial building on Main Street in Venice Beach, bought for about $12 million in the 1980s.",
+      "usesFacts": [4],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 8,
+      "beatType": "number_walkthrough",
+      "line": "He sold it in 2013 for at least triple that — north of $36 million.",
+      "usesFacts": [5],
+      "estSeconds": 3.5
+    },
+    {
+      "order": 9,
+      "beatType": "real_lesson",
+      "line": "That's decades of compounding one strategy: buy right, hold, reinvest, trade up to a bigger asset class.",
+      "usesFacts": [],
+      "estSeconds": 4
+    },
+    {
+      "order": 10,
+      "beatType": "transparency_note",
+      "line": "Some of the exact numbers from his earliest deals are debated online — but the pattern itself is well documented, and it's the part worth learning from.",
+      "usesFacts": [2],
+      "estSeconds": 4.5
+    },
+    {
+      "order": 11,
+      "beatType": "recap",
+      "line": "House hack first. Use other people's rent to build equity. Reinvest the profit. Trade up over time.",
+      "usesFacts": [0, 1, 3],
+      "estSeconds": 4
+    },
+    {
+      "order": 12,
+      "beatType": "cta",
+      "line": "You don't need to be a bodybuilder turned movie star to run this playbook — you need the first small deal, and the patience to repeat it.",
+      "usesFacts": [],
+      "estSeconds": 4.5
+    }
+  ],
+  "totalEstSeconds": 50,
+  "factCheckWarnings": [
+    "The widely-circulated purchase price, down payment, and unit-count progression are not independently verified -- beat 10 flags this briefly, but the script leans on the confirmed pattern (house hack, reinvest, trade up, the Venice Beach deal) rather than repeating unverified figures."
+  ]
+}
