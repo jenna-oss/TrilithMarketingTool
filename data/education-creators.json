@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T01:44:23.328Z",
+  "fetchedAt": "2026-09-09T01:54:49.936Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -239,14 +239,14 @@
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c82b4418564a6f1fa79caa48f9380ad9.mp4"
         },
         {
-          "id": "41ab2337-d649-40e9-b7c1-7115633597a1",
-          "hook": "So Jared and I are out here at a house in Maryville that Jared made an offer on.",
+          "id": "9f3c99be-0455-436b-8324-9e7e3f03f973",
+          "hook": "Although wholesaling as a strategy may be simple to understand, it isn't easy to execute.",
           "hookSource": "hook",
-          "category": "Vlog",
-          "views": "4938",
-          "postedAt": "2026-08-20",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/112c79e4ea0ceaafc4115af43bd489bf.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/112c79e4ea0ceaafc4115af43bd489bf.mp4"
+          "category": "Explainer",
+          "views": "2259",
+          "postedAt": "2026-08-24",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/61b4d375987843c22fd5f89ddd23c1e9.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/61b4d375987843c22fd5f89ddd23c1e9.mp4"
         }
       ]
     },
@@ -327,14 +327,24 @@
       "audience": "borrower",
       "videos": [
         {
-          "id": "1b58742f-5b9a-4637-b47a-6f156022cfb4",
-          "hook": "So check this out",
+          "id": "0b506294-faa0-4341-a06e-c32f7789eea5",
+          "hook": "I have a question now",
+          "hookSource": "hook",
+          "category": "Storytime",
+          "views": "2483",
+          "postedAt": "2026-09-04",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/df2e066695041aff7adcf50d905af3e0.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/df2e066695041aff7adcf50d905af3e0.mp4"
+        },
+        {
+          "id": "2bdbf397-1afb-44c9-9280-9943aa3db62a",
+          "hook": "So the students in Hustle Academy, we teach exactly this method about taking on people's payments.",
           "hookSource": "hook",
           "category": "Explainer",
-          "views": "1693",
+          "views": "758",
           "postedAt": "2026-09-02",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/cdfc188eaf19bf49b14791d4e3545550.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/cdfc188eaf19bf49b14791d4e3545550.mp4"
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d9ba4d496fef6e4991421f287b2e4460.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d9ba4d496fef6e4991421f287b2e4460.mp4"
         },
         {
           "id": "49c068f9-5484-4eb7-b208-10f323a1cd60",
@@ -355,16 +365,6 @@
           "postedAt": "2026-08-31",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/19620af0ced4a89bfbb9d0e1b7064492.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/19620af0ced4a89bfbb9d0e1b7064492.mp4"
-        },
-        {
-          "id": "7e052757-9c82-4d77-99c5-5c38c77d85c6",
-          "hook": "Most up to investors when they're looking at their first up to deal, everyone's always scared of the due on sale clause.",
-          "hookSource": "hook",
-          "category": "Explainer",
-          "views": "2170",
-          "postedAt": "2026-08-29",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/81d081762809f30e5d14966f42a87c9b.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/81d081762809f30e5d14966f42a87c9b.mp4"
         }
       ]
     },
@@ -702,16 +702,6 @@
       "addedOn": "2026-09-09",
       "videos": [
         {
-          "id": "60cbd53e-0f4f-4d40-8eac-a334c29ae16b",
-          "hook": "Yeah, I checked the comps on this one.",
-          "hookSource": "hook",
-          "category": "Commentary",
-          "views": "10917",
-          "postedAt": "2026-09-06",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8feb45d24cbf38d74451604c63a401c9.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8feb45d24cbf38d74451604c63a401c9.mp4"
-        },
-        {
           "id": "f4590e6f-9cb9-476b-84bd-4c8df761fdb0",
           "hook": "Let's have AI make us 10 grand in two weeks.",
           "hookSource": "hook",
@@ -740,6 +730,55 @@
           "postedAt": "2026-08-26",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8eb7314fa3acff2ecbd5124cce116455.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8eb7314fa3acff2ecbd5124cce116455.mp4"
+        },
+        {
+          "id": "adddc60f-a663-4586-8a63-8e72238723c2",
+          "hook": "Let's make 10 grand in two weeks.",
+          "hookSource": "hook",
+          "category": "Tutorial",
+          "views": "53182",
+          "postedAt": "2026-08-26",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/199ac87ed8db701a24eaa45e6f8a287d.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/199ac87ed8db701a24eaa45e6f8a287d.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "fernando-gonzalez",
+      "spyglassId": "6249adf9-e40d-44ca-9c67-1c52fb926db8",
+      "name": "Fernando Gonzalez",
+      "handle": "@fernandogonzalezmentor",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_fernandogonzalezmentor.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/fernandogonzalezmentor",
+      "followers": "244.4K",
+      "angle": "Spanish-language real estate investing fundamentals, dismantling the myth that you need wealth to start and walking beginners through their first steps into property ownership.",
+      "productLines": [
+        "dscr"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "707d8f34-449e-4dc7-aac2-7d43a69d7730",
+          "hook": "Ay, es que necesito ser rico para comenzar a invertir en bienes raíces.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "2710",
+          "postedAt": "2026-08-20",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1d8025e5eff6daf502b6d9b0e4a9b840.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1d8025e5eff6daf502b6d9b0e4a9b840.mp4"
+        },
+        {
+          "id": "eb7264db-4fda-4296-9399-681d3a66d7e0",
+          "hook": "¿Cómo empezar a invertir en bienes raíces?",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "4212",
+          "postedAt": "2026-08-19",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2ae15dc0f9f7f73b9a890eba1a48772b.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2ae15dc0f9f7f73b9a890eba1a48772b.mp4"
         }
       ]
     }

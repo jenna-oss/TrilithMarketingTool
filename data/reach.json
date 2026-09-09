@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T01:46:49.184Z",
+  "fetchedAt": "2026-09-09T01:57:24.056Z",
   "note": "Best-performing ORGANIC post per row. Creators come from the screened roster in education-creators.json; lenders are harvested from the same nine brand ids the creative wall uses. Paid ads are excluded from both halves.",
   "rows": [
     {
@@ -40,6 +40,13 @@
     {
       "kind": "creator",
       "name": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
+      "note": "Let's make 10 grand in two weeks.",
+      "views": 53182,
+      "viewsLabel": "53182"
+    },
+    {
+      "kind": "creator",
+      "name": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
       "note": "Whenever me and my buddy need to make five grand, t…",
       "views": 43791,
       "viewsLabel": "43791"
@@ -50,13 +57,6 @@
       "note": "best post",
       "views": 41763,
       "viewsLabel": "41763"
-    },
-    {
-      "kind": "creator",
-      "name": "Erick Brice",
-      "note": "You're 20 years old.",
-      "views": 39700,
-      "viewsLabel": "39.7K"
     },
     {
       "kind": "lender",
