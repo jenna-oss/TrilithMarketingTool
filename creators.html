@@ -237,78 +237,6 @@
 </header>
 
 <main class="wrap">
-  <h3 style="font-size:1.125rem; color:var(--ink); margin:0 0 .375rem;">Who this audience actually watches</h3>
-  <p class="page-lede" style="max-width:56ch; margin:0 0 1.25rem; font-size:.9375rem;">
-    Best-performing organic post, creators against lenders, same audience and same
-    platform. Every lender in the category combined does not reach what one creator
-    reaches with a single video about their own deal.
-  </p>
-  <div class="legend">
-    <span><i style="background:var(--emerald-bar)"></i> Real estate creators</span>
-    <span><i style="background:var(--clay)"></i> Lenders</span>
-  </div>
-  <div class="bench">
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Erick Brice <i>· 111K</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:100%"></span></span>
-      <span class="v">98.1K</span>
-    </div>
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Sean Pan <i>· 4plex line-item P&amp;L</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:61%"></span></span>
-      <span class="v">59.8K</span>
-    </div>
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Logan Fullmer <i>· a lender’s $25M loss</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:41%"></span></span>
-      <span class="v">39.9K</span>
-    </div>
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Michael Llanas <i>· “subject-to isn’t illegal”</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:33%"></span></span>
-      <span class="v">32K</span>
-    </div>
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Jerry Norton <i>· raw seller phone call</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:27%"></span></span>
-      <span class="v">26K</span>
-    </div>
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Sean Pan <i>· selling 16 units</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:22%"></span></span>
-      <span class="v">22K</span>
-    </div>
-    <div class="bench-row" data-kind="creator">
-      <span class="who">Sean Pan <i>· BRRRR w/ private money</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:17%"></span></span>
-      <span class="v">16.3K</span>
-    </div>
-    <div class="bench-row" data-kind="lender">
-      <span class="who">Kiavi <i>· best post (BiggerPockets)</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:6%"></span></span>
-      <span class="v">5.7K</span>
-    </div>
-    <div class="bench-row" data-kind="lender">
-      <span class="who">Anchor Loans <i>· best post</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:2%"></span></span>
-      <span class="v">996</span>
-    </div>
-    <div class="bench-row" data-kind="lender">
-      <span class="who">Lima One <i>· best post</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
-      <span class="v">770</span>
-    </div>
-    <div class="bench-row" data-kind="lender">
-      <span class="who">Kiavi <i>· typical post</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
-      <span class="v">222</span>
-    </div>
-    <div class="bench-row" data-kind="lender">
-      <span class="who">New Silver <i>· best post</i></span>
-      <span class="bench-track"><span class="bench-fill" style="width:1.5%"></span></span>
-      <span class="v">196</span>
-    </div>
-  </div>
   <div class="method" style="margin-top:var(--s5)">
     <h3>The format that separates them</h3>
     <p>
@@ -362,6 +290,19 @@
   <div class="creators" id="creators"></div>
 
   <div class="empty" id="empty" hidden>No creators match that filter.</div>
+
+  <h3 style="font-size:1.125rem; color:var(--ink); margin:var(--s6) 0 .375rem;">Who this audience actually watches</h3>
+  <p class="page-lede" style="max-width:56ch; margin:0 0 1.25rem; font-size:.9375rem;">
+    Best-performing organic post, creators against lenders, same audience and same
+    platform. Paid ads are excluded from both sides.
+    <span id="reach-stamp"></span>
+  </p>
+  <div class="legend">
+    <span><i style="background:var(--emerald-bar)"></i> Real estate creators</span>
+    <span><i style="background:var(--clay)"></i> Lenders</span>
+  </div>
+  <div class="bench" id="bench"></div>
+  <p class="empty" id="bench-empty" hidden>Reach comparison unavailable.</p>
 
   <section class="page-close">
     <p class="page-eyebrow">Intelligence — creators</p>
@@ -417,6 +358,64 @@ function summarise(json) {
   const when = Number.isNaN(d.getTime()) ? null : fmt(d);
   el.textContent = `${people} of them, ${clips} clips between them${when ? `, refreshed ${when}` : ''}.`;
 }
+
+/* The chart was twelve hardcoded rows -- names, view counts and bar widths all
+   typed by hand -- under a heading making a live claim. Built from data now, so
+   the claim and the bars cannot come apart. Widths are relative to the top row,
+   which is what made the original readable: the gap IS the argument. */
+function renderReach(json) {
+  const el = document.getElementById('bench');
+  const empty = document.getElementById('bench-empty');
+  if (!el) return;
+  const rows = (json && Array.isArray(json.rows)) ? json.rows : [];
+  if (!rows.length) { if (empty) empty.hidden = false; return; }
+
+  const max = Math.max(...rows.map((r) => Number(r.views) || 0));
+  if (!max) { if (empty) empty.hidden = false; return; }
+
+  el.innerHTML = '';
+  rows.forEach((r) => {
+    const row = document.createElement('div');
+    row.className = 'bench-row';
+    row.dataset.kind = r.kind === 'lender' ? 'lender' : 'creator';
+
+    const who = document.createElement('span');
+    who.className = 'who';
+    who.textContent = r.name;
+    if (r.note) {
+      const i = document.createElement('i');
+      i.textContent = ` · ${r.note}`;
+      who.append(i);
+    }
+
+    const track = document.createElement('span');
+    track.className = 'bench-track';
+    const fill = document.createElement('span');
+    fill.className = 'bench-fill';
+    /* A floor of 1%, or the smallest lenders render as no bar at all and read
+       as missing data rather than as the point being made. */
+    fill.style.width = `${Math.max(1, ((Number(r.views) || 0) / max) * 100).toFixed(1)}%`;
+    track.append(fill);
+
+    const v = document.createElement('span');
+    v.className = 'v';
+    v.textContent = r.viewsLabel ?? '';
+
+    row.append(who, track, v);
+    el.append(row);
+  });
+
+  const stamp = document.getElementById('reach-stamp');
+  if (stamp && json.fetchedAt) {
+    const d = new Date(json.fetchedAt);
+    if (!Number.isNaN(d.getTime())) stamp.textContent = ` Measured ${fmt(d)}.`;
+  }
+}
+
+fetch('./data/reach.json')
+  .then((r) => (r.ok ? r.json() : null))
+  .then(renderReach)
+  .catch(() => { const e = document.getElementById('bench-empty'); if (e) e.hidden = false; });
 
 function renderPatterns(json) {
   const el = document.getElementById('patterns');

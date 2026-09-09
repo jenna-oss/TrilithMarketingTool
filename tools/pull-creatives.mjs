@@ -23,6 +23,7 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LENDERS } from './lenders.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = 'https://app.spyglass.so/api/v1';
@@ -34,18 +35,9 @@ const PAUSE_MS = 400;
 const FETCH_PER_BRAND = 12;
 const KEEP_PER_BRAND = 5;
 
-/* Same nine as the board, and the slug matches the filter buttons. */
-const BRANDS = [
-  { slug: 'kiavi',  id: '199787047046840',  name: 'Kiavi',               label: 'Kiavi' },
-  { slug: 'lima',   id: '248880558512632',  name: 'Lima One',            label: 'Lima One' },
-  { slug: 'visio',  id: '1451703848411077', name: 'Visio Lending',       label: 'Visio' },
-  { slug: 'anchor', id: '180735095285808',  name: 'Anchor Loans',        label: 'Anchor' },
-  { slug: 'silver', id: '355605498348601',  name: 'New Silver',          label: 'New Silver' },
-  { slug: 'rcn',    id: '265616356813717',  name: 'RCN Capital',         label: 'RCN' },
-  { slug: 'l1',     id: '1488778371407976', name: 'LendingOne',          label: 'LendingOne' },
-  { slug: 'renovo', id: '232025073545293',  name: 'Renovo Financial',    label: 'Renovo' },
-  { slug: 'temple', id: '1790851891232875', name: 'Temple View Capital', label: 'Temple View' },
-];
+/* Same nine as the board, and the slug matches the filter buttons. Shared with
+ * pull-reach.mjs, which wants the organic side of the same companies. */
+const BRANDS = LENDERS;
 
 const KEY = String(process.env.SPYGLASS_API_KEY ?? '').trim();
 if (!KEY) {
