@@ -76,6 +76,33 @@ maintains — same data, refreshed on a schedule.
 **A public endpoint spends real money.** Add a Cloudflare rate-limiting rule on the
 Worker route before sharing the link widely.
 
+## Knowledge base
+
+`kb` is a fourth schema holding the content intelligence corpus: transcripts,
+research, the published record as topic and angle, idea memory, and a hook
+library. It is the only corpus here with a vector layer — hybrid retrieval,
+reranked and diversity-filtered — and it is what the planning agent searches
+when it needs to know what has already been said, written, or read.
+
+Drop files in `kb/files/`, add URLs to `kb/sources.json`, then:
+
+```
+npm run kb
+```
+
+Full documentation, including the ranking formula, what is deliberately
+switched off and why, and the limits of the data:
+[KNOWLEDGE-BASE.md](KNOWLEDGE-BASE.md). How to get material in:
+[kb/README.md](kb/README.md).
+
+Refreshed daily at 14:00 UTC by `.github/workflows/knowledge-base.yml`, which
+writes only to Postgres and never to git.
+
+Needs `VOYAGE_API_KEY` alongside the Supabase secrets, as a repository secret
+and as a Worker secret. **Without it the system still answers**, using keyword
+search alone, and marks every result degraded so the agent says the search was
+partial rather than concluding nothing exists.
+
 ## Daily automation
 
 `.github/workflows/daily-ad-pull.yml` runs at 11:00 UTC (06:00 ET) and can also be

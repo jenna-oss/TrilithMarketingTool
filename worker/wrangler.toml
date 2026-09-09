@@ -14,6 +14,11 @@ SUPABASE_URL = "https://kugnlobgsguxggnqiseh.supabase.co"
 #
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   npx wrangler secret put SUPABASE_ANON_KEY
+#   npx wrangler secret put VOYAGE_API_KEY
+#
+# VOYAGE_API_KEY is optional. Without it the knowledge-base tools still answer,
+# using keyword search alone, and every result they return is marked degraded so
+# the model says the search was partial rather than concluding nothing exists.
 #
 # Each prompts for the value — never typed into a file or a chat window.
 #

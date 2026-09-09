@@ -5,3 +5,13 @@ worker/node_modules/
 worker/package-lock.json
 .wrangler/
 data/sql/
+
+# Source material is yours, not the repo's. The folder structure is tracked via
+# .gitkeep; what you drop into it is not. This repo is public, and a knowledge
+# base of transcripts and licensed research must not be published with it.
+#
+# Note the shape: excluding kb/files/** would exclude the directories too, and
+# git will not descend into an excluded directory to re-include a file in it,
+# so the .gitkeep negation would silently do nothing.
+kb/files/*/*
+!kb/files/*/.gitkeep

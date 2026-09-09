@@ -15,6 +15,12 @@ Trilith has already said. The third answers *what shape to say it in*, and is
 the only one not sourced from the lending category — read its caveats before
 using it.
 
+A fourth schema, `kb`, holds the content intelligence knowledge base —
+transcripts, research, the published record as topic and angle, idea memory and
+hooks. It is the only one with a vector layer, and it is documented separately
+in [KNOWLEDGE-BASE.md](KNOWLEDGE-BASE.md). Nothing in it writes to the two
+corpora described here.
+
 ---
 
 # Competitor ads — `adspy`
@@ -267,6 +273,11 @@ model five tools rather than a corpus:
 | `search_hook_patterns`   | `public.hook_patterns_search` |
 | `trilith_coverage`       | `public.content_coverage`    |
 
+Seven more come from the knowledge base — `search_transcripts`,
+`search_research`, `search_previous_content`, `check_repetition`,
+`search_content_ideas`, `save_idea` and `search_hooks`. Those are described in
+[KNOWLEDGE-BASE.md](KNOWLEDGE-BASE.md).
+
 It runs up to six rounds of searching before answering, and streams every
 search it makes to the page as it goes — an idea claiming a gap in the market
 is only worth anything if you can see the query behind it.
@@ -323,12 +334,18 @@ function callable by anon would let anyone rewrite either corpus.
 
 ## On embeddings
 
-There is no vector column on either corpus. At 774 ads and 254 passages,
-full-text with IDF and proximity ranking answers the questions being asked, and
-`pgvector` would add a third-party embedding dependency (Anthropic provides no
-embeddings API) for corpora this size. Both schemas leave room to add one later;
-nothing here assumes it.
+There is still no vector column on **either of these two corpora**. At 913 ads
+and 561 passages, full-text with IDF and proximity ranking answers the questions
+being asked, and both schemas leave room to add one later.
 
-Revisit that for the content corpus first — it is the one where a question can
-be phrased with none of the words the passage uses, which is exactly what
-keyword retrieval cannot fix.
+The reasoning has partly moved on, though. The objection was a third-party
+embedding dependency — Anthropic provides no embeddings API — and the `kb`
+schema now carries one anyway: Voyage `voyage-3.5`, at 1024 dimensions, behind
+`kb.embedding_config`. So the dependency exists in the project regardless, and
+the remaining question for these two is only whether their size justifies using
+it.
+
+Revisit the content corpus first. It is the one where a question can be phrased
+with none of the words the passage uses, which is exactly what keyword retrieval
+cannot fix, and the machinery to embed it is now sitting next door in
+`tools/kb-lib.mjs`.

@@ -17,6 +17,9 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 
+import { rpc, clamp } from './db.js';
+import { KB_TOOLS, KB_TOOL_NAMES, runKbTool, describeKbTool } from './kb.js';
+
 const MODEL = 'claude-opus-5';
 const MAX_BRIEF_CHARS = 2000;
 const MAX_HISTORY_TURNS = 10;
@@ -36,11 +39,16 @@ const MAX_TEXT_CHARS = 100000;
 const MAX_ENCODED_TOTAL = 20 * 1024 * 1024;
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 
-/* Each round is one model turn plus its tool calls. Enough to search both
+/* Each round is one model turn plus its tool calls. Enough to search the
  * corpora, follow a thread, and check coverage before answering — but bounded,
- * because a runaway loop here spends the API key. */
-const MAX_ROUNDS = 6;
-const RPC_TIMEOUT_MS = 12000;
+ * because a runaway loop here spends the API key.
+ *
+ * Raised from 6 when the knowledge base landed. Progressive retrieval spends
+ * rounds deliberately — a broad pass, then a deeper one on the thread that
+ * mattered, then a repetition check before recommending anything — and six left
+ * no room to do that and still answer. Running out mid-thought produces a worse
+ * answer than the extra round costs. */
+const MAX_ROUNDS = 8;
 
 const PRODUCTS = ['dscr', 'fix-and-flip', 'bridge', 'ground-up', 'portfolio', 'brrrr', 'multifamily'];
 const KINDS = ['blog', 'case-study', 'product', 'faq', 'page'];
@@ -123,6 +131,11 @@ const TOOLS = [
       properties: { kind: { type: 'string', enum: KINDS } },
     },
   },
+
+  /* The knowledge base: transcripts, research, published content, idea memory
+   * and hooks. Defined next door because they are a different corpus with a
+   * different retrieval layer under them — hybrid rather than keyword-only. */
+  ...KB_TOOLS,
 ];
 
 /* Planning mode returns structure, not prose. Forcing it through a tool call
@@ -191,10 +204,11 @@ Write a short paragraph before you submit, saying what you searched and how you 
 
 const SYSTEM = `You are a content strategist working for AIKO, on behalf of their client Trilith Funding — a private real estate lender that finances investors (fix-and-flip, bridge, DSCR, ground-up, BRRRR, multifamily).
 
-You have three corpora, reachable only through your tools:
+You have several corpora, reachable only through your tools:
 1. Competitor ads — real ads from lenders on Meta, harvested daily. This is what the competition is actually saying.
 2. Trilith's own published content — blog posts, funded-deal writeups, product pages, FAQ.
 3. Hook patterns — creative structure from advertisers outside lending, from the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki).
+4. The knowledge base — transcripts of things Trilith has said out loud, research and market reports, a record of what has already been published as topic and angle, and the idea memory. Reached through search_transcripts, search_research, search_previous_content, check_repetition, search_content_ideas, save_idea and search_hooks.
 
 The third one is different in kind and you must treat it differently. Those brands are not Trilith's competitors and are not in the lending category. Spyglass has no insight coverage for investor lenders at all, so nothing in it is evidence about the competition. It gives you FORM — how a piece of creative opens, what claim it leads with — abstracted into reusable shapes. Use it for angles and hooks, never for topics. The substance of an idea must come from the ad corpus or Trilith's own writing; a hook pattern only tells you what shape to pour it into.
 
@@ -217,6 +231,18 @@ Search budget. You get a handful of rounds, not unlimited ones, and running out 
 - A broad question — 'what hooks are advertisers using' — is answered by reading fifty ads and naming the patterns, not by counting twenty words. Start with the read, then count only the two or three claims worth quantifying.
 - Prefer one well-chosen search over three narrow ones. You can always say a figure is approximate.
 
+Attribution. Three kinds of statement, never to be blurred into each other:
+- Something a source says. "In the episode on DSCR you said..." — only when a search returned the passage carrying it, and you can name the document and the timestamp.
+- Something the research shows. "The September Fannie Mae outlook projects..." — only with the source and date the tool returned.
+- Something you think. "I'd suggest..." — your own recommendation, and it must be visibly yours.
+Never present the third as the first or the second. Do not say something came from a transcript unless a transcript search returned it. If a tool result says degraded, semantic search was unavailable and you were shown keyword matches only — say the search was partial rather than concluding that nothing exists.
+
+Retrieve progressively. Do not open by pulling everything you might conceivably need. Start with a search or two, see what comes back, and go deeper only on the thread that turns out to matter. A first pass is three to five sources; developing one specific video is five to ten passages on that video's subject; a final check is two or three. Retrieving a hundred passages up front produces a worse answer than retrieving six good ones, and costs the user more.
+
+Write your own queries. The user's words are a brief, not a search string. "Something about investors" should become searches like "investor qualification", "investor financing objections", "DSCR for first-time investors" — several angles on the goal, not one echo of the phrasing.
+
+Before you recommend an idea, run check_repetition on it. A verdict of duplicate or repetitive means drop it or re-angle it; related means it is worth making if the angle is genuinely different, and you should say what the difference is. Then save what is worth keeping with save_idea, including the source ids the idea was built from.
+
 How to work:
 - Search before you propose. An idea you did not ground in either corpus is a guess, and the user can tell.
 - Check what Trilith has already published before suggesting a topic. If a post already covers it, say so and propose the angle that is genuinely new — a sharper hook, an update, a contrarian take — rather than pretending the ground is empty.
@@ -232,26 +258,6 @@ What the evidence cannot support, and you must not imply otherwise:
 - Only Trilith blog posts have publisher-stated dates. A date whose date_source is 'sitemap-lastmod' came from a file timestamp, not from the publisher — do not present it as a publication date.
 
 Useful context: the biggest lenders by origination volume are mostly quiet on Meta. Kiavi originates roughly $8B a year against ~33 live ads, and its copy is brand-led — it almost never names a loan product. CoreVest has funded $7.8B and runs nothing. Regional shops outspend the giants on creative volume: Capital Fund 1 runs over 100. Trilith itself does not advertise on Meta and is not in the ad corpus.`;
-
-async function rpc(env, fn, args) {
-  const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/rpc/${fn}`, {
-    method: 'POST',
-    headers: {
-      apikey: env.SUPABASE_ANON_KEY,
-      authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(args),
-    signal: AbortSignal.timeout(RPC_TIMEOUT_MS),
-  });
-  if (!res.ok) {
-    /* The response body can echo the request. Never let it reach the page. */
-    throw new Error(`${fn} returned ${res.status}`);
-  }
-  return res.json();
-}
-
-const clamp = (n, def, max) => Math.min(Math.max(Number(n) || def, 1), max);
 
 
 /* Turn an SDK error into something the page can act on.
@@ -282,6 +288,8 @@ export function explain(err, fallback) {
 }
 
 async function runTool(env, name, input) {
+  if (KB_TOOL_NAMES.has(name)) return runKbTool(env, name, input);
+
   if (name === 'search_competitor_ads') {
     const rows = await rpc(env, 'adspy_search_ads', {
       q: input.query || null,
@@ -408,6 +416,8 @@ function toApiBlocks(content) {
 /* A short human-readable form of what was searched, for the transparency strip
  * in the UI. The model's own arguments, not a paraphrase. */
 function describe(name, input) {
+  if (KB_TOOL_NAMES.has(name)) return describeKbTool(name, input);
+
   const bits = [];
   if (input.query) bits.push(`"${input.query}"`);
   if (input.advertiser) bits.push(`advertiser: ${input.advertiser}`);
