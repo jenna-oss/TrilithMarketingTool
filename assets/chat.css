@@ -155,6 +155,10 @@
 /* Adding a staged text file to the knowledge base. Deliberately quieter than
    the send button: this is the rarer action, and an accidental permanent write
    to the corpus is much more annoying to undo than an accidental message. */
+/* The [hidden] attribute is a UA rule of display:none, and any class rule that
+   sets display beats it on specificity. Without this the bar is visible with
+   nothing staged, which is how it shipped. */
+.chat .kb-add[hidden] { display: none; }
 .chat .kb-add {
   display: flex; align-items: center; flex-wrap: wrap; gap: .5rem;
   margin-top: .5rem; font-family: var(--chat-sans); font-size: .75rem;

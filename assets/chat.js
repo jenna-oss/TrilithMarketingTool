@@ -44,12 +44,13 @@
    *   onSubmitted optional () => void, called once per send after the payload
    *               is built — for clearing staged attachments
    *   onPlan      optional (wrapper, data) => void for planning-mode results
+   *   onPlanState optional (plan) => void for session state after each change
    *   setupNote   optional element revealed when workerUrl is empty
    */
   function create(opts) {
     const {
       workerUrl, transcript, form, input, button,
-      starters = [], onPlan = null, setupNote = null,
+      starters = [], onPlan = null, onPlanState = null, setupNote = null,
     } = opts;
 
     const history = [];
@@ -176,6 +177,11 @@
               row.scrollIntoView({ block: 'end' });
             } else if (event === 'plan') {
               if (onPlan) onPlan(wrapper, data);
+            } else if (event === 'plan_state') {
+              /* The session state after the model's tool calls. Sent mid-turn
+                 as things are agreed, and again at the end, so the page can
+                 mirror it without tracking the tools itself. */
+              if (onPlanState) onPlanState(data);
             } else if (event === 'note') {
               const nte = document.createElement('div');
               nte.className = 'usage';

@@ -19,6 +19,10 @@ import Anthropic from '@anthropic-ai/sdk';
 
 import { rpc, clamp } from './db.js';
 import { KB_TOOLS, KB_TOOL_NAMES, runKbTool, describeKbTool } from './kb.js';
+import {
+  PLAN_TOOLS, PLAN_TOOL_NAMES, REMEMBER_TOOL, applyPlanTool, rememberFile,
+  normalisePlan, planBriefing, planIsComplete,
+} from './plan.js';
 
 const MODEL = 'claude-opus-5';
 const MAX_BRIEF_CHARS = 2000;
@@ -136,6 +140,11 @@ const TOOLS = [
    * and hooks. Defined next door because they are a different corpus with a
    * different retrieval layer under them — hybrid rather than keyword-only. */
   ...KB_TOOLS,
+
+  /* Session state. These do not search anything — they record what has been
+   * agreed, which is the difference between a chat about videos and a plan. */
+  ...PLAN_TOOLS,
+  REMEMBER_TOOL,
 ];
 
 /* Planning mode returns structure, not prose. Forcing it through a tool call
@@ -231,6 +240,23 @@ Search budget. You get a handful of rounds, not unlimited ones, and running out 
 - A broad question — 'what hooks are advertisers using' — is answered by reading fifty ads and naming the patterns, not by counting twenty words. Start with the read, then count only the two or three claims worth quantifying.
 - Prefer one well-chosen search over three narrow ones. You can always say a figure is approximate.
 
+PLANNING A BATCH. This is the main thing you do, and it is a conversation, not a form.
+
+Two things have to be settled, in this order:
+1. How many videos. Ask if it is not stated, then call set_video_count. The slots do not exist until you do, and nothing can be locked before that.
+2. What each one is about. Work through them; call lock_video for each topic the person has actually agreed to.
+
+Rules that make it a plan rather than a chat:
+- Never lock a topic you merely suggested. lock_video means they said yes. If you are unsure whether they agreed, ask.
+- Lock as you go, one at a time, rather than proposing five and locking them in a batch at the end. A locked slot is progress the person can see.
+- When they turn something down, call reject_idea with the reason. You are shown rejections on later turns; re-proposing something already dismissed is the fastest way to look like you were not listening.
+- If they change the number, call set_video_count again. Locked videos are kept.
+- When every slot is locked, say the plan is done and stop proposing. Do not pad it.
+
+Suggesting topics is what the corpora are for. When they ask for ideas — or when a slot is empty and they want help filling it — search before you propose, run check_repetition on anything you are about to recommend, and give them a small number of real options rather than a long list. Two or three they can react to beats eight they have to wade through.
+
+ATTACHMENTS. A file on the message is read once, for this conversation, and then forgotten. If it is a text file that would be worth having permanently — a transcript, a report, research — say so and ask whether to keep it: "want me to keep this in the library?" On a yes, call remember_file. Do not call it without asking, and do not ask about a file that is obviously ephemeral, like a screenshot of a chart. Images and PDFs cannot be kept either way.
+
 Attribution. Three kinds of statement, never to be blurred into each other:
 - Something a source says. "In the episode on DSCR you said..." — only when a search returned the passage carrying it, and you can name the document and the timestamp.
 - Something the research shows. "The September Fannie Mae outlook projects..." — only with the source and date the tool returned.
@@ -287,7 +313,23 @@ export function explain(err, fallback) {
   return fallback;
 }
 
-async function runTool(env, name, input) {
+async function runTool(env, name, input, ctx = {}) {
+  /* Plan tools mutate the session state carried by this request. They are not
+   * searches and deliberately return a small acknowledgement rather than rows —
+   * the page learns the new state from the plan_state event, not from here. */
+  if (PLAN_TOOL_NAMES.has(name)) {
+    const { error, result } = applyPlanTool(ctx.plan, name, input);
+    if (error) throw new Error(error);
+    ctx.planChanged = true;
+    return result;
+  }
+
+  if (name === REMEMBER_TOOL.name) {
+    const { error, result } = await rememberFile(env, ctx.texts, input, ctx.sessionId);
+    if (error) throw new Error(error);
+    return result;
+  }
+
   if (KB_TOOL_NAMES.has(name)) return runKbTool(env, name, input);
 
   if (name === 'search_competitor_ads') {
@@ -428,6 +470,11 @@ function describe(name, input) {
   if (input.insight_type) bits.push(`type: ${input.insight_type}`);
   if (input.group_by) bits.push(`by ${input.group_by}`);
   const label = {
+    set_video_count: 'Batch size',
+    lock_video: 'Locking a video',
+    unlock_video: 'Unlocking a video',
+    reject_idea: 'Noting a rejection',
+    remember_file: 'Adding to the library',
     search_competitor_ads: 'Competitor ads',
     search_trilith_content: 'Trilith content',
     search_hook_patterns: 'Hook patterns',
@@ -591,6 +638,11 @@ export async function handleIdeas(request, env, headers, ctx) {
         .map((m) => ({ role: m.role, content: m.content.slice(0, 8000) }))
     : [];
 
+  /* Session state travels with the request. It is the page's own state coming
+   * back, so it is re-normalised rather than trusted. */
+  const plan = normalisePlan(body.plan);
+  const sessionId = String(body.session_id ?? '').slice(0, 64) || null;
+
   let attached;
   try { attached = buildAttachments(body.attachments); }
   catch (err) { return json({ error: err.message }, 400, headers); }
@@ -639,6 +691,10 @@ export async function handleIdeas(request, env, headers, ctx) {
               ...(planning
                 ? [{ type: 'text', text: `${PLAN_SYSTEM}\n\nProduce exactly ${count} concepts.` }]
                 : []),
+              /* The session state, rebuilt every round because the model's own
+               * tool calls change it mid-turn. Last, so it never invalidates
+               * the cached prefix above. */
+              { type: 'text', text: planBriefing(plan) },
             ],
             tools: planning ? [...TOOLS, PLAN_TOOL] : TOOLS,
             messages,
@@ -701,10 +757,16 @@ export async function handleIdeas(request, env, headers, ctx) {
           const results = [];
           for (const call of calls) {
             const { label, detail } = describe(call.name, call.input || {});
+            const toolCtx = { plan, texts: attached.texts, sessionId };
             try {
-              const rows = await runTool(env, call.name, call.input || {});
+              const rows = await runTool(env, call.name, call.input || {}, toolCtx);
               totals.searches += 1;
               send('tool', { label, detail, count: Array.isArray(rows) ? rows.length : 0 });
+              /* The page mirrors the plan, so it must learn about a change the
+               * moment it happens rather than at the end of the turn — a locked
+               * video that appears only after the answer finishes reads as if
+               * nothing was recorded. */
+              if (toolCtx.planChanged) send('plan_state', plan);
               results.push({
                 type: 'tool_result',
                 tool_use_id: call.id,
@@ -742,6 +804,7 @@ export async function handleIdeas(request, env, headers, ctx) {
                   type: 'text',
                   text: 'You have used your search budget. Answer now from what the searches already returned. Do not ask for more searches. If the evidence is thinner than you would like, say which part is thin rather than withholding the answer.',
                 },
+                { type: 'text', text: planBriefing(plan) },
               ],
               messages,
             });
@@ -758,7 +821,10 @@ export async function handleIdeas(request, env, headers, ctx) {
           }
         }
 
-        send('done', { model: MODEL, usage: totals });
+        /* The authoritative state, sent every turn whether or not it changed.
+         * A page that missed a mid-turn plan_state event still ends up correct. */
+        send('plan_state', plan);
+        send('done', { model: MODEL, usage: totals, plan_complete: planIsComplete(plan) });
       } catch (err) {
         /* Surfaces in `wrangler tail`. The page gets a sanitised message; the
          * operator needs the real one. */

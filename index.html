@@ -71,6 +71,50 @@
     margin-top:.875rem; padding-top:.75rem; border-top:1px solid var(--rule);
   }
   .lockbar .count { font-size:.8125rem; color:var(--ink-body); margin-right:auto; }
+
+  /* This week's plan. Sits above the transcript and stays there: the point of
+     locking a topic is being able to see it without scrolling back. */
+  .plan-panel {
+    border:1px solid var(--rule); border-radius:.5rem;
+    background:var(--card); padding:.75rem .875rem; margin-bottom:1rem;
+  }
+  .plan-panel header { display:flex; align-items:baseline; gap:.75rem; }
+  .plan-panel h2 {
+    font-size:.8125rem; font-weight:600; letter-spacing:.02em;
+    margin:0; margin-right:auto; color:var(--ink-body);
+  }
+  .plan-panel header button {
+    font-size:.6875rem; color:var(--ink-quiet); background:none;
+    border:none; cursor:pointer; padding:0;
+  }
+  .plan-panel header button:hover { color:var(--clay); }
+  .plan-goal { margin:.375rem 0 0; font-size:.75rem; color:var(--ink-quiet); }
+  .plan-slots { list-style:none; margin:.625rem 0 0; padding:0; display:grid; gap:.375rem; }
+  .plan-slot { display:flex; gap:.625rem; align-items:baseline; font-size:.8125rem; }
+  .plan-slot .slot-n {
+    font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet);
+    min-width:1.25rem; flex:none;
+  }
+  .plan-slot .slot-body { display:flex; flex-direction:column; gap:.125rem; }
+  .plan-slot .slot-topic { color:var(--ink-body); font-weight:500; }
+  .plan-slot .slot-angle,
+  .plan-slot .slot-hook { font-size:.75rem; color:var(--ink-quiet); }
+  .plan-slot .slot-hook { font-style:italic; }
+  .plan-slot.empty .slot-empty { font-size:.75rem; color:var(--ink-quiet); opacity:.7; }
+  .plan-slot.locked .slot-n { color:var(--emerald); }
+  /* Same trap as .kb-add: a display rule outranks the [hidden] attribute. */
+  .plan-actions[hidden] { display:none; }
+  .plan-actions {
+    display:flex; align-items:center; gap:.75rem;
+    margin-top:.75rem; padding-top:.625rem; border-top:1px solid var(--rule);
+  }
+  .plan-actions button {
+    font-size:.75rem; color:var(--ink-body); background:var(--card-sunk);
+    border:1px solid var(--rule); border-radius:999px;
+    padding:.1875rem .75rem; cursor:pointer;
+  }
+  .plan-actions button:disabled { opacity:.5; cursor:default; }
+  .plan-note { font-size:.6875rem; color:var(--ink-quiet); }
   .lockbar button {
     font-family:var(--sans); font-size:.8125rem; font-weight:600;
     border-radius:4px; padding:.4375rem 1rem; cursor:pointer; border:none;
@@ -141,6 +185,22 @@
       </ol>
     </div>
 
+    <!-- This week's plan. Mirrors the session state the agent moves with its
+         tools; the page never edits it directly, so what is on screen and what
+         the agent believes cannot drift apart. -->
+    <section class="plan-panel" id="plan-panel" hidden aria-label="This week's plan">
+      <header>
+        <h2 id="plan-title"></h2>
+        <button type="button" id="plan-reset" title="Clear the plan and start again">Start over</button>
+      </header>
+      <p class="plan-goal" id="plan-goal" hidden></p>
+      <ol class="plan-slots" id="plan-slots"></ol>
+      <div class="plan-actions" id="plan-actions" hidden>
+        <button type="button" id="plan-export">Export locked plan</button>
+        <span class="plan-note" id="plan-note"></span>
+      </div>
+    </section>
+
     <div id="transcript" aria-live="polite"></div>
   </div>
 </main>
@@ -210,6 +270,14 @@ const kbCount = document.getElementById('kb-count');
 const kbType = document.getElementById('kb-type');
 const kbSend = document.getElementById('kb-send');
 const kbStatus = document.getElementById('kb-status');
+const planPanel = document.getElementById('plan-panel');
+const planTitle = document.getElementById('plan-title');
+const planGoal = document.getElementById('plan-goal');
+const planSlots = document.getElementById('plan-slots');
+const planActions = document.getElementById('plan-actions');
+const planExport = document.getElementById('plan-export');
+const planNote = document.getElementById('plan-note');
+const planReset = document.getElementById('plan-reset');
 
 /* ---------------------------------------------------------------------------
  * Attachments.
@@ -512,6 +580,7 @@ chat = AikoChat.create({
   buildPayload,
   onSubmitted: () => { staged.length = 0; showError(''); drawTray(); },
   onPlan: renderPlan,
+  onPlanState,
 });
 const render = AikoChat.render;
 
@@ -543,20 +612,130 @@ chat.addMessage('bot', 'Aiko', greet());
 /* Most messages are free text. One that asks for a specific number of videos
    still goes through planning mode, so the answer comes back as briefs you can
    drop and lock rather than as prose. */
+/* --- the planning session -------------------------------------------------
+ * The agent owns this state and moves it with tools; the page mirrors it and
+ * sends it back on the next message. Kept in localStorage so a refresh does not
+ * lose a half-agreed week — the Worker is stateless by design, which is what
+ * lets the same plan be picked up in another tab without either copy being
+ * authoritative over the other.
+ * ------------------------------------------------------------------------ */
+const PLAN_KEY = 'trilith-plan-state';
+const SESSION_KEY = 'trilith-plan-session';
+
+let plan = loadPlan();
+const sessionId = loadSession();
+
+function loadPlan() {
+  try {
+    const raw = localStorage.getItem(PLAN_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* corrupt or unavailable — start clean rather than fail to load */ }
+  return { goal: null, target_count: null, slots: [], rejected: [] };
+}
+
+function loadSession() {
+  try {
+    let id = localStorage.getItem(SESSION_KEY);
+    if (!id) {
+      id = 'plan-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      localStorage.setItem(SESSION_KEY, id);
+    }
+    return id;
+  } catch { return null; }
+}
+
+function savePlan() {
+  try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); } catch { /* private mode */ }
+}
+
+const lockedCount = () => (plan.slots || []).filter((s) => s.status === 'locked').length;
+const planIsComplete = () =>
+  plan.target_count !== null
+  && (plan.slots || []).length === plan.target_count
+  && lockedCount() === plan.target_count;
+
+function drawPlan() {
+  const has = plan.target_count !== null || lockedCount() > 0;
+  planPanel.hidden = !has;
+  if (!has) return;
+
+  const n = lockedCount();
+  const total = plan.target_count ?? (plan.slots || []).length;
+  planTitle.textContent = `This week — ${n} of ${total} locked`;
+
+  planGoal.hidden = !plan.goal;
+  planGoal.textContent = plan.goal || '';
+
+  planSlots.textContent = '';
+  (plan.slots || []).forEach((slot, i) => {
+    const li = document.createElement('li');
+    li.className = 'plan-slot ' + (slot.status === 'locked' ? 'locked' : 'empty');
+
+    const num = document.createElement('span');
+    num.className = 'slot-n';
+    num.textContent = i + 1;
+
+    const body = document.createElement('div');
+    body.className = 'slot-body';
+
+    if (slot.status === 'locked') {
+      const topic = document.createElement('span');
+      topic.className = 'slot-topic';
+      topic.textContent = slot.topic;
+      body.append(topic);
+      if (slot.angle) {
+        const angle = document.createElement('span');
+        angle.className = 'slot-angle';
+        angle.textContent = slot.angle;
+        body.append(angle);
+      }
+      if (slot.hook) {
+        const hook = document.createElement('span');
+        hook.className = 'slot-hook';
+        hook.textContent = '“' + slot.hook + '”';
+        body.append(hook);
+      }
+    } else {
+      const empty = document.createElement('span');
+      empty.className = 'slot-empty';
+      empty.textContent = 'not decided yet';
+      body.append(empty);
+    }
+
+    li.append(num, body);
+    planSlots.append(li);
+  });
+
+  planActions.hidden = n === 0;
+  planExport.disabled = n === 0;
+  planNote.textContent = planIsComplete()
+    ? 'Every slot is locked.'
+    : (plan.target_count ? `${plan.target_count - n} still to decide.` : '');
+}
+
+/* The agent is the only writer. The page redraws and stores whatever it is
+   told, and never edits a slot itself — two writers on one plan is how the
+   screen and the conversation start disagreeing. */
+function onPlanState(next) {
+  plan = next;
+  savePlan();
+  drawPlan();
+}
+
 function buildPayload(brief, history) {
   const attachments = staged.filter((a) => a.ready).map((a) => (a.kind === 'text'
     ? { name: a.name, kind: 'text', text: a.text }
     : { name: a.name, kind: a.kind, mediaType: a.mediaType, data: a.data }));
 
-  const asksForBatch = /\b(plan|propose|brainstorm|draft|come up with|give me|make me|generate)\b/i.test(brief);
-  const n = brief.match(/\b(\d{1,2})\b(?=[^.\n]{0,40}\b(?:videos?|concepts?|ideas?|scripts?)\b)/i);
+  /* Planning used to be a one-shot mode, triggered by spotting a number near
+     the word "videos", and it threw the conversation away to do it. That is
+     the opposite of agreeing a plan: "make it four instead" arrived as a brand
+     new batch with no memory of the three already settled.
 
-  /* No history on a batch: it should be planned against the corpora, not
-     against whatever was being discussed a moment ago. Attachments are the
-     exception — they were staged for this message, so they ride along. */
-  const base = (asksForBatch && n)
-    ? { mode: 'plan', count: Math.min(Math.max(parseInt(n[1], 10), 1), 12), brief, history: [] }
-    : { brief, history };
+     Now every message carries the session state and the agent moves it with
+     tools, so the count and the topics are negotiated rather than guessed at
+     from the phrasing. */
+  const base = { brief, history, plan, session_id: sessionId };
 
   return attachments.length ? { ...base, attachments } : base;
 }
@@ -685,6 +864,50 @@ function renderPlan(wrapper, data) {
   wrapper.append(list, bar);
   list.scrollIntoView({ block: 'nearest' });
 }
+
+planExport.addEventListener('click', () => {
+  const locked = (plan.slots || [])
+    .map((s, i) => ({ ...s, slot: i + 1 }))
+    .filter((s) => s.status === 'locked');
+  if (!locked.length) return;
+
+  const body = {
+    lockedAt: new Date().toISOString(),
+    session_id: sessionId,
+    goal: plan.goal,
+    requested: plan.target_count,
+    briefs: locked.map((s) => ({
+      topic: s.topic,
+      angle: s.angle,
+      opening_line: s.hook || s.opening_line,
+      evidence: s.evidence,
+      product: s.product,
+      audience: s.audience,
+      source_ids: s.source_ids || [],
+    })),
+  };
+
+  const stamp = body.lockedAt.slice(0, 10);
+  const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `video-briefs-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  planNote.textContent = `Exported ${body.briefs.length} — run: node tools/add-briefs.mjs <file>`;
+});
+
+planReset.addEventListener('click', () => {
+  /* A confirm, because the plan is the week's work and there is no undo. */
+  if (!window.confirm('Clear the plan and start again? Locked topics will be lost.')) return;
+  plan = { goal: null, target_count: null, slots: [], rejected: [] };
+  savePlan();
+  drawPlan();
+});
+
+drawPlan();
 
 if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
 </script>
