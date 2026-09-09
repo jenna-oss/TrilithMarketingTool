@@ -1,0 +1,91 @@
+{
+  "fetchedAt": "2026-09-09T01:46:49.184Z",
+  "note": "Best-performing ORGANIC post per row. Creators come from the screened roster in education-creators.json; lenders are harvested from the same nine brand ids the creative wall uses. Paid ads are excluded from both halves.",
+  "rows": [
+    {
+      "kind": "creator",
+      "name": "Erick Brice",
+      "note": "This is your house This is your house Hey",
+      "views": 226000,
+      "viewsLabel": "226K"
+    },
+    {
+      "kind": "creator",
+      "name": "Theoni Rapo",
+      "note": "If the house that you like on Zillow is still on th…",
+      "views": 211040,
+      "viewsLabel": "211040"
+    },
+    {
+      "kind": "creator",
+      "name": "Scott Betley",
+      "note": "Y'all guess what happened?",
+      "views": 118851,
+      "viewsLabel": "118851"
+    },
+    {
+      "kind": "creator",
+      "name": "Theoni Rapo",
+      "note": "When a seller accepts your offer for a house, there…",
+      "views": 102313,
+      "viewsLabel": "102313"
+    },
+    {
+      "kind": "creator",
+      "name": "Sean Pan",
+      "note": "I bought this 4plex for $250,000 and this is how mu…",
+      "views": 59800,
+      "viewsLabel": "59.8K"
+    },
+    {
+      "kind": "creator",
+      "name": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
+      "note": "Whenever me and my buddy need to make five grand, t…",
+      "views": 43791,
+      "viewsLabel": "43791"
+    },
+    {
+      "kind": "lender",
+      "name": "Lima One",
+      "note": "best post",
+      "views": 41763,
+      "viewsLabel": "41763"
+    },
+    {
+      "kind": "creator",
+      "name": "Erick Brice",
+      "note": "You're 20 years old.",
+      "views": 39700,
+      "viewsLabel": "39.7K"
+    },
+    {
+      "kind": "lender",
+      "name": "Renovo Financial",
+      "note": "best post",
+      "views": 18087,
+      "viewsLabel": "18087"
+    },
+    {
+      "kind": "lender",
+      "name": "Visio Lending",
+      "note": "best post",
+      "views": 12148,
+      "viewsLabel": "12148"
+    },
+    {
+      "kind": "lender",
+      "name": "Anchor Loans",
+      "note": "best post",
+      "views": 5998,
+      "viewsLabel": "5998"
+    },
+    {
+      "kind": "lender",
+      "name": "Kiavi",
+      "note": "best post",
+      "views": 5690,
+      "viewsLabel": "5690"
+    }
+  ],
+  "failures": []
+}

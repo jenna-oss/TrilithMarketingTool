@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T01:23:01.877Z",
+  "fetchedAt": "2026-09-09T01:44:23.328Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -327,6 +327,16 @@
       "audience": "borrower",
       "videos": [
         {
+          "id": "1b58742f-5b9a-4637-b47a-6f156022cfb4",
+          "hook": "So check this out",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "1693",
+          "postedAt": "2026-09-02",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/cdfc188eaf19bf49b14791d4e3545550.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/cdfc188eaf19bf49b14791d4e3545550.mp4"
+        },
+        {
           "id": "49c068f9-5484-4eb7-b208-10f323a1cd60",
           "hook": "The calling listings that have been on the market for a long time.",
           "hookSource": "hook",
@@ -524,6 +534,16 @@
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/519345ff8d21cdd565d457a6e7b077cc.mp4"
         },
         {
+          "id": "55d683a9-a663-44e5-be9c-9c6a95cae396",
+          "hook": "How to become a young... investor.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "10515",
+          "postedAt": "2026-09-07",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f9025073df2ff9bd4fcb76f5774944b0.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f9025073df2ff9bd4fcb76f5774944b0.mp4"
+        },
+        {
           "id": "685f3679-85ad-431a-a9c2-141446233fc6",
           "hook": "You see this little house here?",
           "hookSource": "hook",
@@ -542,16 +562,6 @@
           "postedAt": "2026-09-06",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/ad976fd43a4d432f4b24b5d2fa0a4c66.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/ad976fd43a4d432f4b24b5d2fa0a4c66.mp4"
-        },
-        {
-          "id": "0593edb0-7358-4b95-8c8e-0203bde069ba",
-          "hook": "See this yam here?",
-          "hookSource": "hook",
-          "category": "Explainer",
-          "views": "7318",
-          "postedAt": "2026-09-06",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6fccf8895ba359ac8bc6d75a0b41bee6.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6fccf8895ba359ac8bc6d75a0b41bee6.mp4"
         }
       ]
     },
@@ -612,6 +622,124 @@
           "postedAt": "2026-09-02",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/fa5c8170f72d6cd076f8219b59b8c001.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/fa5c8170f72d6cd076f8219b59b8c001.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "avery-carl",
+      "spyglassId": "d7edc594-4681-4d8a-ad34-18de9744ea29",
+      "name": "Avery Carl",
+      "handle": "@theaverycarl",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_theaverycarl.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/theaverycarl",
+      "followers": "54.5K",
+      "angle": "Avery Carl teaches beginners how to buy and operate short-term vacation rentals, drawing on her own Airbnb portfolio in Destin and 30A to give market-picking and revenue-forecasting advice for the coming year.",
+      "productLines": [
+        "dscr"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "61f5abc2-b67d-4592-8203-d6406f4edb8d",
+          "hook": "Buying your first Airbnb can feel like there are 100 things you need to figure out before you even make an offer.",
+          "hookSource": "title",
+          "category": "Text Overlay",
+          "views": "2990",
+          "postedAt": "2026-09-02",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/6aa5b955e3100b73ea34b48a68623b17.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/6aa5b955e3100b73ea34b48a68623b17.mp4"
+        },
+        {
+          "id": "89efcfb3-6279-41dc-b5b9-03add03a11c3",
+          "hook": "How much will an Airbnb make in 2026?",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "3306",
+          "postedAt": "2026-09-01",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/00f58969fe3c4692aed05d46ee2d0117.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/00f58969fe3c4692aed05d46ee2d0117.mp4"
+        },
+        {
+          "id": "df7f5c26-a4a9-4d84-ac19-4b9e074f867d",
+          "hook": "I own a bunch of short -term rentals on 30A and in Destin, Florida,",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "2149",
+          "postedAt": "2026-09-01",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/52cd3e8a0e0c3c74cbc28202a1694f3a.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/52cd3e8a0e0c3c74cbc28202a1694f3a.mp4"
+        },
+        {
+          "id": "319c9628-adf9-4203-a42a-fa77ab0c97d2",
+          "hook": "Where's the best place to buy an Airbnb in 2026?",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "5046",
+          "postedAt": "2026-08-30",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f99c1db0daf01e311169dfdbddd0544e.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f99c1db0daf01e311169dfdbddd0544e.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "",
+      "spyglassId": "804999101",
+      "name": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
+      "handle": "@camm.olivera_",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/102913078804584.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/camm.olivera_",
+      "followers": "97.5K",
+      "angle": "Chicago-based investor who teaches fast-cash deal sourcing — pulling comps, spotting distressed residential deals, and using AI tools to find and flip contracts for quick five-figure paydays.",
+      "productLines": [
+        "fix-and-flip"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "60cbd53e-0f4f-4d40-8eac-a334c29ae16b",
+          "hook": "Yeah, I checked the comps on this one.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "10917",
+          "postedAt": "2026-09-06",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8feb45d24cbf38d74451604c63a401c9.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8feb45d24cbf38d74451604c63a401c9.mp4"
+        },
+        {
+          "id": "f4590e6f-9cb9-476b-84bd-4c8df761fdb0",
+          "hook": "Let's have AI make us 10 grand in two weeks.",
+          "hookSource": "hook",
+          "category": "Tutorial",
+          "views": "6446",
+          "postedAt": "2026-09-03",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/9623dc15fe290deebbdf32d26d1b7725.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/9623dc15fe290deebbdf32d26d1b7725.mp4"
+        },
+        {
+          "id": "93305da1-040c-4bb0-81e3-9bb4efde9f0e",
+          "hook": "Whenever me and my buddy need to make five grand, this is what we do.",
+          "hookSource": "hook",
+          "category": "Tutorial",
+          "views": "43791",
+          "postedAt": "2026-08-29",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c7983628d3bd2ca7e7e978edde296bee.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c7983628d3bd2ca7e7e978edde296bee.mp4"
+        },
+        {
+          "id": "604e0791-6ccc-4c34-9fd9-a992f4895d28",
+          "hook": "I guess what areas do you invest in, how frequently?",
+          "hookSource": "hook",
+          "category": "Interview",
+          "views": "9959",
+          "postedAt": "2026-08-26",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8eb7314fa3acff2ecbd5124cce116455.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8eb7314fa3acff2ecbd5124cce116455.mp4"
         }
       ]
     }
