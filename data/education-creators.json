@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T01:05:16.981Z",
+  "fetchedAt": "2026-09-09T01:13:25.153Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -132,16 +132,6 @@
           "postedAt": "2026-08-20",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e84e7ec8d7b45813412331c9f6ef31da.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e84e7ec8d7b45813412331c9f6ef31da.mp4"
-        },
-        {
-          "id": "238bcd99-75fe-4615-8d0e-5757b06b6a8b",
-          "hook": "Should you buy a camper, renovate it, and put it in your parents' backyard and then rent it out to complete strangers on rental platforms such as Airbnb?",
-          "hookSource": "hook",
-          "category": "Storytime",
-          "views": "5159",
-          "postedAt": "2026-08-06",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2af7c14a6b1d8a57682642c87f4e4d8d.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2af7c14a6b1d8a57682642c87f4e4d8d.mp4"
         },
         {
           "id": "bf9cc717-25a2-4e89-b9c9-06e3c1f735c6",
@@ -404,6 +394,104 @@
           "views": "19.1K",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3d737989dc86f198160107632b7988fd.jpg",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3d737989dc86f198160107632b7988fd.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "ravi-sharma",
+      "spyglassId": "22347bf9-c3aa-4cfa-a5fa-4084411db694",
+      "name": "Ravi Sharma",
+      "handle": "@personalfinancewithravi",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_personalfinancewithravi.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/personalfinancewithravi",
+      "followers": "32.4K",
+      "angle": "Breaks down macro property news—rate moves, budget changes, lending policy shifts like DTI caps and interest-only limits—into calm, contrarian takeaways for everyday investors building a residential portfolio.",
+      "productLines": [
+        "portfolio"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "57f5e8a3-db62-4ca8-b249-22909b8ec3d1",
+          "hook": "Prices are falling and people are freaking out",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "2414",
+          "postedAt": "2026-09-05",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/4c279c28721f00d4883fb2538e1905b1.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/4c279c28721f00d4883fb2538e1905b1.mp4"
+        },
+        {
+          "id": "c65c08f9-cc89-4eff-adb4-6bdfe4d8221b",
+          "hook": "So how do you adapt post budget around building wealth with property?",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "4580",
+          "postedAt": "2026-09-04",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/899986ebc986ddab5571a91abb163a9c.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/899986ebc986ddab5571a91abb163a9c.mp4"
+        },
+        {
+          "id": "2660ab39-405f-4a6a-90b6-f6cdd38c4631",
+          "hook": "Okay, mortgage wars have kicked off, and for anyone that doesn't know what that means, it could be really good news for you and the repayments on your house.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "3907",
+          "postedAt": "2026-09-03",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3fd66d8b3b00c4f059c2eabb84f0059f.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3fd66d8b3b00c4f059c2eabb84f0059f.mp4"
+        },
+        {
+          "id": "141f1fe4-a6d6-459e-8cf1-255a2ce0cf40",
+          "hook": "Oh my god, interest only, loans are gone, and debt -to -income ratios, and no one can ever buy again.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "4370",
+          "postedAt": "2026-09-02",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e248c5606f199773b7b02fb2285acd15.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e248c5606f199773b7b02fb2285acd15.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "scott-kuru",
+      "spyglassId": "1f4a1d18-826c-4493-8865-8a1adcf31c2e",
+      "name": "Scott Kuru",
+      "handle": "@scottkuru",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_scottkuru.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/scottkuru",
+      "followers": "144.3K",
+      "angle": "Scott Kuru breaks down Australian property investing through a regulatory and tax lens, explaining ATO data-matching, SMSF rule changes, and policy shifts so investors can structure and grow residential portfolios compliantly.",
+      "productLines": [
+        "portfolio"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-09-09",
+      "videos": [
+        {
+          "id": "913c4b7a-4324-492f-83c1-b72c2e75ae55",
+          "hook": "If you own property in Australia, you need to understand just how much the tax office can actually see about you,",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "8925",
+          "postedAt": "2026-09-02",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/ff3847483c782f53442b173895040390.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/ff3847483c782f53442b173895040390.mp4"
+        },
+        {
+          "id": "8b496d48-dbbe-49f9-bd33-6fc067ce624d",
+          "hook": "If the government's new SMSF property rules have got you thinking, \"Fine, I can't borrow for residential anymore. I'll just buy commercial.\"",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "1529",
+          "postedAt": "2026-09-02",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/3405490adcadbddc544781dc4e1b9ef4.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/3405490adcadbddc544781dc4e1b9ef4.mp4"
         }
       ]
     }
