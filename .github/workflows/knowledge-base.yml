@@ -21,6 +21,10 @@ on:
         description: 'Also rebuild document summaries and topic insights (costs Anthropic tokens)'
         type: boolean
         default: false
+      seed_hooks:
+        description: 'Also adapt Spyglass hook patterns into the hook library (costs Anthropic tokens)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -79,6 +83,21 @@ jobs:
           VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
           KB_MIRROR_LIMIT: '16'
         run: node tools/kb-mirror-published.mjs
+
+      # Builds the hook library from adspy.hook_patterns. Off by default and a
+      # one-off in practice: it skips patterns already adapted, so a second run
+      # only picks up whatever the weekly Spyglass refresh added. Lives here
+      # rather than on a schedule because the credit cost is per pattern and the
+      # library does not need topping up nightly.
+      - name: Seed the hook library
+        if: inputs.seed_hooks
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # The repo secret is named ANTHROPIC_API; the scripts read ANTHROPIC_API_KEY.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
+        run: node tools/kb-seed-hooks.mjs
 
       # Phase 3. Off by default because it reads every chunk of every new
       # document through the model, which is the most expensive thing here and
