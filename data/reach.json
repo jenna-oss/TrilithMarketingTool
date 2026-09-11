@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-10T16:53:30.876Z",
+  "fetchedAt": "2026-09-11T16:54:30.509Z",
   "note": "Best-performing ORGANIC post per row. Creators come from the screened roster in education-creators.json; lenders are harvested from the same nine brand ids the creative wall uses. Paid ads are excluded from both halves.",
   "rows": [
     {
@@ -52,32 +52,11 @@
       "viewsLabel": "24.3K"
     },
     {
-      "kind": "lender",
-      "name": "Renovo Financial",
-      "note": "best post",
-      "views": 18087,
-      "viewsLabel": "18.1K"
-    },
-    {
-      "kind": "lender",
-      "name": "Visio Lending",
-      "note": "best post",
-      "views": 12148,
-      "viewsLabel": "12.1K"
-    },
-    {
       "kind": "creator",
       "name": "Jack Henderson",
       "note": "We just finished building it, and we made a sneaky,…",
       "views": 11008,
       "viewsLabel": "11K"
-    },
-    {
-      "kind": "lender",
-      "name": "Anchor Loans",
-      "note": "best post",
-      "views": 5998,
-      "viewsLabel": "6K"
     },
     {
       "kind": "lender",
@@ -87,5 +66,34 @@
       "viewsLabel": "5.7K"
     }
   ],
-  "failures": []
+  "failures": [
+    {
+      "lender": "Visio Lending",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    },
+    {
+      "lender": "Anchor Loans",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    },
+    {
+      "lender": "New Silver",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    },
+    {
+      "lender": "RCN Capital",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    },
+    {
+      "lender": "LendingOne",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    },
+    {
+      "lender": "Renovo Financial",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    },
+    {
+      "lender": "Temple View Capital",
+      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
+    }
+  ]
 }
