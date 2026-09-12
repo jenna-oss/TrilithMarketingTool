@@ -153,9 +153,12 @@ def main():
     if video_path.exists():
         cur_video_dur = duration_of(video_path)
         if abs(cur_video_dur - total_s) < 0.5:
+            # apad pads the narration with silence, so -shortest stops at the
+            # end of the video rather than the voice. The video runs TAIL_PAD
+            # past the last line on purpose; a plain -shortest cut that off.
             run(
                 f'ffmpeg -y -i "{video_path}" -i "{audio_path}" '
-                f'-c:v copy -map 0:v:0 -map 1:a:0 -c:a aac -shortest "{final_path}"'
+                f'-c:v copy -map 0:v:0 -map 1:a:0 -af apad -c:a aac -shortest "{final_path}"'
             )
             print(f"\nVideo duration matches the voice take -- muxed: {final_path} ({duration_of(final_path):.2f}s)")
         else:

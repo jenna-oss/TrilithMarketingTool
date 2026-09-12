@@ -26,6 +26,8 @@ video/remotion/_voiceover_*/
 video/remotion/public/*/
 !video/remotion/public/fonts/
 video/.env
+# The per-run copy of the pipeline script with the locked brief written in.
+video/remotion/.run/
 
 # The lockfile is the exception to the blanket package-lock rule above. Renders
 # run unattended, so the install has to be reproducible: without it `npm ci`

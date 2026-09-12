@@ -60,9 +60,19 @@ Workflow({
 })
 ```
 
+`topic` can also be an object with the Plan page's fields (`topic`, `angle`,
+`hook`, `evidence`, `product`, `audience`, `source_ids`). When there is a
+`hook`, it is beat 1 of the script word for word, enforced in the script rather
+than asked for; the template library is only used for briefs without one.
+
 `args.root` is required away from the original Windows working copy: a workflow
 script is sandboxed, with no `process.env` and no filesystem, so it cannot
 discover where it lives and has to be told.
+
+In CI neither goes through args. The workflow writes the locked brief and the
+checkout path into a copy of the script, `video/remotion/.run/pipeline.mjs`,
+and runs that. Args are typed out by the model driving the run, and a brief
+passed that way once reached the Research stage as `[object Object]`.
 
 The workflow runs Research -> Script -> Visual Plan -> Assets -> Assembly ->
 Voiceover and returns the finished video's path. It does not auto-publish

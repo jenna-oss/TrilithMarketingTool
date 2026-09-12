@@ -1,10 +1,12 @@
 // Topic-to-video pipeline. See ../PIPELINE_SPEC.html for the full spec.
-// Invoke via the Workflow tool with args: { topic: "..." } (topic can be a
-// short description or a source URL/article).
 //
-// This file is authored here for reference/version control, but the
-// Workflow tool itself is invoked with the script passed inline or via
-// scriptPath -- run with: Workflow({ scriptPath: "<this file>", args: { topic } })
+// In CI (.github/workflows/render-videos.yml) the locked brief and the
+// checkout's location are written into a copy of this file before it runs --
+// see BAKED_BRIEF below -- and the Workflow tool is called with no args.
+//
+// By hand: Workflow({ scriptPath: "<this file>", args: { root, topic } }), where
+// topic is a short description, a source URL, or an object with the Plan page's
+// fields (topic, angle, hook, evidence, product, audience, source_ids).
 
 export const meta = {
   name: 'topic-to-video',
@@ -19,15 +21,60 @@ export const meta = {
   ],
 }
 
-const PROJECT_ROOT = (typeof args !== 'undefined' && args && args.root)
-  ? args.root
-  : 'C:/Users/jenna/Downloads/NicheScraper/newsletter_video_pipeline'
+// Replaced with literals by CI. Not taken from args there: args are typed out
+// by the model driving the run, and in the first batch slot 1's brief arrived
+// as an object, so the Research stage was asked to research "[object Object]".
+const BAKED_BRIEF = /*@BRIEF@*/ null
+const BAKED_ROOT = /*@ROOT@*/ null
+
+const ARGS = (typeof args !== 'undefined' && args) ? args : {}
+const PROJECT_ROOT = BAKED_ROOT || ARGS.root || 'C:/Users/jenna/Downloads/NicheScraper/newsletter_video_pipeline'
 const REMOTION_ROOT = `${PROJECT_ROOT}/remotion`
 const HOOK_LIBRARY_PATH = `${PROJECT_ROOT}/hook_templates_1000.json`
-const ENV_HINT = (typeof args !== 'undefined' && args && args.root)
+const ENV_HINT = (BAKED_ROOT || ARGS.root)
   ? 'the ELEVENLABS_API_KEY environment variable (already set on this runner)'
   : `${PROJECT_ROOT}/.env (ELEVENLABS_API_KEY)`
 const VOICE_ID = 'oWdwRrGpAwNn1T1p5ZQK'
+
+const BRIEF = normaliseBrief(BAKED_BRIEF || ARGS.brief || ARGS.topic)
+
+// Accepts a plain topic/URL string or the Plan page's slot fields, and always
+// hands back the same shape, so no prompt below interpolates an object.
+function normaliseBrief(b) {
+  if (typeof b === 'string') b = { topic: b }
+  if (!b || typeof b !== 'object') {
+    throw new Error('No brief: pass args.topic (a string or an object with a topic), or run from CI')
+  }
+  const text = (v) => Array.isArray(v) ? v.filter(Boolean).join('; ').trim()
+    : typeof v === 'string' ? v.trim()
+    : v == null ? '' : String(v).trim()
+  const sources = Array.isArray(b.source_ids) ? b.source_ids : Array.isArray(b.sources) ? b.sources : []
+  const brief = {
+    topic: text(b.topic) || text(b.title),
+    goal: text(b.goal),
+    angle: text(b.angle),
+    hook: text(b.hook) || text(b.opening_line),
+    evidence: text(b.evidence),
+    product: text(b.product),
+    audience: text(b.audience),
+    sources: sources.filter(s => typeof s === 'string' && s.trim()).map(s => s.trim()),
+  }
+  if (!brief.topic) throw new Error('The brief has no topic')
+  return brief
+}
+
+function briefBlock() {
+  return [
+    `TOPIC: ${BRIEF.topic}`,
+    BRIEF.goal && `BATCH GOAL: ${BRIEF.goal}`,
+    BRIEF.angle && `ANGLE: ${BRIEF.angle}`,
+    BRIEF.hook && `OPENING LINE (locked, spoken to camera): ${BRIEF.hook}`,
+    BRIEF.evidence && `EVIDENCE ALREADY GATHERED: ${BRIEF.evidence}`,
+    BRIEF.product && `PRODUCT: ${BRIEF.product}`,
+    BRIEF.audience && `AUDIENCE: ${BRIEF.audience}`,
+    BRIEF.sources.length && `SOURCES:\n${BRIEF.sources.map(s => `- ${s}`).join('\n')}`,
+  ].filter(Boolean).join('\n\n')
+}
 
 const COMPONENT_NAMES = [
   'Card', 'GiantStat', 'BuildList', 'DocumentCard',
@@ -58,9 +105,9 @@ const SCRIPT_SCHEMA = {
   type: 'object',
   required: ['hookCategory', 'hookTemplate', 'filledHook', 'beats'],
   properties: {
-    hookCategory: { type: 'string' },
-    hookTemplate: { type: 'string', description: 'the raw template string chosen from hook_templates_1000.json, placeholders intact' },
-    filledHook: { type: 'string', description: 'the template with (insert X) placeholders filled from real facts' },
+    hookCategory: { type: 'string', description: 'the library category, or "LOCKED" when the brief has a locked opening line' },
+    hookTemplate: { type: 'string', description: 'the raw template string chosen from hook_templates_1000.json, placeholders intact -- or "(locked on the Plan page)"' },
+    filledHook: { type: 'string', description: 'the template with (insert X) placeholders filled from real facts -- or the locked opening line, verbatim' },
     beats: {
       type: 'array',
       minItems: 8,
@@ -154,12 +201,18 @@ than reinventing it.`
 
 phase('Research')
 const research = await agent(
-  `Research this topic for a short-form vertical educational video about real estate/finance: "${args.topic}".
+  `Research this brief for a short-form vertical educational video about real estate/finance.
 
-If the topic is a URL, fetch and read it directly. Otherwise web-search it. Cross-check facts against
-2-3 sources when possible. Extract dated, specific facts with citations -- do not invent numbers. If the
-topic doesn't have hard figures (rates, ratios, dollar amounts), say so explicitly in missingNumbers rather
-than making them up.
+${briefBlock()}
+
+The brief was locked by a person on the Plan page. Research serves it: keep its topic and angle, and do
+not trade them for a different story.
+
+Read any SOURCES first, and if the TOPIC is itself a URL, fetch and read that. Then web-search to fill
+gaps. Cross-check facts against 2-3 sources when possible. Extract dated, specific facts with citations
+-- do not invent numbers. If the topic doesn't have hard figures (rates, ratios, dollar amounts), say so
+explicitly in missingNumbers rather than making them up. Where the brief's EVIDENCE or OPENING LINE states
+a figure, confirm it from a source, or say in missingNumbers that it could not be confirmed.
 
 Also produce a lowercase-hyphenated "slug" for this topic (e.g. "arnold-schwarzenegger", "cap-rate-explainer")
 -- it will be used as a file/folder name, so keep it short, no spaces, no special characters besides hyphens.`,
@@ -168,25 +221,64 @@ Also produce a lowercase-hyphenated "slug" for this topic (e.g. "arnold-schwarze
 log(`Researched "${research.workingTitle}" (slug: ${research.slug})`)
 
 phase('Script')
-const script = await agent(
-  `Read the hook template library at ${HOOK_LIBRARY_PATH} (a JSON object of {category: [templates...]}).
+const hookStep = BRIEF.hook
+  ? `The opening line is already decided: it was locked on the Plan page. Beat 1 is exactly this line,
+word for word, with no change to its wording or punctuation:
 
-Topic: ${research.workingTitle}
-Facts:
+${BRIEF.hook}
+
+Do not pick a hook from the template library and do not rewrite this line. Report hookCategory "LOCKED",
+hookTemplate "(locked on the Plan page)", and filledHook as the line above. Beat 2 onward must follow on
+from it.`
+  : `Read the hook template library at ${HOOK_LIBRARY_PATH} (a JSON object of {category: [templates...]}).
+Pick ONE category and ONE specific template from that library that fits this brief's angle. Fill its
+(insert X) placeholders with real details from the facts above -- do not invent facts. Report both the
+raw template (hookTemplate, placeholders intact) and the filled version (filledHook). The filledHook
+should be beat 1 or very close to it.`
+
+const script = await agent(
+  `Write the script for a short-form vertical video from this brief. The brief was locked by a person on
+the Plan page: the script carries its ANGLE, speaks to its AUDIENCE, and features its PRODUCT where it
+names one. Do not drift to a different story.
+
+${briefBlock()}
+
+Working title: ${research.workingTitle}
+Facts (the only source for figures and claims):
 ${research.sourcedFacts.map(f => `- ${f.fact} (${f.source})`).join('\n')}
 
-Pick ONE category and ONE specific template from that library that fits this topic's angle. Fill its
-(insert X) placeholders with real details from the facts above -- do not invent facts. Report both the
-raw template (hookTemplate, placeholders intact) and the filled version (filledHook).
+${hookStep}
 
 Then write a full beat-by-beat script: 8-13 beats, each a short natural spoken line (these get narrated
 by a cloned voice, so keep them punchy -- 8-14 words per beat is typical, not full paragraphs) with an
-estSeconds guess. The filledHook should be beat 1 or very close to it. The script should read as one
-connected story, not isolated facts -- reference the Mayweather/JPMorgan/DSCR/Construction videos' scripts
-in ${PROJECT_ROOT}/data/script_*.json for the tone and pacing this account uses.`,
+estSeconds guess. The script should read as one connected story, not isolated facts -- reference the
+Mayweather/JPMorgan/DSCR/Construction videos' scripts in ${PROJECT_ROOT}/data/script_*.json for the tone
+and pacing this account uses.`,
   { schema: SCRIPT_SCHEMA, label: 'script' }
 )
+// Not left to the prompt alone. In the first batch every script replaced the
+// locked hook with one from the template library, so the line is put in place
+// here, where no agent can talk its way out of it.
+if (BRIEF.hook) lockOpeningLine(script, BRIEF.hook)
 log(`Hook: [${script.hookCategory}] "${script.filledHook}"`)
+
+function lockOpeningLine(s, hook) {
+  const norm = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  const at = s.beats.findIndex(b => norm(b.line) === norm(hook))
+  if (at > 0) {
+    s.beats.unshift(s.beats.splice(at, 1)[0])
+    log(`The locked opening line was beat ${at + 1}; moved it to beat 1`)
+  } else if (at < 0) {
+    log(`Beat 1 was not the locked opening line; replaced "${s.beats[0].line}"`)
+    // A guess only, as every estSeconds is: Voiceover times each scene to the real take.
+    s.beats[0].estSeconds = Math.max(3, Math.round(hook.split(/\s+/).length / 2.8 * 10) / 10)
+  }
+  s.beats[0].line = hook
+  s.beats.forEach((b, i) => { b.order = i + 1 })
+  s.hookCategory = 'LOCKED'
+  s.hookTemplate = '(locked on the Plan page)'
+  s.filledHook = hook
+}
 
 phase('Visual Plan')
 let visualPlan = null
@@ -358,14 +450,16 @@ Steps:
    in beat order) and the TOTAL_S constant in Root.tsx.
 3. Re-render: npx remotion render src/index.ts ${assembly.compositionId} out/${research.slug}.mp4
 4. Mux the SAME narration audio file (don't regenerate) onto the fresh render with ffmpeg (-c:v copy -map 0:v:0
-   -map 1:a:0 -c:a aac -shortest) to out/${research.slug}_voice.mp4.
+   -map 1:a:0 -af apad -c:a aac -shortest) to out/${research.slug}_voice.mp4. Keep the apad: the video runs
+   a couple of seconds past the last line on purpose, and a plain -shortest cuts that closing hold off.
 
 Report the finalVideoPath, durationSeconds, whether the mux succeeded, and any notes.`,
   { schema: VOICEOVER_SCHEMA, label: 'voiceover' }
 )
 
 return {
-  topic: args.topic,
+  topic: BRIEF.topic,
+  hookLocked: Boolean(BRIEF.hook),
   slug: research.slug,
   workingTitle: research.workingTitle,
   hook: script.filledHook,

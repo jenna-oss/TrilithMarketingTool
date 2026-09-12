@@ -91,22 +91,28 @@ jobs:
             slots = [...new Set(wanted)].map((n) => slots[n - 1]);
           }
 
-          /* The pipeline takes one `topic` string. A locked slot is richer than
-           * that, and the angle is what makes a video specific rather than
-           * generic, so the whole brief goes in rather than the title alone. */
+          /* The locked slot goes to the pipeline as fields, not flattened into
+           * one string. The Script stage needs the hook on its own so it can be
+           * beat 1 word for word; flattened, it was one line among many and
+           * every script in the first batch replaced it. `brief` is a JSON
+           * string because it is written into the pipeline script as-is;
+           * `topic` is the plain title, for job names and the render record. */
+          const text = (v) => Array.isArray(v) ? v.filter(Boolean).join('; ').trim()
+            : typeof v === 'string' ? v.trim() : v == null ? '' : String(v).trim();
           const include = slots.map((s) => ({
             slot: s.slot,
             name: String(s.topic).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48),
-            topic: [
-              s.topic,
-              plan.goal ? `BATCH GOAL: ${plan.goal}` : null,
-              s.angle ? `ANGLE: ${s.angle}` : null,
-              s.hook ? `OPENING LINE (use this, spoken to camera): ${s.hook}` : null,
-              s.evidence ? `EVIDENCE ALREADY GATHERED: ${s.evidence}` : null,
-              s.product ? `PRODUCT: ${s.product}` : null,
-              s.audience ? `AUDIENCE: ${s.audience}` : null,
-              (s.source_ids || []).length ? `SOURCES: ${s.source_ids.join(' , ')}` : null,
-            ].filter(Boolean).join('\n\n'),
+            topic: text(s.topic),
+            brief: JSON.stringify({
+              topic: text(s.topic),
+              goal: text(plan.goal),
+              angle: text(s.angle),
+              hook: text(s.hook) || text(s.opening_line),
+              evidence: text(s.evidence),
+              product: text(s.product),
+              audience: text(s.audience),
+              source_ids: (s.source_ids || []).filter((x) => typeof x === 'string' && x.trim()),
+            }),
           }));
 
           console.log(`matrix=${JSON.stringify({ include })}`);
@@ -115,6 +121,7 @@ jobs:
           EOF
 
   render:
+    name: Render ${{ matrix.slot }} — ${{ matrix.name }}
     needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -123,8 +130,15 @@ jobs:
       max-parallel: 3
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
 
+    # No Supabase secret anywhere in this job. The agent below has a shell (and
+    # sudo, on a hosted runner) while reading pages from the open web, so
+    # anything this job holds, it can reach. Storage is the next job's work.
     steps:
+      # By default checkout leaves the job's GitHub token in .git/config, where
+      # the agent's shell could read it.
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -153,12 +167,11 @@ jobs:
         env:
           # The repo secret is named ANTHROPIC_API; the CLI reads ANTHROPIC_API_KEY.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
-          SESSION_ID: ${{ needs.plan.outputs.session }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-          TOPIC: ${{ matrix.topic }}
+          BRIEF_JSON: ${{ matrix.brief }}
           MAX_TURNS: ${{ inputs.max_turns }}
           # Every stage is an agent() call with no model of its own, so they all
-          # inherit this. On opus the first three videos cost $5.0-5.6 each,
+          # inherit this. On opus the first three videos cost $5.0-6.2 each,
           # nearly all of it the stages; web lookups ran on haiku for ~$0.40.
           # A choice, not a hardcode, so the two can be compared on the same
           # brief before either becomes the default for good.
@@ -180,16 +193,37 @@ jobs:
           # the same moment — so the artifact was fifteen pre-existing sources
           # around a 208-byte log.
           touch /tmp/render-start
+
+          # The brief is written into a copy of the pipeline script as a
+          # literal, rather than handed over as Workflow args. Args are typed
+          # out by the model driving the run: in the first batch it passed
+          # slot 1's brief as an object, and the Research stage was asked to
+          # research "[object Object]". Here nothing the model writes stands
+          # between the locked plan and the pipeline.
+          node - <<'EOF'
+          const fs = require('fs');
+          const bake = (src, token, value) => {
+            if (src.split(token).length !== 2) throw new Error(`expected exactly one ${token} in pipeline_workflow.mjs`);
+            return src.replace(token, () => JSON.stringify(value));
+          };
+          let src = fs.readFileSync('video/remotion/pipeline_workflow.mjs', 'utf8');
+          src = bake(src, '/*@BRIEF@*/ null', JSON.parse(process.env.BRIEF_JSON));
+          src = bake(src, '/*@ROOT@*/ null', `${process.env.GITHUB_WORKSPACE}/video`);
+          fs.mkdirSync('video/remotion/.run', { recursive: true });
+          fs.writeFileSync('video/remotion/.run/pipeline.mjs', src);
+          EOF
+
           # A headless run has no terminal to answer a permission prompt on, so
           # the tools the pipeline needs are granted explicitly and by name. An
           # allowlist rather than a blanket bypass: it is auditable here, and
           # anything the pipeline was not built to reach is still refused.
           #
           # WebSearch is on the list because the Research stage is told to
-          # "otherwise web-search it". Without it that agent cannot look
-          # anything up, and the failure is the quiet kind: rather than
-          # stopping, it falls back on what it already knows and produces
-          # facts whose citations nobody can check.
+          # web-search. Without it that agent cannot look anything up, and the
+          # failure is the quiet kind: rather than stopping, it falls back on
+          # what it already knows and produces facts whose citations nobody
+          # can check.
+          #
           # stream-json, not text. In text mode the CLI prints its result
           # once, at the end, so for the whole run the log stays empty and then
           # everything lands at once. Combined with GitHub only publishing a
@@ -201,22 +235,21 @@ jobs:
           # pass or fail is decided at the end of this step by what was produced,
           # not by any exit status in this pipe.
           set +e
-          claude -p             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch"             --model "${MODEL:-sonnet}" --max-turns "$MAX_TURNS"             --output-format stream-json --verbose             "Run the video pipeline for one topic.
+          claude -p \
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch" \
+            --model "${MODEL:-sonnet}" --max-turns "$MAX_TURNS" \
+            --output-format stream-json --verbose \
+            "Run the video pipeline for one brief.
 
-          Use the Workflow tool exactly once:
+          Use the Workflow tool exactly once, with no args:
 
-            Workflow({
-              scriptPath: 'video/remotion/pipeline_workflow.mjs',
-              args: { root: '$GITHUB_WORKSPACE/video', topic: <the topic below> }
-            })
+            Workflow({ scriptPath: 'video/remotion/.run/pipeline.mjs' })
 
-          Pass args.root exactly as given — the script is sandboxed and cannot
-          find its own location. Do not edit the workflow script. When it
+          The brief and the project location are already written into that
+          script. Do not pass args and do not edit the script. When it
           finishes, print the absolute path of the finished mp4 on its own line
-          and nothing else. If it fails, print the error and stop.
-
-          TOPIC:
-          $TOPIC" 2>&1 | tee render.log | { jq -r --unbuffered '
+          and nothing else. If it fails, print the error and stop." \
+            2>&1 | tee render.log | { jq -r --unbuffered '
               if .type == "assistant" then
                 (.message.content // [])[]
                 | if .type == "text" then (.text // "")[0:400]
@@ -263,21 +296,62 @@ jobs:
         run: |
           mkdir -p artifact
           cp render.log artifact/ 2>/dev/null || true
+          cp video/remotion/.run/pipeline.mjs artifact/pipeline-as-run.mjs 2>/dev/null || true
           find video/remotion/out -name '*.mp4' -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion/src -maxdepth 1 -name '*.tsx' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
           echo "--- artifact contents ---"; ls -la artifact/
 
-      # Storage is what makes a render survive. The artifact below expires in
-      # fourteen days and re-rendering is not a recovery path — the Assembly
-      # agent writes a fresh component every run, so the same brief does not
-      # give back the same video.
-      #
-      # always(): a failed render is worth a row too. "Slot 2 failed at 04:12,
-      # here is the run" is the question you ask later, and without the row
-      # there is nothing to ask it of.
-      - name: Store the video
+      - uses: actions/upload-artifact@v4
         if: always()
+        with:
+          name: video-${{ matrix.slot }}-${{ matrix.name }}
+          path: artifact/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # Storage is what makes a render survive. The artifact expires in fourteen
+  # days and re-rendering is not a recovery path — the Assembly agent writes a
+  # fresh component every run, so the same brief does not give back the same
+  # video.
+  #
+  # A job of its own, on a clean runner, because this is where the service-role
+  # key lives. It used to be a step after the agent on the render runner, where
+  # a prompt-injected agent could have rewritten find-output.sh, or put its own
+  # curl on PATH, and been handed the key when this ran. Only the artifact
+  # crosses over, and nothing in it is executed.
+  #
+  # !cancelled() rather than success(): a failed render is worth a row too.
+  # "Slot 2 failed at 04:12, here is the run" is the question you ask later,
+  # and without the row there is nothing to ask it of.
+  store:
+    name: Store ${{ matrix.slot }} — ${{ matrix.name }}
+    needs: [plan, render]
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: video
+
+      - name: Install ffmpeg
+        run: command -v ffmpeg >/dev/null || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
+
+      # A render that died before collecting anything leaves no artifact. That
+      # is a failed row to write, not a reason to skip writing one.
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: video-${{ matrix.slot }}-${{ matrix.name }}
+          path: artifact
+
+      - name: Store the video
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -289,15 +363,32 @@ jobs:
         run: |
           set -euo pipefail
           BASE="${SUPABASE_URL%/}"
-          # The same judgement the render step made, from the same script, so the
-          # row and the step cannot disagree about what happened. This used to
-          # store the first mp4 find returned: slot 1 reached the bucket without
-          # its narration, and slots 2 and 3 were recorded as rendered although
-          # their Voiceover stage never ran.
+          mkdir -p artifact
+
+          # --fail-with-body on every call. Without it curl exits 0 on a 4xx or
+          # 5xx: a rejected upload was followed by a row saying "rendered", and
+          # a rejected row was not noticed at all.
+          record() {
+            curl -sS --fail-with-body -X POST "$BASE/rest/v1/rpc/kb_record_render" \
+              -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+              -H 'content-type: application/json' \
+              -d "$1" > /dev/null
+          }
+          record_failed() {
+            record "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" --arg r "$RUN_URL" --arg w "$1" \
+              '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,status:"failed",error:$w,run_url:$r}}')"
+            echo "### Slot $SLOT — not stored: $1" >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          # The same judgement the render step made, by the same script, on the
+          # same files. This used to store the first mp4 find returned: slot 1
+          # reached the bucket without its narration, and slots 2 and 3 were
+          # recorded as rendered although their Voiceover stage never ran.
           OUT_state=; OUT_path=; OUT_mean_db=
           while IFS='=' read -r k v; do
             case "$k" in state) OUT_state=$v ;; path) OUT_path=$v ;; mean_db) OUT_mean_db=$v ;; esac
-          done < <(bash video/find-output.sh)
+          done < <(bash video/find-output.sh artifact)
 
           if [ "$OUT_state" != "ok" ]; then
             case "$OUT_state" in
@@ -308,8 +399,7 @@ jobs:
             # Not uploaded. An unnarrated render is not the deliverable, and under
             # the canonical path it would read as one. It stays in the artifact.
             echo "Not storing: $WHY"
-            curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H 'content-type: application/json' -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" --arg r "$RUN_URL" --arg w "$WHY" '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,status:"failed",error:$w,run_url:$r}}')" > /dev/null
-            echo "### Slot $SLOT — not finished: $WHY" >> "$GITHUB_STEP_SUMMARY"
+            record_failed "$WHY"
             exit 0
           fi
           MP4="$OUT_path"
@@ -319,15 +409,32 @@ jobs:
           DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$MP4" 2>/dev/null || echo "")
 
           echo "Uploading $MP4 ($BYTES bytes) -> videos/$PATH_IN_BUCKET"
-          curl -sS -X POST "$BASE/storage/v1/object/videos/$PATH_IN_BUCKET"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: video/mp4'             -H 'x-upsert: true'             --data-binary "@$MP4" > /dev/null
+          if ! UPLOAD=$(curl -sS --fail-with-body -X POST "$BASE/storage/v1/object/videos/$PATH_IN_BUCKET" \
+                -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                -H 'content-type: video/mp4' \
+                -H 'x-upsert: true' \
+                --data-binary "@$MP4" 2>&1); then
+            # One line: it becomes a summary heading and a database field.
+            UPLOAD=$(printf '%s' "$UPLOAD" | tr '\n' ' ')
+            echo "::error::Upload to storage failed: ${UPLOAD:0:500}"
+            record_failed "upload to storage failed: ${UPLOAD:0:300}"
+            exit 1
+          fi
 
-          curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render"             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: application/json'             -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC"                   --arg p "$PATH_IN_BUCKET" --argjson b "$BYTES" --arg d "${DUR:-0}" --arg r "$RUN_URL" --arg f "$(basename "$MP4")" --arg m "${OUT_mean_db:-}"                   '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,
-                             storage_path:$p,bytes:$b,duration_seconds:($d|tonumber),
-                             status:"rendered",run_url:$r,metadata:{source_file:$f,mean_volume_db:$m}}}')" > /dev/null
+          record "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" \
+            --arg p "$PATH_IN_BUCKET" --argjson b "$BYTES" --arg d "${DUR:-0}" --arg r "$RUN_URL" \
+            --arg f "$(basename "$MP4")" --arg m "${OUT_mean_db:-}" \
+            '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,
+                       storage_path:$p,bytes:$b,duration_seconds:($d|tonumber),
+                       status:"rendered",run_url:$r,metadata:{source_file:$f,mean_volume_db:$m}}}')"
 
           # A signed link in the job summary, so reviewing is a click rather than
-          # a download. The bucket is private; this is the only way in.
-          SIGNED=$(curl -sS -X POST "$BASE/storage/v1/object/sign/videos/$PATH_IN_BUCKET"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: application/json'             -d '{"expiresIn": 2592000}' | jq -r '.signedURL // empty')
+          # a download. The bucket is private; this is the only way in. A failure
+          # here costs the link, not the video, so it does not fail the step.
+          SIGNED=$(curl -sS --fail-with-body -X POST "$BASE/storage/v1/object/sign/videos/$PATH_IN_BUCKET" \
+            -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H 'content-type: application/json' \
+            -d '{"expiresIn": 2592000}' | jq -r '.signedURL // empty') || SIGNED=""
 
           {
             echo "### Slot $SLOT — $NAME"
@@ -338,11 +445,3 @@ jobs:
             echo "- **Stored:** \`videos/$PATH_IN_BUCKET\`"
             [ -n "$SIGNED" ] && echo "- **Watch (30-day link):** ${BASE}/storage/v1${SIGNED}"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: video-${{ matrix.slot }}-${{ matrix.name }}
-          path: artifact/
-          retention-days: 14
-          if-no-files-found: warn

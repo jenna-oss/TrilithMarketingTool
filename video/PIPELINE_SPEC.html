@@ -232,9 +232,15 @@
   </p>
 
   <h2><span class="num">02</span>Hook + Script</h2>
-  <div class="stage-meta"><span class="pill agent">agent</span> <span class="pill">reads hook_templates_1000.json</span></div>
+  <div class="stage-meta"><span class="pill agent">agent</span> <span class="pill">reads hook_templates_1000.json</span> <span class="pill">+ JS enforcement</span></div>
   <p>
-    Selects a category and a specific template from the <strong>980-template hook library</strong>
+    <strong>When the brief has a locked opening line</strong> (every brief from the Plan page does),
+    that line is beat 1, word for word, and the library is not used. The agent is told so, and the
+    workflow script then puts the line in place itself: in the first batch, every script swapped
+    the locked hook for a library one.
+  </p>
+  <p>
+    Otherwise, selects a category and a specific template from the <strong>980-template hook library</strong>
     (<span class="path">hook_templates_1000.json</span> — Educational, Storytelling, Authority,
     Myth Busting, Comparison, Day in the Life, Random), then fills its <code>(insert X)</code>
     placeholders with real facts from Stage 01. Example: "This represents your X before, during,
