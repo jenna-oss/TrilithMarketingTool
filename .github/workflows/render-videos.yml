@@ -30,9 +30,9 @@ on:
         type: string
         default: '120'
       model:
-        description: 'Model the pipeline stages run on. The first three videos used opus, at about $5 each.'
+        description: 'Model the pipeline stages run on. A full video cost $6.19 on opus and $3.46 on sonnet; haiku is untested.'
         type: choice
-        options: [sonnet, opus]
+        options: [sonnet, opus, haiku]
         default: sonnet
 
 concurrency:
