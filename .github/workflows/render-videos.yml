@@ -29,6 +29,11 @@ on:
         description: 'Cap on agent turns per video — the runaway guard'
         type: string
         default: '120'
+      model:
+        description: 'Model the pipeline stages run on. The first three videos used opus, at about $5 each.'
+        type: choice
+        options: [sonnet, opus]
+        default: sonnet
 
 concurrency:
   group: render-videos
@@ -152,6 +157,12 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           TOPIC: ${{ matrix.topic }}
           MAX_TURNS: ${{ inputs.max_turns }}
+          # Every stage is an agent() call with no model of its own, so they all
+          # inherit this. On opus the first three videos cost $5.0-5.6 each,
+          # nearly all of it the stages; web lookups ran on haiku for ~$0.40.
+          # A choice, not a hardcode, so the two can be compared on the same
+          # brief before either becomes the default for good.
+          MODEL: ${{ inputs.model }}
           # The Workflow tool returns immediately with a task id and runs in the
           # background, so the agent has nothing to block on and says it will
           # report back later. Claude Code then waits 600s for background work
@@ -186,12 +197,11 @@ jobs:
           # box with a spinner on it.
           #
           # The raw stream goes to render.log for the artifact; a readable
-          # digest goes to stdout. jq may fail without taking the step with it,
-          # and claude's own exit status decides pass or fail — a formatting
-          # problem must not look like a failed render, and a failed render must
-          # not be hidden by a working formatter.
+          # digest goes to stdout. jq may fail without taking the step with it;
+          # pass or fail is decided at the end of this step by what was produced,
+          # not by any exit status in this pipe.
           set +e
-          claude -p             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch"             --max-turns "$MAX_TURNS"             --output-format stream-json --verbose             "Run the video pipeline for one topic.
+          claude -p             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch"             --model "${MODEL:-sonnet}" --max-turns "$MAX_TURNS"             --output-format stream-json --verbose             "Run the video pipeline for one topic.
 
           Use the Workflow tool exactly once:
 
@@ -217,7 +227,34 @@ jobs:
               else empty end' 2>/dev/null || cat; }
           status=${PIPESTATUS[0]}
           set -e
-          exit "$status"
+
+          # Pass or fail on the thing this job exists to make: a narrated video.
+          # Not on how the agent's last turn went. One run went green having
+          # produced nothing, killed at 600s with exit 0; a later one went red
+          # because the closing "here is the path" turn hit a credit error after
+          # the files existed. Both verdicts were about the wrong thing.
+          OUT_state=; OUT_path=; OUT_mean_db=
+          while IFS='=' read -r k v; do
+            case "$k" in state) OUT_state=$v ;; path) OUT_path=$v ;; mean_db) OUT_mean_db=$v ;; esac
+          done < <(bash video/find-output.sh)
+
+          case "$OUT_state" in
+            ok)
+              if [ "$status" -ne 0 ]; then
+                echo "::warning::claude exited $status after the narrated video was made. The video is fine; the agent's closing turn was not. See render.log."
+              fi
+              echo "Finished: $OUT_path (mean ${OUT_mean_db} dB)"
+              exit 0 ;;
+            silent)
+              echo "::error::$OUT_path exists but its audio is silent (mean ${OUT_mean_db:-n/a} dB); the narration did not make it into the mux."
+              exit 1 ;;
+            unnarrated)
+              echo "::error::Only an unnarrated render exists ($OUT_path). The Voiceover stage did not finish (claude exit $status). See render.log."
+              exit 1 ;;
+            *)
+              echo "::error::No video was produced (claude exit $status). See render.log."
+              exit 1 ;;
+          esac
 
       # always(): a failed render's log is the only way to learn why, and it is
       # exactly what you want when nobody watched it happen.
@@ -252,15 +289,30 @@ jobs:
         run: |
           set -euo pipefail
           BASE="${SUPABASE_URL%/}"
-          MP4=$(find video/remotion/out -name '*.mp4' -print -quit 2>/dev/null || true)
+          # The same judgement the render step made, from the same script, so the
+          # row and the step cannot disagree about what happened. This used to
+          # store the first mp4 find returned: slot 1 reached the bucket without
+          # its narration, and slots 2 and 3 were recorded as rendered although
+          # their Voiceover stage never ran.
+          OUT_state=; OUT_path=; OUT_mean_db=
+          while IFS='=' read -r k v; do
+            case "$k" in state) OUT_state=$v ;; path) OUT_path=$v ;; mean_db) OUT_mean_db=$v ;; esac
+          done < <(bash video/find-output.sh)
 
-          if [ -z "$MP4" ]; then
-            echo "No mp4 — recording the failure."
-            curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render"               -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"               -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"               -H 'content-type: application/json'               -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" --arg r "$RUN_URL"                     '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,status:"failed",
-                               error:"render produced no mp4",run_url:$r}}')" > /dev/null
-            echo "### Slot $SLOT — no video produced" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$OUT_state" != "ok" ]; then
+            case "$OUT_state" in
+              unnarrated) WHY="voiceover stage did not finish; only an unnarrated render exists" ;;
+              silent)     WHY="narrated file is silent (mean ${OUT_mean_db:-n/a} dB)" ;;
+              *)          WHY="render produced no mp4" ;;
+            esac
+            # Not uploaded. An unnarrated render is not the deliverable, and under
+            # the canonical path it would read as one. It stays in the artifact.
+            echo "Not storing: $WHY"
+            curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H 'content-type: application/json' -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" --arg r "$RUN_URL" --arg w "$WHY" '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,status:"failed",error:$w,run_url:$r}}')" > /dev/null
+            echo "### Slot $SLOT — not finished: $WHY" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+          MP4="$OUT_path"
 
           PATH_IN_BUCKET="$SESSION_ID/$SLOT-$NAME.mp4"
           BYTES=$(wc -c < "$MP4" | tr -d ' ')
@@ -269,9 +321,9 @@ jobs:
           echo "Uploading $MP4 ($BYTES bytes) -> videos/$PATH_IN_BUCKET"
           curl -sS -X POST "$BASE/storage/v1/object/videos/$PATH_IN_BUCKET"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: video/mp4'             -H 'x-upsert: true'             --data-binary "@$MP4" > /dev/null
 
-          curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render"             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: application/json'             -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC"                   --arg p "$PATH_IN_BUCKET" --argjson b "$BYTES" --arg d "${DUR:-0}" --arg r "$RUN_URL"                   '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,
+          curl -sS -X POST "$BASE/rest/v1/rpc/kb_record_render"             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H 'content-type: application/json'             -d "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC"                   --arg p "$PATH_IN_BUCKET" --argjson b "$BYTES" --arg d "${DUR:-0}" --arg r "$RUN_URL" --arg f "$(basename "$MP4")" --arg m "${OUT_mean_db:-}"                   '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,
                              storage_path:$p,bytes:$b,duration_seconds:($d|tonumber),
-                             status:"rendered",run_url:$r}}')" > /dev/null
+                             status:"rendered",run_url:$r,metadata:{source_file:$f,mean_volume_db:$m}}}')" > /dev/null
 
           # A signed link in the job summary, so reviewing is a click rather than
           # a download. The bucket is private; this is the only way in.
@@ -281,6 +333,7 @@ jobs:
             echo "### Slot $SLOT — $NAME"
             echo ""
             echo "- **Size:** $(( BYTES / 1024 )) KB"
+            echo "- **Narration:** mean ${OUT_mean_db:-n/a} dB, from $(basename "$MP4")"
             [ -n "$DUR" ] && echo "- **Duration:** ${DUR}s"
             echo "- **Stored:** \`videos/$PATH_IN_BUCKET\`"
             [ -n "$SIGNED" ] && echo "- **Watch (30-day link):** ${BASE}/storage/v1${SIGNED}"
