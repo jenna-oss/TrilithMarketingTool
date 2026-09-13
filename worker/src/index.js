@@ -16,7 +16,7 @@
  * ------------------------------------------------------------------------ */
 
 import { handleIdeas } from './ideas.js';
-import { handleUpload } from './upload.js';
+import { handleUpload, tokenMatches } from './upload.js';
 import { rpc } from './db.js';
 
 /* Only the published pages may call this. The key lives here, so an open
@@ -110,12 +110,43 @@ export default {
           audience: r.audience,
           duration: r.duration_seconds == null ? null : Number(r.duration_seconds),
           rendered_at: r.rendered_at,
+          posted_at: r.posted_at,
           url: `${base}/storage/v1/object/public/videos/`
             + String(r.storage_path).split('/').map(encodeURIComponent).join('/'),
         }));
         return json({ videos }, 200, headers);
       } catch {
         return json({ error: 'could not load videos' }, 502, headers);
+      }
+    }
+
+    /* Mark a finished video posted, or move it back to review. A write, so it
+     * takes the same team token as /kb/upload: the origin check above is a
+     * browser control, not a lock. */
+    if (path === '/videos/posted') {
+      if (!env.KB_UPLOAD_TOKEN) {
+        return json({ error: 'posting is not configured on the Worker' }, 503, headers);
+      }
+      const auth = request.headers.get('authorization') || '';
+      const given = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+      if (!tokenMatches(given, env.KB_UPLOAD_TOKEN)) {
+        return json({ error: 'wrong or missing team token' }, 401, headers);
+      }
+
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ error: 'body must be JSON' }, 400, headers); }
+      const id = String(body.id ?? '');
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return json({ error: 'id must be a video id' }, 400, headers);
+      }
+
+      try {
+        const out = await rpc(env, 'kb_video_set_posted', { p_id: id, p_posted: body.posted !== false });
+        if (!out || !out.found) return json({ error: 'no finished video with that id' }, 404, headers);
+        return json({ posted_at: out.posted_at }, 200, headers);
+      } catch {
+        return json({ error: 'could not update that video' }, 502, headers);
       }
     }
 

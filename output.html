@@ -88,6 +88,32 @@
 
   .state { font-size:.875rem; color:var(--ink-quiet); }
 
+  /* Two tabs, one question each: what still needs a look, and what is live. */
+  .tabs {
+    display:flex; gap:var(--s4); margin:var(--s3) 0 var(--s4);
+    border-bottom:1px solid var(--rule);
+  }
+  .tabs button {
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-family:var(--sans); font-size:.9375rem; font-weight:600; color:var(--ink-quiet);
+    background:none; border:none; border-bottom:2px solid transparent;
+    padding:.5rem 0; margin-bottom:-1px; cursor:pointer;
+  }
+  .tabs button:hover { color:var(--ink); }
+  .tabs button[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--accent); }
+  .tabs button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .tabs .count {
+    font-family:var(--mono); font-size:.6875rem; font-weight:600; color:var(--ink-body);
+    background:var(--card-sunk); border:1px solid var(--rule); border-radius:999px;
+    padding:0 .5rem; line-height:1.5;
+  }
+
+  .toast {
+    position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
+    background:var(--panel); color:var(--cream-text); font-size:.875rem;
+    padding:.5rem 1.125rem; border-radius:999px; box-shadow:0 4px 18px #0000003d;
+  }
+
   .empty {
     border:1px solid var(--rule); border-radius:4px; background:var(--card);
     padding:var(--s6) var(--s4); text-align:center;
@@ -100,6 +126,9 @@
     padding:.5625rem 1.125rem; cursor:pointer; text-decoration:none;
   }
   .btn:hover { background:var(--emerald-bar); }
+  .btn.secondary { background:transparent; color:var(--ink-body); border:1px solid var(--rule-strong); }
+  .btn.secondary:hover { background:var(--card-sunk); }
+  .btn:disabled { opacity:.6; cursor:default; }
 
   /* Detail — the brief that produced the video, which is the point of the page */
   dialog.detail {
@@ -128,6 +157,12 @@
   .detail dt:first-of-type { margin-top:0; }
   .detail dd { margin:.25rem 0 0; font-size:.875rem; }
   .detail .line { font-style:italic; color:var(--ink); border-left:2px solid var(--emerald-bar); padding-left:.625rem; }
+  .actions {
+    display:flex; flex-wrap:wrap; align-items:center; gap:.75rem;
+    margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--rule);
+  }
+  .action-note { font-size:.8125rem; color:var(--ink-quiet); }
+  .action-note.bad { color:var(--clay); }
   @media (max-width:640px) { .detail-body { grid-template-columns:1fr; } }
 
 </style>
@@ -167,20 +202,29 @@
 
 <main class="wrap">
   <p class="eyebrow">Library</p>
-  <h2>What has been made</h2>
+  <h2>Videos</h2>
+
+  <div class="tabs" role="tablist" aria-label="Video status">
+    <button type="button" role="tab" data-tab="review" aria-selected="true" aria-controls="grid">
+      Ready to review <span class="count" id="count-review">0</span>
+    </button>
+    <button type="button" role="tab" data-tab="posted" aria-selected="false" aria-controls="grid">
+      Posted <span class="count" id="count-posted">0</span>
+    </button>
+  </div>
+
   <p class="state" id="state" role="status">Loading videos…</p>
 
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid" role="tabpanel"></div>
 
   <div class="empty" id="empty" hidden>
-    <h3>No finished videos yet</h3>
-    <p>
-      Videos show up here as soon as they finish rendering. Start by planning a
-      batch.
-    </p>
-    <a class="btn" href="./">Go to planning</a>
+    <h3 id="empty-title"></h3>
+    <p id="empty-text"></p>
+    <a class="btn" id="empty-cta" href="./">Go to planning</a>
   </div>
 </main>
+
+<div class="toast" id="toast" role="status" hidden></div>
 
 <dialog class="detail" id="detail">
   <div class="detail-head">
@@ -197,12 +241,35 @@ const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
 
 const grid = document.getElementById('grid');
 const emptyEl = document.getElementById('empty');
+const emptyTitle = document.getElementById('empty-title');
+const emptyText = document.getElementById('empty-text');
+const emptyCta = document.getElementById('empty-cta');
 const stateEl = document.getElementById('state');
 const detail = document.getElementById('detail');
 const detailBody = document.getElementById('detail-body');
 const detailTitle = document.getElementById('detail-title');
+const tabButtons = [...document.querySelectorAll('.tabs [role="tab"]')];
+const countReview = document.getElementById('count-review');
+const countPosted = document.getElementById('count-posted');
+const toastEl = document.getElementById('toast');
+
+/* Shared with the Plan page, which asks for the same token when a file is
+   added to the library — one team token, asked for once per browser. */
+const TOKEN_KEY = 'trilith-kb-upload-token';
 
 let videos = [];
+let tab = location.hash === '#posted' ? 'posted' : 'review';
+
+const isPosted = (v) => Boolean(v.posted_at);
+
+/* Newest first: by when it rendered while it waits for review, by when it went
+   out once it is posted. */
+function inTab(name) {
+  const key = name === 'posted' ? 'posted_at' : 'rendered_at';
+  return videos
+    .filter((v) => isPosted(v) === (name === 'posted'))
+    .sort((a, b) => new Date(b[key]) - new Date(a[key]));
+}
 
 const fmtDuration = (s) => {
   if (!Number.isFinite(s) || s <= 0) return '';
@@ -234,11 +301,44 @@ async function load() {
   render();
 }
 
-function render() {
-  grid.textContent = '';
-  emptyEl.hidden = videos.length > 0;
+function setTab(name) {
+  tab = name;
+  /* In the URL, so a reload or a shared link lands on the same tab. */
+  history.replaceState(null, '', name === 'posted' ? '#posted' : location.pathname);
+  render();
+}
+tabButtons.forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
 
-  videos.forEach((v) => {
+function showEmpty(nReview, nPosted) {
+  emptyCta.hidden = false;
+  if (tab === 'posted') {
+    emptyTitle.textContent = 'Nothing posted yet';
+    emptyText.textContent = 'Open a video under Ready to review and mark it as posted once it’s live.';
+    emptyCta.hidden = true;
+  } else if (nPosted) {
+    emptyTitle.textContent = 'All caught up';
+    emptyText.textContent = 'Every finished video has been posted.';
+    emptyCta.textContent = 'Plan more videos';
+  } else {
+    emptyTitle.textContent = 'No videos to review yet';
+    emptyText.textContent = 'Finished videos show up here as soon as they render. Start by planning a batch.';
+    emptyCta.textContent = 'Go to planning';
+  }
+}
+
+function render() {
+  const review = inTab('review');
+  const posted = inTab('posted');
+  countReview.textContent = review.length;
+  countPosted.textContent = posted.length;
+  tabButtons.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+
+  const list = tab === 'posted' ? posted : review;
+  grid.textContent = '';
+  emptyEl.hidden = list.length > 0;
+  if (!list.length) showEmpty(review.length, posted.length);
+
+  list.forEach((v) => {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'vid';
@@ -271,7 +371,7 @@ function render() {
     t.textContent = v.topic || 'Untitled';
     const m = document.createElement('div');
     m.className = 'm';
-    m.textContent = fmtDate(v.rendered_at);
+    m.textContent = isPosted(v) ? 'Posted ' + fmtDate(v.posted_at) : 'Finished ' + fmtDate(v.rendered_at);
     body.append(t, m);
 
     card.append(frame, body);
@@ -307,10 +407,90 @@ function open(v) {
   add('Length', fmtDuration(v.duration));
   add('Finished', fmtDate(v.rendered_at));
 
+  /* One action, whichever way the video is facing. */
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = isPosted(v) ? 'btn secondary' : 'btn';
+  btn.textContent = isPosted(v) ? 'Move back to review' : 'Mark as posted';
+  const note = document.createElement('span');
+  note.className = 'action-note';
+  if (isPosted(v)) note.textContent = 'Posted ' + fmtDate(v.posted_at);
+  btn.addEventListener('click', async () => {
+    const posting = !isPosted(v);
+    btn.disabled = true;
+    note.className = 'action-note';
+    note.textContent = 'Saving…';
+    const result = await setPosted(v.id, posting);
+    if (!result.ok) {
+      btn.disabled = false;
+      note.className = 'action-note bad';
+      note.textContent = result.error;
+      return;
+    }
+    v.posted_at = result.posted_at;
+    closeDetail();
+    render();
+    toast(posting ? 'Moved to Posted' : 'Moved back to Ready to review');
+  });
+  actions.append(btn, note);
+
   const left = document.createElement('div');
   left.append(player);
-  detailBody.append(left, dl);
+  const right = document.createElement('div');
+  right.append(dl, actions);
+  detailBody.append(left, right);
   detail.showModal();
+}
+
+function teamToken(force) {
+  let token = '';
+  try { if (!force) token = localStorage.getItem(TOKEN_KEY) || ''; } catch { /* private mode */ }
+  if (!token) {
+    token = (window.prompt('Team token (the same one used to add files to the library):') || '').trim();
+    if (token) { try { localStorage.setItem(TOKEN_KEY, token); } catch { /* private mode */ } }
+  }
+  return token;
+}
+
+/* A rotated or mistyped token costs one re-ask, not a dead button. */
+async function setPosted(id, posted) {
+  let token = teamToken(false);
+  if (!token) return { ok: false, error: 'No team token, so nothing changed.' };
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let res;
+    try {
+      res = await fetch(WORKER_URL + '/videos/posted', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+        body: JSON.stringify({ id, posted }),
+      });
+    } catch {
+      return { ok: false, error: 'Couldn’t reach the server. Try again.' };
+    }
+    if (res.status === 401 && attempt === 0) {
+      try { localStorage.removeItem(TOKEN_KEY); } catch { /* private mode */ }
+      token = teamToken(true);
+      if (!token) return { ok: false, error: 'No team token, so nothing changed.' };
+      continue;
+    }
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { ok: false, error: 'Couldn’t save' + (body.error ? ': ' + body.error : ' (' + res.status + ')') + '.' };
+    }
+    return { ok: true, posted_at: body.posted_at ?? null };
+  }
+  return { ok: false, error: 'That team token wasn’t accepted.' };
+}
+
+let toastTimer;
+function toast(message) {
+  toastEl.textContent = message;
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2600);
 }
 
 /* Closing the dialog must stop the sound, not just hide the player. The ×
