@@ -361,10 +361,16 @@
     <li>off-palette colors, gradients, shadows and rounded corners</li>
     <li>fonts other than Archivo and Inter, and text under 40px</li>
     <li>a missing caption overlay, logo or follow ask</li>
-    <li>scene text placed in the caption band or outside Instagram's safe zone. This is read from
-      the component's real structure, so an offset inside a card or <code>&lt;SafeArea&gt;</code> is
-      judged against that box, not the frame.</li>
+    <li>scene text that would collide with something: on top of the captions, below the safe zone
+      under Instagram's controls, or more than 40px past its other edges. This is read from the
+      component's real structure, so an offset inside a card or <code>&lt;SafeArea&gt;</code> is judged
+      against that box, not the frame.</li>
   </ul>
+  <p>
+    Text a little outside the safe zone passes with a note, rather than failing. That covers up to
+    40px past the top, left or right edge, or dipping into the gap above the captions without
+    reaching them. The aim is the safe zone; the hard lines are only where overlap would happen.
+  </p>
   <p>
     Scene text goes inside <code>&lt;SafeArea&gt;</code> from <span class="path">brand.ts</span>:
     the region inside the safe zone and above the captions. It is plumbing, not a layout; what goes

@@ -4,7 +4,11 @@
 // inside the brand. The Assembly stage runs it and fixes what it reports
 // before rendering; CI runs it again and turns anything left into a warning.
 //
-//   node brand-lint.mjs src/SomeVideo.tsx     exits 1 when something is off
+// Two levels. A problem fails the check and has to be fixed. A note passes:
+// it marks text a little outside the safe zone, which is allowed when a scene
+// needs the room to keep from overlapping.
+//
+//   node brand-lint.mjs src/SomeVideo.tsx     exits 1 when there is a problem
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -17,7 +21,9 @@ if (!file) {
 const src = fs.readFileSync(file, 'utf8')
 const lineOf = (i) => src.slice(0, i).split('\n').length
 const problems = []
+const notes = []
 const at = (i, msg) => problems.push(`${file}:${lineOf(i)}: ${msg}`)
+const noteAt = (i, msg) => notes.push(`${file}:${lineOf(i)}: note: ${msg}`)
 const once = (msg) => problems.push(`${file}: ${msg}`)
 
 const PALETTE = ['#000000', '#FFFFFF', '#E6E7E8', '#6A6E72', '#FF5A1F', '#0E7A42']
@@ -60,19 +66,24 @@ if (!/\bHANDLE\b|@thebuyboxre/.test(src)) once('no follow ask; the closing frame
 
 await checkPositions()
 
+if (notes.length) console.log(notes.join('\n'))
 if (problems.length) {
   console.log(problems.join('\n'))
   console.log(`\n${problems.length} brand problem(s). Fix them and run this again.`)
   process.exit(1)
 }
-console.log(`${file}: brand check passed`)
+console.log(`${file}: brand check passed${notes.length ? ` (${notes.length} note${notes.length > 1 ? 's' : ''}: text a little outside the safe zone, allowed where a scene needs the room)` : ''}`)
 
-// Position: scene text stays inside Instagram's safe zone and above the
-// captions. Read from the component's real structure (TypeScript's parser),
-// not by pattern, because an offset only means something relative to its
-// positioned parent: `bottom: 40` inside <SafeArea> or a card is fine, and the
-// same value on a full-frame layer puts text behind the captions. Only
-// offsets that resolve to numbers are judged; the rest is left to the prompt.
+// Position: scene text aims for the safe zone and never reaches the captions.
+// Read from the component's real structure (TypeScript's parser), not by
+// pattern, because an offset only means something relative to its positioned
+// parent: `bottom: 40` inside <SafeArea> or a card is fine, and the same value
+// on a full-frame layer puts text behind the captions. Only offsets that
+// resolve to numbers are judged; the rest is left to the prompt.
+//
+// The hard lines are the ones that cause a collision: the caption box, the
+// area below the safe zone, and far past its other edges. Short of those,
+// text outside the safe zone is a note, not a failure.
 async function checkPositions() {
   let ts
   try {
@@ -82,20 +93,26 @@ async function checkPositions() {
     return
   }
 
-  // The safe zone and caption band come from brand.ts, so the check and the
-  // components can't disagree about where the lines are.
-  const B = { top: 180, right: 150, bottom: 440, left: 110, band: 200, H: 1920, W: 1080 }
+  // The lines come from brand.ts, so the check and the components can't
+  // disagree about where they are.
+  const B = { top: 180, right: 150, bottom: 440, left: 110, band: 200, captionTop: 160, slack: 40, H: 1920, W: 1080 }
   try {
     const brand = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'src', 'brand.ts'), 'utf8')
     const safe = brand.match(/SAFE\s*=\s*\{\s*top:\s*(\d+),\s*right:\s*(\d+),\s*bottom:\s*(\d+),\s*left:\s*(\d+)/)
     if (safe) Object.assign(B, { top: +safe[1], right: +safe[2], bottom: +safe[3], left: +safe[4] })
     const band = brand.match(/SCENE_BOTTOM\s*=\s*H\s*-\s*SAFE\.bottom\s*-\s*(\d+)/)
     if (band) B.band = +band[1]
+    const cap = brand.match(/CAPTION_TOP\s*=\s*SAFE\.bottom\s*\+\s*(\d+)/)
+    if (cap) B.captionTop = +cap[1]
+    const slack = brand.match(/SAFE_SLACK\s*=\s*(\d+)/)
+    if (slack) B.slack = +slack[1]
   } catch {}
   const SAFE = { top: B.top, right: B.right, bottom: B.bottom, left: B.left }
-  const FLOOR = B.bottom + B.band // px from the bottom edge; the captions and Instagram's controls are below it
+  const FLOOR = B.bottom + B.band // aim: scene content at least this far up from the bottom edge
+  const CAPTION_TOP = B.bottom + B.captionTop // limit: below this, text hits the caption box
+  const SLACK = B.slack
   const SCENE_BOTTOM = B.H - FLOOR
-  const known = { H: B.H, W: B.W, SCENE_BOTTOM, SCENE_FLOOR: FLOOR, SAFE_W: B.W - B.left - B.right }
+  const known = { H: B.H, W: B.W, SCENE_BOTTOM, SCENE_FLOOR: FLOOR, CAPTION_TOP, SAFE_SLACK: SLACK, SAFE_W: B.W - B.left - B.right }
 
   const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
 
@@ -137,8 +154,18 @@ async function checkPositions() {
     }
     return {}
   }
-  const flag = (node, msg) => at(node.getStart(sf), msg)
-  const fix = 'put the scene text inside <SafeArea> from ./brand'
+  const bad = (node, msg) => at(node.getStart(sf), msg)
+  const soft = (node, msg) => noteAt(node.getStart(sf), msg)
+  const fix = 'Move it up, or put the scene text inside <SafeArea> from ./brand.'
+
+  // Distance from the bottom edge: below the safe zone, or on the caption box,
+  // is a collision; between the caption box and SCENE_FLOOR is room a scene
+  // may borrow.
+  function checkBottom(el, b, what) {
+    if (b < SAFE.bottom) bad(el, `${what} puts this below the safe zone, under Instagram's caption and controls. ${fix}`)
+    else if (b < CAPTION_TOP) bad(el, `${what} puts this on top of the captions, which reach ${CAPTION_TOP}px up. ${fix}`)
+    else if (b < FLOOR) soft(el, `${what} dips ${FLOOR - b}px into the space kept above the captions; it still clears them.`)
+  }
 
   function checkOffsets(el, style) {
     const t = num(style.top)
@@ -146,15 +173,20 @@ async function checkPositions() {
     const l = num(style.left)
     const r = num(style.right)
     if (num(style.inset) === 0 || (t === 0 && b === 0)) return // a full-bleed layer
-    if (b !== undefined && b > 0 && b < FLOOR) {
-      flag(el, b < SAFE.bottom
-        ? `bottom: ${b} puts this below the safe zone, under Instagram's caption and controls; scene content stays at least ${FLOOR}px up. ${fix}`
-        : `bottom: ${b} puts this in the caption band; scene content stays at least ${FLOOR}px up. ${fix}`)
+    if (b !== undefined && b > 0) checkBottom(el, b, `bottom: ${b}`)
+    if (t !== undefined && t > 0 && t < SAFE.top) {
+      if (t < SAFE.top - SLACK) bad(el, `top: ${t} is under Instagram's top bar (the safe zone starts at ${SAFE.top}; ${SLACK}px of slack). ${fix}`)
+      else soft(el, `top: ${t} is ${SAFE.top - t}px above the safe zone.`)
     }
-    if (t !== undefined && t > 0 && t < SAFE.top) flag(el, `top: ${t} is above the safe zone, under Instagram's top bar (min ${SAFE.top}). ${fix}`)
-    if (t !== undefined && t > SCENE_BOTTOM) flag(el, `top: ${t} starts below the scene area, in the caption band (max ${SCENE_BOTTOM}). ${fix}`)
-    if (l !== undefined && l > 0 && l < SAFE.left) flag(el, `left: ${l} is outside the safe zone (min ${SAFE.left}). ${fix}`)
-    if (r !== undefined && r > 0 && r < SAFE.right) flag(el, `right: ${r} is under Instagram's like and share buttons (min ${SAFE.right}). ${fix}`)
+    if (t !== undefined && t > SCENE_BOTTOM) bad(el, `top: ${t} starts below the scene area (max ${SCENE_BOTTOM}), so the text runs into the captions. ${fix}`)
+    if (l !== undefined && l > 0 && l < SAFE.left) {
+      if (l < SAFE.left - SLACK) bad(el, `left: ${l} is too close to the edge (the safe zone starts at ${SAFE.left}; ${SLACK}px of slack). ${fix}`)
+      else soft(el, `left: ${l} is ${SAFE.left - l}px outside the safe zone.`)
+    }
+    if (r !== undefined && r > 0 && r < SAFE.right) {
+      if (r < SAFE.right - SLACK) bad(el, `right: ${r} is under Instagram's like and share buttons (the safe zone starts ${SAFE.right}px in; ${SLACK}px of slack). ${fix}`)
+      else soft(el, `right: ${r} is ${SAFE.right - r}px into the like and share column.`)
+    }
   }
 
   // ctx.frame: inside a full-frame AbsoluteFill, so offsets are frame-relative
@@ -175,8 +207,7 @@ async function checkPositions() {
           next = { ...ctx, frame: true }
           const column = (str(style.flexDirection) ?? 'column') === 'column'
           if (str(style.justifyContent) === 'flex-end' && column) {
-            const pb = num(style.paddingBottom) ?? 0
-            if (pb < FLOOR) flag(el, `content is pushed to the bottom of the frame (paddingBottom ${pb}), into the caption band; scene content stays at least ${FLOOR}px up. ${fix}`)
+            checkBottom(el, num(style.paddingBottom) ?? 0, `content pushed to the bottom of the frame (paddingBottom ${num(style.paddingBottom) ?? 0})`)
           }
         }
       } else if (position === 'absolute' || position === 'fixed') {

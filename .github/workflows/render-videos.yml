@@ -294,7 +294,9 @@ jobs:
           if [ -z "$files" ]; then echo "No new video component to check."; exit 0; fi
           for f in $files; do
             if out=$(node video/remotion/brand-lint.mjs "$f"); then
-              echo "$out"
+              # Notes pass the check: text a little outside the safe zone,
+              # allowed where a scene needs the room. Shown, not failed.
+              echo "$out" | sed '/: note: /s/^/::notice::/'
             else
               echo "$out" | grep -v '^$' | sed 's/^/::warning::/'
             fi

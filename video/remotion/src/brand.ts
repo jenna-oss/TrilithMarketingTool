@@ -44,8 +44,15 @@ export const SAFE_W = W - SAFE.left - SAFE.right;
 /** Captions sit at the bottom of the safe zone; scene text stays above them. */
 export const CAPTION_SIZE = 56;
 export const SCENE_BOTTOM = H - SAFE.bottom - 200;
-/** How far up from the bottom edge scene content has to stay. */
+/** How far up from the bottom edge scene content aims to stay. */
 export const SCENE_FLOOR = H - SCENE_BOTTOM;
+/** The top of the caption box at its tallest (two lines), in px from the
+ *  bottom edge. When a scene needs the room, its text may dip below
+ *  SCENE_FLOOR, but never below this: that is where it would hit the captions. */
+export const CAPTION_TOP = SAFE.bottom + 160;
+/** How far past the safe zone's top, left and right edges text may go when a
+ *  scene needs the room to keep from overlapping. */
+export const SAFE_SLACK = 40;
 
 /** The part of the frame scene text may use: inside the Reels safe zone and
  *  above the captions. It is a positioned box, so absolute children are

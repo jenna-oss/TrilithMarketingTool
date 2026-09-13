@@ -232,10 +232,12 @@ const BRAND_LOOK = `THE LOOK: The Buy Box brand guide. Every value lives in ${RE
 - The guide's headline box: a line of Archivo in a tight BLACK box with WHITE text, the key line in an ORANGE box,
   one box per line, stacked. Use it where a statement should hit, especially over footage.
 - Shapes: square corners, thick solid bars, flat colour. No gradients, shadows, rounded corners, cream or navy.
-- Safe zone: every scene's text goes inside <SafeArea> (from ./brand), the part of the frame inside Instagram's
-  safe zone and above the captions. Absolute offsets inside it are relative to it, so bottom: 0 sits just above the
-  captions. Only full-bleed backgrounds and footage go outside it. The brand check rejects frame-level text in the
-  caption band or outside the safe zone.
+- Safe zone: aim to put every scene's text inside <SafeArea> (from ./brand), the part of the frame inside
+  Instagram's safe zone and above the captions. Absolute offsets inside it are relative to it, so bottom: 0 sits
+  just above the captions. Full-bleed backgrounds and footage go outside it. When a scene needs a little more room
+  to keep its text from overlapping, text may go up to SAFE_SLACK (40px) past the safe zone's top, left or right
+  edge, or dip below SafeArea's bottom, but never lower than CAPTION_TOP: below that it hits the captions, and
+  below the safe zone it sits under Instagram's own controls.
 - Motion: quick and sure. Boxes and lines slide in on a short stagger, numbers count up, things stop hard. No
   wobble, bounce or flash.`
 
@@ -672,7 +674,9 @@ Register the new composition in ${REMOTION_ROOT}/src/Root.tsx following its exac
 
 BRAND CHECK: before rendering, run
   node ${REMOTION_ROOT}/brand-lint.mjs ${REMOTION_ROOT}/src/${PascalName}.tsx
-and fix everything it reports until it prints "brand check passed". It checks the rules above, never your layout.
+Fix every problem it reports until it prints "brand check passed". It may also print notes: text a little outside the
+safe zone. Those pass, and are fine where a scene needs the room to keep text from overlapping; don't use them as a
+habit. It checks the rules above, never your layout.
 
 Then render it: cd ${REMOTION_ROOT} && npx remotion render src/index.ts ${PascalName.replace('Video', '')} out/${research.slug}.mp4
 Report the tsxPath, compositionId, whether the brand check passed, whether the initial render succeeded, any render
