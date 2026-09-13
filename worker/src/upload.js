@@ -42,7 +42,8 @@ const DOCUMENT_TYPES = new Set([
 
 /* Compare in constant time. A plain === leaks the token a character at a time
  * to anyone patient enough to measure, and the fix costs three lines. Exported
- * because marking a video posted is a write too, and takes the same token. */
+ * because recording a video review decision is a write too, and takes the same
+ * token. */
 export function tokenMatches(given, expected) {
   if (typeof given !== 'string' || typeof expected !== 'string') return false;
   if (given.length !== expected.length) return false;

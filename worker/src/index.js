@@ -110,7 +110,8 @@ export default {
           audience: r.audience,
           duration: r.duration_seconds == null ? null : Number(r.duration_seconds),
           rendered_at: r.rendered_at,
-          posted_at: r.posted_at,
+          review_status: r.review_status ?? null,
+          reviewed_at: r.reviewed_at ?? null,
           url: `${base}/storage/v1/object/public/videos/`
             + String(r.storage_path).split('/').map(encodeURIComponent).join('/'),
         }));
@@ -120,10 +121,10 @@ export default {
       }
     }
 
-    /* Mark a finished video posted, or move it back to review. A write, so it
-     * takes the same team token as /kb/upload: the origin check above is a
-     * browser control, not a lock. */
-    if (path === '/videos/posted') {
+    /* Record a review decision on a finished video: to_post or rejected.
+     * Either can be changed later. A write, so it takes the same team token as
+     * /kb/upload: the origin check above is a browser control, not a lock. */
+    if (path === '/videos/review') {
       if (!env.KB_UPLOAD_TOKEN) {
         return json({ error: 'posting is not configured on the Worker' }, 503, headers);
       }
@@ -141,10 +142,15 @@ export default {
         return json({ error: 'id must be a video id' }, 400, headers);
       }
 
+      const status = body.status;
+      if (status !== 'to_post' && status !== 'rejected') {
+        return json({ error: 'status must be to_post or rejected' }, 400, headers);
+      }
+
       try {
-        const out = await rpc(env, 'kb_video_set_posted', { p_id: id, p_posted: body.posted !== false });
+        const out = await rpc(env, 'kb_video_set_review', { p_id: id, p_status: status });
         if (!out || !out.found) return json({ error: 'no finished video with that id' }, 404, headers);
-        return json({ posted_at: out.posted_at }, 200, headers);
+        return json({ review_status: out.review_status, reviewed_at: out.reviewed_at }, 200, headers);
       } catch {
         return json({ error: 'could not update that video' }, 502, headers);
       }

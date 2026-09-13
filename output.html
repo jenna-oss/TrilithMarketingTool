@@ -129,6 +129,8 @@
   .btn.secondary { background:transparent; color:var(--ink-body); border:1px solid var(--rule-strong); }
   .btn.secondary:hover { background:var(--card-sunk); }
   .btn:disabled { opacity:.6; cursor:default; }
+  .btn.reject { background:transparent; color:var(--clay); border:1px solid var(--clay); }
+  .btn.reject:hover { background:var(--card-sunk); }
 
   /* Detail — the brief that produced the video, which is the point of the page */
   dialog.detail {
@@ -206,10 +208,13 @@
 
   <div class="tabs" role="tablist" aria-label="Video status">
     <button type="button" role="tab" data-tab="review" aria-selected="true" aria-controls="grid">
-      Ready to review <span class="count" id="count-review">0</span>
+      Ready to review <span class="count" data-count="review">0</span>
     </button>
-    <button type="button" role="tab" data-tab="posted" aria-selected="false" aria-controls="grid">
-      Posted <span class="count" id="count-posted">0</span>
+    <button type="button" role="tab" data-tab="to_post" aria-selected="false" aria-controls="grid">
+      To Be Posted <span class="count" data-count="to_post">0</span>
+    </button>
+    <button type="button" role="tab" data-tab="rejected" aria-selected="false" aria-controls="grid">
+      Rejected <span class="count" data-count="rejected">0</span>
     </button>
   </div>
 
@@ -249,25 +254,31 @@ const detail = document.getElementById('detail');
 const detailBody = document.getElementById('detail-body');
 const detailTitle = document.getElementById('detail-title');
 const tabButtons = [...document.querySelectorAll('.tabs [role="tab"]')];
-const countReview = document.getElementById('count-review');
-const countPosted = document.getElementById('count-posted');
+const countEls = Object.fromEntries(
+  [...document.querySelectorAll('.tabs .count')].map((el) => [el.dataset.count, el]));
 const toastEl = document.getElementById('toast');
 
 /* Shared with the Plan page, which asks for the same token when a file is
    added to the library — one team token, asked for once per browser. */
 const TOKEN_KEY = 'trilith-kb-upload-token';
 
+/* Three places a video can be. Ready to review is the absence of a decision;
+   the other two are decisions, and either can be changed later. */
+const TABS = ['review', 'to_post', 'rejected'];
+const HASHES = { review: '', to_post: '#to-be-posted', rejected: '#rejected' };
+
 let videos = [];
-let tab = location.hash === '#posted' ? 'posted' : 'review';
+let tab = TABS.find((t) => HASHES[t] && HASHES[t] === location.hash) || 'review';
 
-const isPosted = (v) => Boolean(v.posted_at);
+const stateOf = (v) =>
+  (v.review_status === 'to_post' || v.review_status === 'rejected' ? v.review_status : 'review');
 
-/* Newest first: by when it rendered while it waits for review, by when it went
-   out once it is posted. */
+/* Newest first: by when it rendered while it waits for review, by when the
+   decision was made once there is one. */
 function inTab(name) {
-  const key = name === 'posted' ? 'posted_at' : 'rendered_at';
+  const key = name === 'review' ? 'rendered_at' : 'reviewed_at';
   return videos
-    .filter((v) => isPosted(v) === (name === 'posted'))
+    .filter((v) => stateOf(v) === name)
     .sort((a, b) => new Date(b[key]) - new Date(a[key]));
 }
 
@@ -304,20 +315,22 @@ async function load() {
 function setTab(name) {
   tab = name;
   /* In the URL, so a reload or a shared link lands on the same tab. */
-  history.replaceState(null, '', name === 'posted' ? '#posted' : location.pathname);
+  history.replaceState(null, '', HASHES[name] || location.pathname);
   render();
 }
 tabButtons.forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
 
-function showEmpty(nReview, nPosted) {
-  emptyCta.hidden = false;
-  if (tab === 'posted') {
-    emptyTitle.textContent = 'Nothing posted yet';
-    emptyText.textContent = 'Open a video under Ready to review and mark it as posted once it’s live.';
-    emptyCta.hidden = true;
-  } else if (nPosted) {
+function showEmpty() {
+  emptyCta.hidden = tab !== 'review';
+  if (tab === 'to_post') {
+    emptyTitle.textContent = 'Nothing to post yet';
+    emptyText.textContent = 'Open a video under Ready to review and choose To Be Posted.';
+  } else if (tab === 'rejected') {
+    emptyTitle.textContent = 'Nothing rejected';
+    emptyText.textContent = 'Rejected videos stay here, so you can change your mind later.';
+  } else if (videos.length) {
     emptyTitle.textContent = 'All caught up';
-    emptyText.textContent = 'Every finished video has been posted.';
+    emptyText.textContent = 'Every finished video has been reviewed.';
     emptyCta.textContent = 'Plan more videos';
   } else {
     emptyTitle.textContent = 'No videos to review yet';
@@ -327,16 +340,14 @@ function showEmpty(nReview, nPosted) {
 }
 
 function render() {
-  const review = inTab('review');
-  const posted = inTab('posted');
-  countReview.textContent = review.length;
-  countPosted.textContent = posted.length;
+  const lists = Object.fromEntries(TABS.map((t) => [t, inTab(t)]));
+  TABS.forEach((t) => { countEls[t].textContent = lists[t].length; });
   tabButtons.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
 
-  const list = tab === 'posted' ? posted : review;
+  const list = lists[tab];
   grid.textContent = '';
   emptyEl.hidden = list.length > 0;
-  if (!list.length) showEmpty(review.length, posted.length);
+  if (!list.length) showEmpty();
 
   list.forEach((v) => {
     const card = document.createElement('button');
@@ -371,7 +382,11 @@ function render() {
     t.textContent = v.topic || 'Untitled';
     const m = document.createElement('div');
     m.className = 'm';
-    m.textContent = isPosted(v) ? 'Posted ' + fmtDate(v.posted_at) : 'Finished ' + fmtDate(v.rendered_at);
+    m.textContent = {
+      review: 'Finished ' + fmtDate(v.rendered_at),
+      to_post: 'To be posted · ' + fmtDate(v.reviewed_at),
+      rejected: 'Rejected ' + fmtDate(v.reviewed_at),
+    }[stateOf(v)];
     body.append(t, m);
 
     card.append(frame, body);
@@ -407,34 +422,47 @@ function open(v) {
   add('Length', fmtDuration(v.duration));
   add('Finished', fmtDate(v.rendered_at));
 
-  /* One action, whichever way the video is facing. */
+  /* The choices depend on where the video is. Ready to review gets both; a
+     decided video gets the other one, so either decision can be reversed. */
+  const state = stateOf(v);
   const actions = document.createElement('div');
   actions.className = 'actions';
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = isPosted(v) ? 'btn secondary' : 'btn';
-  btn.textContent = isPosted(v) ? 'Move back to review' : 'Mark as posted';
   const note = document.createElement('span');
   note.className = 'action-note';
-  if (isPosted(v)) note.textContent = 'Posted ' + fmtDate(v.posted_at);
-  btn.addEventListener('click', async () => {
-    const posting = !isPosted(v);
-    btn.disabled = true;
-    note.className = 'action-note';
-    note.textContent = 'Saving…';
-    const result = await setPosted(v.id, posting);
-    if (!result.ok) {
-      btn.disabled = false;
-      note.className = 'action-note bad';
-      note.textContent = result.error;
-      return;
-    }
-    v.posted_at = result.posted_at;
-    closeDetail();
-    render();
-    toast(posting ? 'Moved to Posted' : 'Moved back to Ready to review');
+  if (state === 'to_post') note.textContent = 'Marked to be posted ' + fmtDate(v.reviewed_at);
+  if (state === 'rejected') note.textContent = 'Rejected ' + fmtDate(v.reviewed_at);
+
+  const choices = {
+    review: [['to_post', 'To Be Posted', 'btn'], ['rejected', 'Reject', 'btn reject']],
+    to_post: [['rejected', 'Reject', 'btn reject']],
+    rejected: [['to_post', 'Move to To Be Posted', 'btn']],
+  }[state];
+
+  const buttons = choices.map(([next, label, cls]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = cls;
+    b.textContent = label;
+    b.addEventListener('click', async () => {
+      buttons.forEach((x) => { x.disabled = true; });
+      note.className = 'action-note';
+      note.textContent = 'Saving…';
+      const result = await setReview(v.id, next);
+      if (!result.ok) {
+        buttons.forEach((x) => { x.disabled = false; });
+        note.className = 'action-note bad';
+        note.textContent = result.error;
+        return;
+      }
+      v.review_status = result.review_status;
+      v.reviewed_at = result.reviewed_at;
+      closeDetail();
+      render();
+      toast(next === 'to_post' ? 'Moved to To Be Posted' : 'Moved to Rejected');
+    });
+    return b;
   });
-  actions.append(btn, note);
+  actions.append(...buttons, note);
 
   const left = document.createElement('div');
   left.append(player);
@@ -455,17 +483,17 @@ function teamToken(force) {
 }
 
 /* A rotated or mistyped token costs one re-ask, not a dead button. */
-async function setPosted(id, posted) {
+async function setReview(id, status) {
   let token = teamToken(false);
   if (!token) return { ok: false, error: 'No team token, so nothing changed.' };
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     let res;
     try {
-      res = await fetch(WORKER_URL + '/videos/posted', {
+      res = await fetch(WORKER_URL + '/videos/review', {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-        body: JSON.stringify({ id, posted }),
+        body: JSON.stringify({ id, status }),
       });
     } catch {
       return { ok: false, error: 'Couldn’t reach the server. Try again.' };
@@ -480,7 +508,7 @@ async function setPosted(id, posted) {
     if (!res.ok) {
       return { ok: false, error: 'Couldn’t save' + (body.error ? ': ' + body.error : ' (' + res.status + ')') + '.' };
     }
-    return { ok: true, posted_at: body.posted_at ?? null };
+    return { ok: true, review_status: body.review_status ?? status, reviewed_at: body.reviewed_at ?? null };
   }
   return { ok: false, error: 'That team token wasn’t accepted.' };
 }
@@ -506,7 +534,10 @@ function closeDetail() {
   stopPlayer();
   if (detail.open) detail.close();
 }
-detail.addEventListener('close', stopPlayer);
+/* The close event arrives after the fact, and can land after the next video
+   has already been opened into the same dialog — clearing it would leave an
+   empty dialog on screen. Only tidy up if the dialog really is shut. */
+detail.addEventListener('close', () => { if (!detail.open) stopPlayer(); });
 document.getElementById('detail-close').addEventListener('click', closeDetail);
 detail.addEventListener('click', (e) => { if (e.target === detail) closeDetail(); });
 
