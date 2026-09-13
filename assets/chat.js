@@ -116,10 +116,14 @@
       }
 
       const { wrapper, bubble } = addMessage('bot', botLabel, '');
-      const searches = document.createElement('div');
-      searches.className = 'searches';
-      wrapper.insertBefore(searches, bubble);
-      bubble.classList.add('cursor');
+      /* One quiet line while the agent works, instead of a row per search and
+         a token count at the end. The searches still happen; watching every
+         one of them go past was more than anyone needed to follow along. They
+         are logged to the console for debugging. */
+      const status = document.createElement('div');
+      status.className = 'status';
+      status.textContent = 'Thinking…';
+      wrapper.append(status);
 
       let answer = '';
       try {
@@ -159,26 +163,18 @@
 
             if (event === 'token') {
               answer += data;
+              status.hidden = true;
+              bubble.classList.add('cursor');
               bubble.innerHTML = render(answer);
               bubble.scrollIntoView({ block: 'end' });
             } else if (event === 'tool') {
-              const row = document.createElement('div');
-              row.className = 'search' + (data.failed ? ' failed' : '');
-              const tag = document.createElement('span');
-              tag.className = 'tag';
-              tag.textContent = data.failed ? (data.label + ' — search failed') : data.label;
-              const detail = document.createElement('span');
-              detail.textContent = data.detail;
-              const n = document.createElement('span');
-              n.className = 'n';
-              /* summary for tools that do not return rows — "locked · 2 to go"
-                 says more than a count would, and a count would say 0. */
-              const outcome = data.summary != null ? data.summary : data.count;
-              n.textContent = data.failed ? '' : ('→ ' + outcome
-                + (data.degraded ? ' · keyword only' : ''));
-              row.append(tag, detail, n);
-              searches.append(row);
-              row.scrollIntoView({ block: 'end' });
+              console.info('[aiko] ' + data.label + (data.failed ? ' (failed)' : ''),
+                data.detail, data.summary != null ? data.summary : data.count);
+              /* Saving a pick reads differently from looking something up. */
+              status.textContent = /lock|batch size|rejection|library|saving/i.test(data.label)
+                ? 'Saving…' : 'Looking into it…';
+              status.hidden = false;
+              bubble.classList.remove('cursor');
             } else if (event === 'plan') {
               if (onPlan) onPlan(wrapper, data);
             } else if (event === 'plan_state') {
@@ -187,21 +183,14 @@
                  mirror it without tracking the tools itself. */
               if (onPlanState) onPlanState(data);
             } else if (event === 'note') {
-              const nte = document.createElement('div');
-              nte.className = 'usage';
-              nte.textContent = data.message;
-              wrapper.append(nte);
+              console.info('[aiko] ' + data.message);
             } else if (event === 'error') {
               bubble.classList.remove('cursor');
+              status.hidden = true;
               addMessage('error', 'Problem', data.message);
             } else if (event === 'done') {
-              const u = document.createElement('div');
-              u.className = 'usage';
-              const cached = data.usage.cacheRead
-                ? (' · ' + data.usage.cacheRead.toLocaleString() + ' cached') : '';
-              u.textContent = data.model + ' · ' + data.usage.searches + ' searches · '
-                + data.usage.output.toLocaleString() + ' output tokens' + cached;
-              wrapper.append(u);
+              console.info('[aiko] ' + data.model + ' · ' + data.usage.searches + ' searches · '
+                + data.usage.output + ' output tokens · ' + data.usage.cacheRead + ' cached');
             }
           }
         }
@@ -209,6 +198,7 @@
         addMessage('error', 'Problem', err.message);
       } finally {
         bubble.classList.remove('cursor');
+        status.remove();
         if (answer) history.push({ role: 'user', content: shown },
                                  { role: 'assistant', content: answer });
         setBusy(false);

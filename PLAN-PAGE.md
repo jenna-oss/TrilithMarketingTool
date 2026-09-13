@@ -131,9 +131,12 @@ turn, because a locked video that only appears after the answer finishes reads
 as though nothing was recorded. It is also sent once more at the end regardless,
 so a page that missed an event still converges.
 
-**`tool` events are the point.** Every search is shown on the page while it
-runs, so an idea claiming a gap in the market can be checked against the queries
-that found it. An answer you cannot audit is an answer you have to trust.
+The page no longer lists `tool` events or the `done` usage line. Seeing every
+search go past made the conversation hard to follow. While the agent works, the
+page shows one quiet status line ("Thinking…", "Looking into it…", "Saving…").
+Searches, notes and token usage go to the browser console as `[aiko] …` lines,
+so they can still be audited. The evidence behind a locked video goes into that
+slot's `evidence` and `source_ids`, not into the chat.
 
 `assets/chat.js` is shared with the briefing page's floating panel — one parser,
 because two hand-maintained SSE readers would drift and the drift would show up
@@ -220,19 +223,12 @@ parsers.
 
 ## Where the plan lives
 
-The session is carried with each request and mirrored in three places, each for
-a different reason:
+The page shows only the conversation. There is no plan panel. Every visit starts
+a fresh session with an empty plan. The plan is carried with each request in
+page memory and written to `kb.planning_sessions` after every turn, which is the
+durable copy the render workflow reads.
 
-| | Holds | Survives |
-| --- | --- | --- |
-| `localStorage` | the live plan | a reload; not a cleared browser |
-| `kb.planning_sessions` | the same plan, written every turn | anything — it is the durable copy |
-| `video-briefs-<date>.json` | the locked set, on export | it is a file |
-
-The panel shows a **Resume link** carrying `?session=<id>`. Opening it anywhere
-loads the stored copy, which is how a plan started on one machine is picked up
-on another. Arriving by that link makes the server copy win; an ordinary reload
-prefers the local copy, so it stays instant and works offline.
+A `?session=<id>` link still reopens a specific stored plan.
 
 `kb.planning_sessions` is addressed by id and nothing else — no table grants for
 anon, two `SECURITY DEFINER` functions as the whole surface — because the id is

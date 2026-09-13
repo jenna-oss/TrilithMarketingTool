@@ -70,17 +70,14 @@
   border-radius: 4px; padding: .75rem 1rem; color: var(--chat-clay); font-size: .875rem;
 }
 
-/* What the agent actually searched. A claim about a gap in the market is only
-   worth anything if you can see the query behind it. */
-.chat .searches { margin-bottom: .625rem; display: flex; flex-direction: column; gap: .25rem; }
-.chat .search {
-  font-family: var(--chat-mono); font-size: .6875rem; color: var(--chat-quiet);
-  display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap;
+/* The one line shown while the agent works. Quiet on purpose: it says
+   "still going", not what is being searched. */
+.chat .status {
+  font-size: .8125rem; color: var(--chat-quiet); font-style: italic;
+  animation: chat-pulse 1.6s ease-in-out infinite;
 }
-.chat .search .tag { color: var(--chat-accent); font-weight: 700; }
-.chat .search.failed .tag { color: var(--chat-clay); }
-
-.chat .usage { font-family: var(--chat-mono); font-size: .6875rem; color: var(--chat-quiet); margin-top: .75rem; }
+@keyframes chat-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .chat .status { animation: none; } }
 
 .chat .cursor::after { content: "▍"; color: var(--chat-accent); animation: chat-blink 1s step-end infinite; }
 @keyframes chat-blink { 50% { opacity: 0; } }

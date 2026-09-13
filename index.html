@@ -72,54 +72,6 @@
   }
   .lockbar .count { font-size:.8125rem; color:var(--ink-body); margin-right:auto; }
 
-  /* This week's plan. Sits above the transcript and stays there: the point of
-     locking a topic is being able to see it without scrolling back. */
-  .plan-panel {
-    border:1px solid var(--rule); border-radius:.5rem;
-    background:var(--card); padding:.75rem .875rem; margin-bottom:1rem;
-  }
-  .plan-panel header { display:flex; align-items:baseline; gap:.75rem; }
-  .plan-panel h2 {
-    font-size:.8125rem; font-weight:600; letter-spacing:.02em;
-    margin:0; margin-right:auto; color:var(--ink-body);
-  }
-  .plan-panel header a {
-    font-size:.6875rem; color:var(--ink-quiet); text-decoration:none;
-    border-bottom:1px dotted var(--rule-strong);
-  }
-  .plan-panel header a:hover { color:var(--emerald); }
-  .plan-panel header button {
-    font-size:.6875rem; color:var(--ink-quiet); background:none;
-    border:none; cursor:pointer; padding:0;
-  }
-  .plan-panel header button:hover { color:var(--clay); }
-  .plan-goal { margin:.375rem 0 0; font-size:.75rem; color:var(--ink-quiet); }
-  .plan-slots { list-style:none; margin:.625rem 0 0; padding:0; display:grid; gap:.375rem; }
-  .plan-slot { display:flex; gap:.625rem; align-items:baseline; font-size:.8125rem; }
-  .plan-slot .slot-n {
-    font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet);
-    min-width:1.25rem; flex:none;
-  }
-  .plan-slot .slot-body { display:flex; flex-direction:column; gap:.125rem; }
-  .plan-slot .slot-topic { color:var(--ink-body); font-weight:500; }
-  .plan-slot .slot-angle,
-  .plan-slot .slot-hook { font-size:.75rem; color:var(--ink-quiet); }
-  .plan-slot .slot-hook { font-style:italic; }
-  .plan-slot.empty .slot-empty { font-size:.75rem; color:var(--ink-quiet); opacity:.7; }
-  .plan-slot.locked .slot-n { color:var(--emerald); }
-  /* Same trap as .kb-add: a display rule outranks the [hidden] attribute. */
-  .plan-actions[hidden] { display:none; }
-  .plan-actions {
-    display:flex; align-items:center; gap:.75rem;
-    margin-top:.75rem; padding-top:.625rem; border-top:1px solid var(--rule);
-  }
-  .plan-actions button {
-    font-size:.75rem; color:var(--ink-body); background:var(--card-sunk);
-    border:1px solid var(--rule); border-radius:999px;
-    padding:.1875rem .75rem; cursor:pointer;
-  }
-  .plan-actions button:disabled { opacity:.5; cursor:default; }
-  .plan-note { font-size:.6875rem; color:var(--ink-quiet); }
   .lockbar button {
     font-family:var(--sans); font-size:.8125rem; font-weight:600;
     border-radius:4px; padding:.4375rem 1rem; cursor:pointer; border:none;
@@ -189,23 +141,6 @@
       </ol>
     </div>
 
-    <!-- This week's plan. Mirrors the session state the agent moves with its
-         tools; the page never edits it directly, so what is on screen and what
-         the agent believes cannot drift apart. -->
-    <section class="plan-panel" id="plan-panel" hidden aria-label="This week's plan">
-      <header>
-        <h2 id="plan-title"></h2>
-        <a id="plan-resume" hidden title="Open this plan on another machine">Resume link</a>
-        <button type="button" id="plan-reset" title="Clear the plan and start again">Start over</button>
-      </header>
-      <p class="plan-goal" id="plan-goal" hidden></p>
-      <ol class="plan-slots" id="plan-slots"></ol>
-      <div class="plan-actions" id="plan-actions" hidden>
-        <button type="button" id="plan-export">Export locked plan</button>
-        <span class="plan-note" id="plan-note"></span>
-      </div>
-    </section>
-
     <div id="transcript" aria-live="polite"></div>
   </div>
 </main>
@@ -244,14 +179,10 @@
           <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
         </svg>
       </button>
-      <textarea id="chat-input" rows="1" placeholder="Message the agent&hellip;"
+      <textarea id="chat-input" rows="1" placeholder="Message Aiko&hellip;"
                 autocomplete="off" aria-label="Your message"></textarea>
       <button type="submit" id="chat-send">Send</button>
     </form>
-    <p class="chat-hint">
-      Enter sends; Shift+Enter adds a line. Attach images, PDFs or text files &mdash;
-      drop them here or paste a screenshot. Text files can also be added to the library.
-    </p>
   </div>
 </footer>
 
@@ -275,15 +206,6 @@ const kbCount = document.getElementById('kb-count');
 const kbType = document.getElementById('kb-type');
 const kbSend = document.getElementById('kb-send');
 const kbStatus = document.getElementById('kb-status');
-const planPanel = document.getElementById('plan-panel');
-const planTitle = document.getElementById('plan-title');
-const planGoal = document.getElementById('plan-goal');
-const planSlots = document.getElementById('plan-slots');
-const planActions = document.getElementById('plan-actions');
-const planExport = document.getElementById('plan-export');
-const planNote = document.getElementById('plan-note');
-const planReset = document.getElementById('plan-reset');
-const planResume = document.getElementById('plan-resume');
 
 /* ---------------------------------------------------------------------------
  * Attachments.
@@ -592,77 +514,39 @@ const render = AikoChat.render;
 
 if (!WORKER_URL) attachBtn.disabled = true;
 
-/* The greeting differs on every load, so the page does not read like a
-   screenshot of itself. Time of day comes from the browser clock; the rest is
-   picked at random. */
+/* One short, open question. Every visit is a fresh conversation, so the
+   greeting should read like the start of one, not a menu. */
 function greet() {
   const h = new Date().getHours();
   const part = h < 5 ? 'evening' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
-  const openers = ['Hello', 'Hello there', 'Hi', 'Hi there', 'Hey'];
-  const invites = [
-    'Would you like to begin planning videos?',
-    'Shall we plan some videos?',
-    'Want to start planning this week’s videos?',
-    'Ready to work up a few video concepts?',
-    'Where would you like to start — a question about the category, or a batch of concepts?',
-    'What are we making videos about today?',
-    'Fancy planning a batch of short-form videos?',
-    'Shall we pull some ideas out of the ad corpus?',
-  ];
-  const pick = (a) => a[Math.floor(Math.random() * a.length)];
-  return pick(openers) + ', good ' + part + '! ' + pick(invites);
+  return 'Good ' + part + '! What should this week’s videos be about?';
 }
 
 chat.addMessage('bot', 'Aiko', greet());
 
-/* Most messages are free text. One that asks for a specific number of videos
-   still goes through planning mode, so the answer comes back as briefs you can
-   drop and lock rather than as prose. */
 /* --- the planning session -------------------------------------------------
- * The agent owns this state and moves it with tools; the page mirrors it and
- * sends it back on the next message. Kept in localStorage so a refresh does not
- * lose a half-agreed week — the Worker is stateless by design, which is what
- * lets the same plan be picked up in another tab without either copy being
- * authoritative over the other.
+ * The agent still records the week's plan with its tools, and the Worker
+ * stores it against the session id after every turn. The page just no longer
+ * shows it: this screen is only the conversation.
+ *
+ * Every visit is a fresh start: a new session, an empty plan. Carrying last
+ * week's finished plan into a new chat made the agent open with "every slot
+ * is locked" before anyone had said a word. A ?session= link still reopens a
+ * specific plan.
  * ------------------------------------------------------------------------ */
-const PLAN_KEY = 'trilith-plan-state';
-const SESSION_KEY = 'trilith-plan-session';
+const sessionFromUrl = new URLSearchParams(location.search).get('session');
+const sessionId = sessionFromUrl
+  || 'plan-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+let plan = { goal: null, target_count: null, slots: [], rejected: [] };
 
-let plan = loadPlan();
-const sessionId = loadSession();
+/* Left behind by the version of this page that kept the plan across visits. */
+try {
+  localStorage.removeItem('trilith-plan-state');
+  localStorage.removeItem('trilith-plan-session');
+} catch { /* private mode */ }
 
-function loadPlan() {
-  try {
-    const raw = localStorage.getItem(PLAN_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch { /* corrupt or unavailable — start clean rather than fail to load */ }
-  return { goal: null, target_count: null, slots: [], rejected: [] };
-}
-
-function loadSession() {
-  /* A ?session= link wins over whatever this browser remembers. That is how a
-     plan started on one machine is picked up on another — the Worker stores it
-     against this id after every turn. */
-  const fromUrl = new URLSearchParams(location.search).get('session');
-  try {
-    if (fromUrl) { localStorage.setItem(SESSION_KEY, fromUrl); return fromUrl; }
-    let id = localStorage.getItem(SESSION_KEY);
-    if (!id) {
-      id = 'plan-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-      localStorage.setItem(SESSION_KEY, id);
-    }
-    return id;
-  } catch { return fromUrl || null; }
-}
-
-/* Pull the stored copy when arriving by link, or when this browser has nothing
-   local. The server copy is authoritative in exactly those two cases; otherwise
-   local wins, so an ordinary reload stays instant and works offline. */
 async function hydratePlan() {
-  if (!WORKER_URL || !sessionId) return;
-  const arrivedByLink = new URLSearchParams(location.search).has('session');
-  if (!arrivedByLink && plan.target_count !== null) return;
-
+  if (!WORKER_URL || !sessionFromUrl) return;
   try {
     const res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/plan', {
       method: 'POST',
@@ -671,100 +555,21 @@ async function hydratePlan() {
     });
     if (!res.ok) return;
     const { plan: stored } = await res.json();
-    if (stored && (stored.target_count !== null || (stored.slots || []).length)) {
+    if (stored) {
       plan = {
         goal: stored.goal ?? null,
         target_count: stored.target_count ?? null,
         slots: stored.slots || [],
         rejected: stored.rejected || [],
       };
-      savePlan();
-      drawPlan();
     }
-  } catch { /* offline or not reachable — the local copy stands */ }
+  } catch { /* offline or not reachable — start from an empty plan */ }
 }
 
-function savePlan() {
-  try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); } catch { /* private mode */ }
-}
-
-const lockedCount = () => (plan.slots || []).filter((s) => s.status === 'locked').length;
-const planIsComplete = () =>
-  plan.target_count !== null
-  && (plan.slots || []).length === plan.target_count
-  && lockedCount() === plan.target_count;
-
-function drawPlan() {
-  const has = plan.target_count !== null || lockedCount() > 0;
-  planPanel.hidden = !has;
-  if (!has) return;
-
-  const n = lockedCount();
-  const total = plan.target_count ?? (plan.slots || []).length;
-  planTitle.textContent = `This week — ${n} of ${total} locked`;
-
-  planGoal.hidden = !plan.goal;
-  planGoal.textContent = plan.goal || '';
-
-  planSlots.textContent = '';
-  (plan.slots || []).forEach((slot, i) => {
-    const li = document.createElement('li');
-    li.className = 'plan-slot ' + (slot.status === 'locked' ? 'locked' : 'empty');
-
-    const num = document.createElement('span');
-    num.className = 'slot-n';
-    num.textContent = i + 1;
-
-    const body = document.createElement('div');
-    body.className = 'slot-body';
-
-    if (slot.status === 'locked') {
-      const topic = document.createElement('span');
-      topic.className = 'slot-topic';
-      topic.textContent = slot.topic;
-      body.append(topic);
-      if (slot.angle) {
-        const angle = document.createElement('span');
-        angle.className = 'slot-angle';
-        angle.textContent = slot.angle;
-        body.append(angle);
-      }
-      if (slot.hook) {
-        const hook = document.createElement('span');
-        hook.className = 'slot-hook';
-        hook.textContent = '“' + slot.hook + '”';
-        body.append(hook);
-      }
-    } else {
-      const empty = document.createElement('span');
-      empty.className = 'slot-empty';
-      empty.textContent = 'not decided yet';
-      body.append(empty);
-    }
-
-    li.append(num, body);
-    planSlots.append(li);
-  });
-
-  planResume.hidden = !sessionId;
-  if (sessionId) {
-    planResume.href = location.origin + location.pathname + '?session=' + encodeURIComponent(sessionId);
-  }
-
-  planActions.hidden = n === 0;
-  planExport.disabled = n === 0;
-  planNote.textContent = planIsComplete()
-    ? 'Every slot is locked.'
-    : (plan.target_count ? `${plan.target_count - n} still to decide.` : '');
-}
-
-/* The agent is the only writer. The page redraws and stores whatever it is
-   told, and never edits a slot itself — two writers on one plan is how the
-   screen and the conversation start disagreeing. */
+/* The agent is the only writer; the page keeps whatever it is told and sends
+   it back with the next message. */
 function onPlanState(next) {
   plan = next;
-  savePlan();
-  drawPlan();
 }
 
 function buildPayload(brief, history) {
@@ -910,52 +715,6 @@ function renderPlan(wrapper, data) {
   list.scrollIntoView({ block: 'nearest' });
 }
 
-planExport.addEventListener('click', () => {
-  const locked = (plan.slots || [])
-    .map((s, i) => ({ ...s, slot: i + 1 }))
-    .filter((s) => s.status === 'locked');
-  if (!locked.length) return;
-
-  const body = {
-    lockedAt: new Date().toISOString(),
-    session_id: sessionId,
-    goal: plan.goal,
-    requested: plan.target_count,
-    briefs: locked.map((s) => ({
-      topic: s.topic,
-      angle: s.angle,
-      opening_line: s.hook || s.opening_line,
-      evidence: s.evidence,
-      product: s.product,
-      audience: s.audience,
-      source_ids: s.source_ids || [],
-    })),
-  };
-
-  const stamp = body.lockedAt.slice(0, 10);
-  const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `video-briefs-${stamp}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-
-  planNote.textContent = `Exported ${body.briefs.length} — run: node tools/add-briefs.mjs <file>`;
-});
-
-planReset.addEventListener('click', () => {
-  /* A confirm, because the plan is the week's work and there is no undo. */
-  if (!window.confirm('Clear the plan and start again? Locked topics will be lost.')) return;
-  plan = { goal: null, target_count: null, slots: [], rejected: [] };
-  savePlan();
-  /* A new id, or "start over" would overwrite the plan just abandoned and the
-     resume link for it would stop working. */
-  try { localStorage.removeItem(SESSION_KEY); } catch {}
-  location.search = '';
-});
-
-drawPlan();
 hydratePlan();
 
 if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
