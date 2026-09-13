@@ -91,6 +91,34 @@ export default {
       }
     }
 
+    /* The finished-video library, for the Output page. Read-only: one
+     * SECURITY DEFINER function returns renders marked 'rendered', the newest
+     * cut per slot, and nothing that failed. The videos bucket is public, so
+     * each row carries a plain storage URL the page can play directly. */
+    if (path === '/videos') {
+      try {
+        const rows = await rpc(env, 'kb_video_library', { p_limit: 60 });
+        const base = env.SUPABASE_URL.replace(/\/+$/, '');
+        const videos = (rows || []).map((r) => ({
+          id: r.id,
+          session_id: r.session_id,
+          slot: r.slot,
+          topic: r.topic,
+          hook: r.hook,
+          angle: r.angle,
+          product: r.product,
+          audience: r.audience,
+          duration: r.duration_seconds == null ? null : Number(r.duration_seconds),
+          rendered_at: r.rendered_at,
+          url: `${base}/storage/v1/object/public/videos/`
+            + String(r.storage_path).split('/').map(encodeURIComponent).join('/'),
+        }));
+        return json({ videos }, 200, headers);
+      } catch {
+        return json({ error: 'could not load videos' }, 502, headers);
+      }
+    }
+
     /* The retired ask endpoint. Anything still POSTing here gets told where to
      * go rather than a bare 404 that looks like an outage. */
     return json({

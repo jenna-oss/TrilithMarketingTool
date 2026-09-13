@@ -49,17 +49,6 @@
     font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
     font-weight:700; color:var(--accent); margin:0 0 var(--s1);
   }
-  .lede { max-width:68ch; margin:0 0 var(--s4); }
-
-  .filters { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:var(--s4); }
-  .filters button {
-    font-family:var(--sans); font-size:.8125rem; color:var(--ink-body);
-    background:transparent; border:1px solid var(--rule-strong); border-radius:999px;
-    padding:.4375rem .875rem; cursor:pointer;
-  }
-  .filters button:hover { border-color:var(--accent); color:var(--ink); }
-  .filters button[aria-pressed="true"] { border-color:var(--accent); color:var(--ink); background:var(--card); }
-  .filters button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 
   .grid {
     display:grid; gap:var(--s3);
@@ -77,7 +66,17 @@
     aspect-ratio:9/16; background:var(--card-sunk); position:relative;
     display:flex; align-items:center; justify-content:center;
   }
-  .vid .frame img { width:100%; height:100%; object-fit:cover; display:block; }
+  /* The card preview is the video itself, paused on an early frame — there are
+     no thumbnails, and preload="metadata" fetches only enough to draw one. */
+  .vid .frame video { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+  .vid .play {
+    position:absolute; inset:0; margin:auto; width:2.75rem; height:2.75rem;
+    border-radius:50%; background:#0B3529cc; display:flex; align-items:center; justify-content:center;
+  }
+  .vid .play::after {
+    content:""; margin-left:.2rem;
+    border-left:.8rem solid #EAE9D5; border-top:.5rem solid transparent; border-bottom:.5rem solid transparent;
+  }
   .vid .dur {
     position:absolute; right:.375rem; bottom:.375rem;
     font-family:var(--mono); font-size:.625rem; color:#EAE9D5;
@@ -86,14 +85,8 @@
   .vid .body { padding:.625rem .75rem; }
   .vid .t { font-weight:700; color:var(--ink); font-size:.875rem; line-height:1.3; }
   .vid .m { font-family:var(--mono); font-size:.625rem; color:var(--ink-quiet); margin-top:.375rem; }
-  .vid .st {
-    font-family:var(--mono); font-size:.5625rem; letter-spacing:.08em; text-transform:uppercase;
-    font-weight:700; padding:.125rem .4375rem; border-radius:999px; display:inline-block;
-  }
-  .st.draft     { color:var(--ochre); border:1px solid var(--ochre); }
-  .st.approved  { color:var(--accent); border:1px solid var(--accent); }
-  .st.published { color:#F4F2E7; background:var(--emerald); }
-  .st.failed    { color:var(--clay); border:1px solid var(--clay); }
+
+  .state { font-size:.875rem; color:var(--ink-quiet); }
 
   .empty {
     border:1px solid var(--rule); border-radius:4px; background:var(--card);
@@ -124,7 +117,7 @@
     color:var(--sage); font-size:1.25rem; line-height:1; padding:.25rem .5rem;
   }
   .detail-close:hover { color:var(--cream-text); }
-  .detail-body { display:grid; grid-template-columns:minmax(0,220px) 1fr; gap:var(--s4); padding:var(--s4); }
+  .detail-body { display:grid; grid-template-columns:minmax(0,280px) 1fr; gap:var(--s4); padding:var(--s4); }
   .detail-body video, .detail-body .frame-lg {
     width:100%; aspect-ratio:9/16; background:var(--card-sunk); border-radius:4px;
   }
@@ -137,12 +130,6 @@
   .detail .line { font-style:italic; color:var(--ink); border-left:2px solid var(--emerald-bar); padding-left:.625rem; }
   @media (max-width:640px) { .detail-body { grid-template-columns:1fr; } }
 
-  .note {
-    background:var(--card); border:1px dashed var(--clay); border-radius:4px;
-    padding:var(--s3) var(--s4); margin-bottom:var(--s5); font-size:.875rem;
-  }
-  .note h3 { margin:0 0 var(--s2); color:var(--clay); font-size:1rem; }
-  .note code { font-family:var(--mono); font-size:.8125rem; background:var(--card-sunk); padding:.125rem .375rem; border-radius:2px; }
 </style>
 </head>
 <body>
@@ -181,29 +168,14 @@
 <main class="wrap">
   <p class="eyebrow">Library</p>
   <h2>What has been made</h2>
-  <p class="lede">
-    Every finished cut, with the concept that produced it. Open one to see the
-    hook it borrowed, the topic it carries and the competitor evidence that
-    justified making it.
-  </p>
-
-  <div class="note" id="note" hidden>
-    <h3>Nothing is rendering yet</h3>
-    <p style="margin:0">
-      This page reads <code>data/video-output.json</code>, which is written by the
-      processing service. That service does not exist yet, so the library is
-      empty by fact rather than by filter.
-    </p>
-  </div>
-
-  <div class="filters" id="filters" role="group" aria-label="Filter videos" hidden></div>
+  <p class="state" id="state" role="status">Loading videos…</p>
 
   <div class="grid" id="grid"></div>
 
   <div class="empty" id="empty" hidden>
-    <h3>No finished video yet</h3>
+    <h3>No finished videos yet</h3>
     <p>
-      Videos appear here once footage has been processed. Start by planning a
+      Videos show up here as soon as they finish rendering. Start by planning a
       batch.
     </p>
     <a class="btn" href="./">Go to planning</a>
@@ -219,86 +191,76 @@
 </dialog>
 
 <script>
+/* Same Worker as the Plan page. It reads the render records and hands back
+   finished videos only — anything that failed or has no narration stays out. */
+const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
+
 const grid = document.getElementById('grid');
 const emptyEl = document.getElementById('empty');
-const noteEl = document.getElementById('note');
-const filtersEl = document.getElementById('filters');
+const stateEl = document.getElementById('state');
 const detail = document.getElementById('detail');
 const detailBody = document.getElementById('detail-body');
 const detailTitle = document.getElementById('detail-title');
 
 let videos = [];
-let active = 'all';
 
-const esc = (s) => String(s ?? '');
+const fmtDuration = (s) => {
+  if (!Number.isFinite(s) || s <= 0) return '';
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return m + ':' + String(r).padStart(2, '0');
+};
+const fmtDate = (iso) => {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
-/* Written by the processing service. Absent is the normal state until one
-   exists, so a 404 is an empty library, not an error. */
-fetch('./data/video-output.json')
-  .then((r) => r.ok ? r.json() : null)
-  .then((data) => {
-    videos = (data && Array.isArray(data.videos)) ? data.videos : [];
-    if (!data) noteEl.hidden = false;
-    render();
-  })
-  .catch(() => { noteEl.hidden = false; render(); });
-
-function render() {
-  grid.innerHTML = '';
-
-  if (!videos.length) {
-    emptyEl.hidden = false;
-    filtersEl.hidden = true;
+async function load() {
+  try {
+    const res = await fetch(WORKER_URL + '/videos', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    if (!res.ok) throw new Error('status ' + res.status);
+    const data = await res.json();
+    videos = Array.isArray(data.videos) ? data.videos : [];
+  } catch (err) {
+    console.error('videos failed to load:', err);
+    stateEl.textContent = 'Couldn’t load the videos. Try refreshing the page.';
     return;
   }
-  emptyEl.hidden = true;
+  stateEl.hidden = true;
+  render();
+}
 
-  /* Filters are built from what is actually present, so there is never a
-     control that selects nothing. */
-  if (!filtersEl.children.length) {
-    const products = [...new Set(videos.map((v) => v.product).filter(Boolean))];
-    const audiences = [...new Set(videos.map((v) => v.audience).filter(Boolean))];
-    const statuses = [...new Set(videos.map((v) => v.status).filter(Boolean))];
-    [['all', 'All'], ...products.map((p) => [p, p]), ...audiences.map((a) => [a, a]),
-     ...statuses.map((s) => [s, s])].forEach(([key, label], i) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.dataset.f = key;
-      b.textContent = label;
-      b.setAttribute('aria-pressed', String(i === 0));
-      b.addEventListener('click', () => {
-        active = key;
-        filtersEl.querySelectorAll('button').forEach((x) =>
-          x.setAttribute('aria-pressed', String(x === b)));
-        render();
-      });
-      filtersEl.append(b);
-    });
-    filtersEl.hidden = false;
-  }
+function render() {
+  grid.textContent = '';
+  emptyEl.hidden = videos.length > 0;
 
-  const shown = videos.filter((v) =>
-    active === 'all' || v.product === active || v.audience === active || v.status === active);
-
-  shown.forEach((v) => {
+  videos.forEach((v) => {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'vid';
+    card.setAttribute('aria-label', 'Play: ' + (v.topic || 'video'));
 
     const frame = document.createElement('div');
     frame.className = 'frame';
-    if (v.thumbnailUrl) {
-      const img = document.createElement('img');
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      img.src = v.thumbnailUrl;
-      img.alt = '';
-      frame.append(img);
-    }
-    if (v.duration) {
+    const preview = document.createElement('video');
+    /* #t=1 lands the preview on a real frame instead of the black first one. */
+    preview.src = v.url + '#t=1';
+    preview.preload = 'metadata';
+    preview.muted = true;
+    preview.playsInline = true;
+    preview.setAttribute('aria-hidden', 'true');
+    const play = document.createElement('span');
+    play.className = 'play';
+    frame.append(preview, play);
+    const dur = fmtDuration(v.duration);
+    if (dur) {
       const d = document.createElement('span');
       d.className = 'dur';
-      d.textContent = v.duration;
+      d.textContent = dur;
       frame.append(d);
     }
 
@@ -306,14 +268,11 @@ function render() {
     body.className = 'body';
     const t = document.createElement('div');
     t.className = 't';
-    t.textContent = esc(v.topic || v.title || 'Untitled');
-    const st = document.createElement('span');
-    st.className = 'st ' + esc(v.status || 'draft');
-    st.textContent = esc(v.status || 'draft');
+    t.textContent = v.topic || 'Untitled';
     const m = document.createElement('div');
     m.className = 'm';
-    m.textContent = [v.product, v.audience, v.producedAt].filter(Boolean).join(' · ');
-    body.append(t, m, st);
+    m.textContent = fmtDate(v.rendered_at);
+    body.append(t, m);
 
     card.append(frame, body);
     card.addEventListener('click', () => open(v));
@@ -321,25 +280,15 @@ function render() {
   });
 }
 
-/* The detail view is the point of the page: it closes the loop from competitor
-   evidence, through the borrowed hook, to the finished asset. */
 function open(v) {
-  detailTitle.textContent = esc(v.topic || v.title || 'Video');
-  detailBody.innerHTML = '';
+  detailTitle.textContent = v.topic || 'Video';
+  detailBody.textContent = '';
 
-  const left = document.createElement('div');
-  if (v.videoUrl) {
-    const el = document.createElement('video');
-    el.src = v.videoUrl;
-    el.controls = true;
-    el.playsInline = true;
-    if (v.thumbnailUrl) el.poster = v.thumbnailUrl;
-    left.append(el);
-  } else {
-    const ph = document.createElement('div');
-    ph.className = 'frame-lg';
-    left.append(ph);
-  }
+  const player = document.createElement('video');
+  player.src = v.url;
+  player.controls = true;
+  player.playsInline = true;
+  player.autoplay = true;
 
   const dl = document.createElement('dl');
   const add = (label, value, cls) => {
@@ -351,22 +300,37 @@ function open(v) {
     dd.textContent = value;
     dl.append(dt, dd);
   };
-  add('Topic', v.topic);
-  add('Opening line', v.opening_line ? '“' + v.opening_line + '”' : null, 'line');
-  add('Hook form', v.hook_form);
-  add('Borrowed from', v.hook_source);
-  add('Evidence', v.evidence);
-  add('Product', v.product);
-  add('Audience', v.audience);
-  add('Produced', v.producedAt);
-  add('Status', v.status);
+  add('Opening line', v.hook ? '“' + v.hook + '”' : null, 'line');
+  add('What it argues', v.angle);
+  add('Loan type', v.product);
+  add('Made for', v.audience);
+  add('Length', fmtDuration(v.duration));
+  add('Finished', fmtDate(v.rendered_at));
 
+  const left = document.createElement('div');
+  left.append(player);
   detailBody.append(left, dl);
   detail.showModal();
 }
 
-document.getElementById('detail-close').addEventListener('click', () => detail.close());
-detail.addEventListener('click', (e) => { if (e.target === detail) detail.close(); });
+/* Closing the dialog must stop the sound, not just hide the player. The ×
+   and the backdrop do it directly rather than relying on the dialog's close
+   event, which not every browser surface fires; that event still covers
+   Escape, which closes the dialog natively without touching these handlers. */
+function stopPlayer() {
+  const player = detailBody.querySelector('video');
+  if (player) player.pause();
+  detailBody.textContent = '';
+}
+function closeDetail() {
+  stopPlayer();
+  if (detail.open) detail.close();
+}
+detail.addEventListener('close', stopPlayer);
+document.getElementById('detail-close').addEventListener('click', closeDetail);
+detail.addEventListener('click', (e) => { if (e.target === detail) closeDetail(); });
+
+load();
 
 
 if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
