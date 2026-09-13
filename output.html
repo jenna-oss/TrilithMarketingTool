@@ -167,24 +167,16 @@
   .action-note { font-size:.8125rem; color:var(--ink-quiet); }
   .action-note.bad { color:var(--clay); }
 
-  /* Asking for a change: one box, one button. */
-  .edit-box { margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--rule); }
-  .edit-box label {
-    display:block; font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
-    font-weight:700; color:var(--accent); margin-bottom:.375rem;
+  /* Editing lives on the Edit tab. Here: how the last edit went, and a link. */
+  .edit-box {
+    display:grid; gap:.5rem; justify-items:start;
+    margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--rule);
   }
-  .edit-box textarea {
-    display:block; width:100%; min-height:5rem; resize:vertical;
-    font-family:var(--sans); font-size:.875rem; line-height:1.5; color:var(--ink);
-    background:var(--card); border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
-  }
-  .edit-box textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
-  .edit-row { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; margin-top:.5rem; }
   .edit-status {
-    margin:0; font-size:.8125rem; color:var(--ink-body);
+    margin:0; font-size:.8125rem; color:var(--ink-body); white-space:pre-line;
     background:var(--card-sunk); border-radius:4px; padding:.5rem .625rem;
   }
-  .edit-last { margin:0 0 .5rem; font-size:.75rem; color:var(--ink-quiet); }
+  .edit-last { margin:0; font-size:.75rem; color:var(--ink-quiet); white-space:pre-line; }
   .vid .badge {
     position:absolute; left:.375rem; top:.375rem;
     font-size:.625rem; font-weight:700; letter-spacing:.04em;
@@ -218,6 +210,7 @@
     <span class="nav-group">
       <span class="nav-group-label">Production</span>
       <a class="nav-link" href="./">Plan</a>
+      <a class="nav-link" href="./edit.html">Edit</a>
       <a class="nav-link" href="./output.html" aria-current="page">Output</a>
     </span>
     <button class="theme-toggle" id="theme-toggle" type="button"
@@ -518,8 +511,8 @@ async function setReview(id, status) {
   return { ok: true, review_status: body.review_status ?? status, reviewed_at: body.reviewed_at ?? null };
 }
 
-/* The change box under a video's details. While an edit runs, it shows that
-   instead, so a second edit can't be stacked on the first. */
+/* Editing lives on the Edit tab. Here a video shows how its last edit went,
+   and one waiting for review links straight to it. */
 function buildEditBox(v) {
   const box = document.createElement('div');
   box.className = 'edit-box';
@@ -528,88 +521,30 @@ function buildEditBox(v) {
   if (last && last.in_progress) {
     const status = document.createElement('p');
     status.className = 'edit-status';
-    status.textContent = 'Editing now: “' + last.instruction + '”. The new version will show up in Ready to review when it’s done.';
+    status.textContent = 'Editing now:\n' + last.instruction + '\nThe new version will show up in Ready to review when it’s done.';
     box.append(status);
     return box;
   }
-
   if (last && last.status === 'done') {
     const done = document.createElement('p');
     done.className = 'edit-last';
-    done.textContent = 'Last change: “' + last.instruction + '”';
+    done.textContent = 'Last change:\n' + last.instruction;
     box.append(done);
   }
-
-  const label = document.createElement('label');
-  label.htmlFor = 'edit-text';
-  label.textContent = 'Request a change';
-  const text = document.createElement('textarea');
-  text.id = 'edit-text';
-  text.maxLength = 600;
-  text.placeholder = 'e.g. Make the first headline bigger, say “monthly payment” instead of “PITIA”, or make the voice more enthusiastic.';
-
-  const row = document.createElement('div');
-  row.className = 'edit-row';
-  const send = document.createElement('button');
-  send.type = 'button';
-  send.className = 'btn';
-  send.textContent = 'Send edit';
-  const note = document.createElement('span');
-  note.className = 'action-note';
-  note.textContent = v.has_source
-    ? 'Only what you ask for will change.'
-    : 'This video was made before edits were possible, so it will be re-made with your change.';
   if (last && last.status === 'failed') {
-    note.className = 'action-note bad';
-    note.textContent = 'The last edit didn’t work' + (last.error ? ': ' + last.error : '') + '. You can try again.';
+    const failed = document.createElement('p');
+    failed.className = 'action-note bad';
+    failed.textContent = 'The last edit didn’t work' + (last.error ? ': ' + last.error : '') + '.';
+    box.append(failed);
   }
-
-  send.addEventListener('click', async () => {
-    const change = text.value.trim();
-    if (change.length < 3) {
-      note.className = 'action-note bad';
-      note.textContent = 'Say what should change.';
-      text.focus();
-      return;
-    }
-    send.disabled = true;
-    text.disabled = true;
-    note.className = 'action-note';
-    note.textContent = 'Starting the edit…';
-    const result = await requestEdit(v.id, change);
-    if (!result.ok) {
-      send.disabled = false;
-      text.disabled = false;
-      note.className = 'action-note bad';
-      note.textContent = result.error;
-      return;
-    }
-    v.last_edit = { status: 'queued', instruction: change, in_progress: true, created_at: new Date().toISOString() };
-    closeDetail();
-    render();
-    toast('Edit started');
-    schedulePoll();
-  });
-
-  row.append(send, note);
-  box.append(label, text, row);
-  return box;
-}
-
-async function requestEdit(id, instruction) {
-  let res;
-  try {
-    res = await fetch(WORKER_URL + '/videos/edit', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id, instruction }),
-    });
-  } catch {
-    return { ok: false, error: 'Couldn’t reach the server. Try again.' };
+  if (stateOf(v) === 'review') {
+    const link = document.createElement('a');
+    link.className = 'btn secondary';
+    link.href = './edit.html?video=' + encodeURIComponent(v.id);
+    link.textContent = 'Edit this video';
+    box.append(link);
   }
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) return { ok: false, error: body.error || 'Couldn’t start the edit (' + res.status + ').' };
-  return { ok: true };
+  return box.childElementCount ? box : document.createTextNode('');
 }
 
 /* While an edit runs, check back every 30 seconds so the new version turns up

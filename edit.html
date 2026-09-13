@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Edit — Private Real Estate Lending</title>
+<script src="./assets/theme.js"></script>
+<link rel="stylesheet" href="./assets/nav.css">
+<style>
+  :root {
+    --cream-text:#EAE9D5; --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
+    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
+    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
+    --s1:.5rem; --s2:.75rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#ECE9D8; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
+  }
+  :root[data-theme="dark"] {
+    --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+    --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+    --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink-body);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1180px; margin:0 auto; padding:var(--s5) var(--s4) var(--s6); }
+  h2 { color:var(--ink); font-weight:700; line-height:1.12; margin:0 0 var(--s1); font-size:1.5rem; }
+  .eyebrow {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin:0 0 var(--s1);
+  }
+  .lede { margin:0 0 var(--s4); font-size:.875rem; color:var(--ink-quiet); max-width:62ch; }
+  .state { font-size:.875rem; color:var(--ink-quiet); }
+  .label {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin:0 0 var(--s2);
+  }
+
+  .btn {
+    display:inline-block; font-family:var(--sans); font-size:.875rem; font-weight:600;
+    color:#F4F2E7; background:var(--emerald); border:1px solid transparent; border-radius:4px;
+    padding:.5rem 1rem; cursor:pointer; text-decoration:none;
+  }
+  .btn:hover { background:var(--emerald-bar); }
+  .btn.secondary { background:transparent; color:var(--ink-body); border-color:var(--rule-strong); }
+  .btn.secondary:hover { background:var(--card-sunk); }
+  .btn:disabled { opacity:.55; cursor:default; }
+  .btn:focus-visible, .ctl:focus-visible, .pick:focus-visible, .when:focus-visible, .remove:focus-visible {
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+
+  .empty {
+    border:1px solid var(--rule); border-radius:4px; background:var(--card);
+    padding:var(--s6) var(--s4); text-align:center;
+  }
+  .empty h3 { margin:0 0 var(--s2); color:var(--ink); font-size:1rem; }
+  .empty p { margin:0 auto var(--s3); max-width:46ch; font-size:.875rem; }
+
+  /* Three columns: which video, the video itself, and the notes on it. */
+  .editor {
+    display:grid; gap:var(--s4); align-items:start;
+    grid-template-columns:190px minmax(0, 340px) minmax(0, 1fr);
+  }
+  @media (max-width:980px) { .editor { grid-template-columns:1fr; } }
+
+  .picker ul { list-style:none; margin:0; padding:0; display:grid; gap:.5rem; }
+  @media (max-width:980px) {
+    .picker ul { grid-auto-flow:column; grid-auto-columns:minmax(200px, 1fr); overflow-x:auto; padding-bottom:.25rem; }
+  }
+  .pick {
+    display:flex; gap:.625rem; align-items:center; width:100%; text-align:left;
+    background:var(--card); border:1px solid var(--rule); border-radius:4px;
+    padding:.375rem; cursor:pointer; font-family:var(--sans); color:var(--ink-body);
+  }
+  .pick:hover { border-color:var(--accent); }
+  .pick[aria-current="true"] { border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent); }
+  .pick video {
+    width:40px; aspect-ratio:9/16; object-fit:cover; border-radius:2px; flex:none;
+    background:var(--card-sunk); pointer-events:none;
+  }
+  .pick .t { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); line-height:1.3; }
+  .pick .m { display:block; font-size:.6875rem; color:var(--ink-quiet); margin-top:.125rem; }
+
+  /* Sized to the screen's height less the sticky menu and the controls, so the
+     frame buttons stay on screen with the video; the video letterboxes inside.
+     Phones leave more room because the menu wraps onto three rows there. */
+  .player {
+    aspect-ratio:9/16; max-height:calc(100vh - 21rem); min-height:15rem;
+    background:#000; border-radius:6px; overflow:hidden;
+  }
+  @media (max-width:980px) { .player { max-height:calc(100vh - 22rem); } }
+  .player video { width:100%; height:100%; display:block; object-fit:contain; }
+  .controls { display:flex; flex-wrap:wrap; gap:.375rem; align-items:center; margin-top:.625rem; }
+  .ctl {
+    font-family:var(--sans); font-size:.8125rem; font-weight:600; color:var(--ink-body);
+    background:var(--card); border:1px solid var(--rule-strong); border-radius:4px;
+    padding:.3125rem .5625rem; min-height:36px; cursor:pointer;
+  }
+  .ctl:hover { border-color:var(--accent); color:var(--ink); }
+  .ctl.play { min-width:4.5rem; }
+  .scrub { width:100%; margin:.625rem 0 0; accent-color:var(--accent); }
+  .timecode { font-family:var(--mono); font-size:.8125rem; color:var(--ink); margin:.25rem 0 0; }
+  .hint { font-size:.6875rem; color:var(--ink-quiet); margin:.25rem 0 0; }
+
+  .panel .title { font-size:1.0625rem; font-weight:700; color:var(--ink); margin:0 0 var(--s3); line-height:1.3; }
+  .status {
+    margin:0 0 var(--s3); font-size:.8125rem; color:var(--ink-body); white-space:pre-line;
+    background:var(--card-sunk); border-radius:4px; padding:.625rem .75rem;
+  }
+  .status.bad { color:var(--clay); }
+  .compose label { display:block; font-size:.875rem; font-weight:600; color:var(--ink); margin-bottom:.375rem; }
+  .compose textarea {
+    display:block; width:100%; min-height:4.5rem; resize:vertical;
+    font-family:var(--sans); font-size:.875rem; line-height:1.5; color:var(--ink);
+    background:var(--card); border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
+  }
+  .compose textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .compose .row { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.5rem; }
+  .compose-error { font-size:.8125rem; color:var(--clay); margin:.375rem 0 0; }
+
+  .notes { list-style:none; margin:var(--s4) 0 0; padding:0; display:grid; gap:.5rem; }
+  .note {
+    display:flex; gap:.625rem; align-items:flex-start;
+    background:var(--card); border:1px solid var(--rule); border-radius:4px; padding:.5rem;
+  }
+  .note img, .note .nothumb {
+    width:45px; aspect-ratio:9/16; object-fit:cover; border-radius:2px; flex:none; background:var(--card-sunk);
+  }
+  .note .nothumb { display:flex; align-items:center; justify-content:center; font-size:.625rem; color:var(--ink-quiet); text-align:center; }
+  .note .body { flex:1; min-width:0; }
+  .when {
+    font-family:var(--mono); font-size:.6875rem; font-weight:600; color:var(--accent);
+    background:none; border:none; padding:0; cursor:pointer;
+    text-decoration:underline; text-underline-offset:2px;
+  }
+  .when.whole { text-decoration:none; cursor:default; color:var(--ink-quiet); }
+  .note .text { font-size:.875rem; color:var(--ink); margin-top:.125rem; overflow-wrap:anywhere; }
+  .remove {
+    background:none; border:none; color:var(--ink-quiet); font-size:1.125rem;
+    line-height:1; padding:.125rem .375rem; cursor:pointer;
+  }
+  .remove:hover { color:var(--clay); }
+
+  .send {
+    display:flex; flex-wrap:wrap; gap:.75rem; align-items:center;
+    margin-top:var(--s3); padding-top:var(--s3); border-top:1px solid var(--rule);
+  }
+  .action-note { font-size:.8125rem; color:var(--ink-quiet); }
+  .action-note.bad { color:var(--clay); }
+
+  .toast {
+    position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
+    background:var(--panel); color:var(--cream-text); font-size:.875rem;
+    padding:.5rem 1.125rem; border-radius:999px; box-shadow:0 4px 18px #0000003d;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <a class="site-brand" href="./">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+    <span>
+      <span class="name">Trilith marketing tool</span><br>
+      <span class="who">aikogroup.io — internal</span>
+    </span>
+  </a>
+
+  <nav class="site-nav" aria-label="Sections">
+    <span class="nav-group">
+      <span class="nav-group-label">Intelligence</span>
+      <a class="nav-link" href="./briefing.html">Competitors</a>
+      <a class="nav-link" href="./creators.html">Creators</a>
+    </span>
+    <span class="nav-group">
+      <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./">Plan</a>
+      <a class="nav-link" href="./edit.html" aria-current="page">Edit</a>
+      <a class="nav-link" href="./output.html">Output</a>
+    </span>
+    <button class="theme-toggle" id="theme-toggle" type="button"
+            aria-label="Toggle light and dark theme" aria-pressed="false">
+      <span data-theme-label>Dark</span>
+    </button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Production</p>
+  <h2>Edit</h2>
+  <p class="lede">Pick a video, go to the frame you want changed and leave a note. Send your notes together as one edit.</p>
+
+  <p class="state" id="state" role="status">Loading videos…</p>
+
+  <div class="empty" id="empty" hidden>
+    <h3>Nothing to edit right now</h3>
+    <p>Videos in Ready to review show up here. Once one is finished, you can step through it and leave notes on any frame.</p>
+    <a class="btn" href="./output.html">Go to Output</a>
+  </div>
+
+  <div class="editor" id="editor" hidden>
+    <aside class="picker" aria-label="Videos in Ready to review">
+      <p class="label">Ready to review</p>
+      <ul id="picker"></ul>
+    </aside>
+
+    <section class="stage" aria-label="Video">
+      <div class="player"><video id="video" playsinline preload="auto"></video></div>
+      <input class="scrub" id="scrub" type="range" min="0" max="0" step="0.0333" value="0" aria-label="Position in the video">
+      <div class="controls">
+        <button class="ctl play" id="play" type="button">Play</button>
+        <button class="ctl" type="button" data-step="-30" aria-label="Back one second">−1s</button>
+        <button class="ctl" type="button" data-step="-1" aria-label="Back one frame">−1 frame</button>
+        <button class="ctl" type="button" data-step="1" aria-label="Forward one frame">+1 frame</button>
+        <button class="ctl" type="button" data-step="30" aria-label="Forward one second">+1s</button>
+      </div>
+      <p class="timecode" id="timecode" aria-live="off"></p>
+      <p class="hint">← → one frame · Shift for one second · Space plays</p>
+    </section>
+
+    <section class="panel" aria-label="Notes">
+      <h3 class="title" id="title"></h3>
+      <p class="status" id="status" role="status" hidden></p>
+
+      <div class="compose" id="compose">
+        <label for="note-text">What should change?</label>
+        <textarea id="note-text" maxlength="400"
+                  placeholder="e.g. Make this headline bigger, or use a photo of a house here"></textarea>
+        <div class="row">
+          <button class="btn" id="add-frame" type="button">Add note at this frame</button>
+          <button class="btn secondary" id="add-whole" type="button">Note for the whole video</button>
+        </div>
+        <p class="compose-error" id="compose-error" role="alert" hidden></p>
+      </div>
+
+      <ol class="notes" id="notes"></ol>
+
+      <div class="send" id="send-row">
+        <button class="btn" id="send" type="button" disabled>Send edit</button>
+        <span class="action-note" id="send-note" role="status"></span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* Same Worker as the Plan and Output pages. /videos lists finished videos;
+   this page keeps the ones still in Ready to review. /videos/edit takes the
+   notes and starts the edit. */
+const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
+const FPS = 30;
+const MAX_NOTES = 8;
+const DRAFT_KEY = 'trilith-edit-drafts';
+const POLL_MS = 30000;
+
+const $ = (id) => document.getElementById(id);
+const stateEl = $('state');
+const emptyEl = $('empty');
+const editorEl = $('editor');
+const pickerEl = $('picker');
+const video = $('video');
+const scrub = $('scrub');
+const timecodeEl = $('timecode');
+const playBtn = $('play');
+const titleEl = $('title');
+const statusEl = $('status');
+const composeEl = $('compose');
+const noteText = $('note-text');
+const addFrameBtn = $('add-frame');
+const addWholeBtn = $('add-whole');
+const composeError = $('compose-error');
+const notesEl = $('notes');
+const sendRow = $('send-row');
+const sendBtn = $('send');
+const sendNote = $('send-note');
+const toastEl = $('toast');
+
+let videos = [];     /* Ready to review, newest first */
+let current = null;  /* the video on screen */
+/* Notes not sent yet, by video id. Kept in the browser so a reload or a
+   wander to another tab doesn't lose them. */
+let drafts = loadDrafts();
+
+const slotOf = (v) => v.session_id + '#' + v.slot;
+const editing = (v) => Boolean(v && v.last_edit && v.last_edit.in_progress);
+const frameAt = (t) => Math.max(0, Math.round(t * FPS));
+const draftFor = (v) => (v && drafts[v.id]) || [];
+
+/* 0:42.13 — minutes, seconds and the frame within that second. */
+function timecode(t) {
+  const f = frameAt(t);
+  const s = Math.floor(f / FPS);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + '.' + String(f % FPS).padStart(2, '0');
+}
+function clock(t) {
+  const s = Math.floor(t);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function loadDrafts() {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}') || {}; }
+  catch { return {}; }
+}
+function saveDrafts() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts)); }
+  catch { /* full or private mode: the notes just won't survive a reload */ }
+}
+
+async function fetchVideos() {
+  const res = await fetch(WORKER_URL + '/videos', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  if (!res.ok) throw new Error('status ' + res.status);
+  const data = await res.json();
+  return (Array.isArray(data.videos) ? data.videos : []).filter((v) => !v.review_status);
+}
+
+async function load() {
+  try {
+    videos = await fetchVideos();
+  } catch (err) {
+    console.error('videos failed to load:', err);
+    stateEl.textContent = 'Couldn’t load the videos. Try refreshing the page.';
+    return;
+  }
+  stateEl.hidden = true;
+  if (!videos.length) { showEmpty(); return; }
+  const wanted = new URLSearchParams(location.search).get('video');
+  editorEl.hidden = false;
+  select(videos.find((v) => v.id === wanted) || videos[0]);
+  schedulePoll();
+}
+
+function showEmpty() {
+  current = null;
+  editorEl.hidden = true;
+  emptyEl.hidden = false;
+  video.removeAttribute('src');
+  video.load();
+}
+
+/* --- which video ------------------------------------------------------- */
+
+function renderPicker() {
+  pickerEl.textContent = '';
+  videos.forEach((v) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pick';
+    b.setAttribute('aria-current', String(Boolean(current && current.id === v.id)));
+
+    const thumb = document.createElement('video');
+    thumb.src = v.url + '#t=1';
+    thumb.preload = 'metadata';
+    thumb.muted = true;
+    thumb.playsInline = true;
+    thumb.setAttribute('aria-hidden', 'true');
+
+    const body = document.createElement('span');
+    const t = document.createElement('span');
+    t.className = 't';
+    t.textContent = v.topic || 'Untitled';
+    const m = document.createElement('span');
+    m.className = 'm';
+    const n = draftFor(v).length;
+    m.textContent = editing(v) ? 'Editing…'
+      : n ? n + (n === 1 ? ' note' : ' notes') + ' not sent'
+      : clock(v.duration || 0);
+    body.append(t, m);
+
+    b.append(thumb, body);
+    b.addEventListener('click', () => select(v));
+    li.append(b);
+    pickerEl.append(li);
+  });
+}
+
+function select(v) {
+  current = v;
+  history.replaceState(null, '', '?video=' + encodeURIComponent(v.id));
+  if (video.dataset.id !== v.id) {
+    /* Anonymous CORS so a frame can be drawn for a note's thumbnail; the
+       storage bucket allows it. */
+    video.crossOrigin = 'anonymous';
+    video.src = v.url;
+    video.dataset.id = v.id;
+    scrub.value = 0;
+  }
+  titleEl.textContent = v.topic || 'Untitled';
+  composeError.hidden = true;
+  renderPicker();
+  renderPanel();
+  updateTime();
+}
+
+/* --- the player -------------------------------------------------------- */
+
+function lastFrame() {
+  return Number.isFinite(video.duration) ? Math.max(frameAt(video.duration) - 1, 0) : 0;
+}
+
+/* Land on a whole frame. The small nudge keeps the browser from showing the
+   frame before it when the time falls exactly on the boundary. */
+function seek(t) {
+  const f = Math.min(Math.max(frameAt(t), 0), lastFrame());
+  video.currentTime = f / FPS + 0.001;
+}
+function step(frames) {
+  video.pause();
+  seek(video.currentTime + frames / FPS);
+}
+function togglePlay() {
+  if (video.paused) video.play().catch(() => {});
+  else video.pause();
+}
+
+function updateTime() {
+  const t = video.currentTime || 0;
+  const total = Number.isFinite(video.duration) ? video.duration : 0;
+  timecodeEl.textContent = timecode(t) + ' · frame ' + frameAt(t) + (total ? ' of ' + lastFrame() : '');
+  if (document.activeElement !== scrub) scrub.value = t;
+  addFrameBtn.textContent = 'Add note at ' + timecode(t);
+}
+
+let ticking = false;
+function tick() {
+  updateTime();
+  if (!video.paused) requestAnimationFrame(tick);
+  else ticking = false;
+}
+
+video.addEventListener('loadedmetadata', () => {
+  scrub.max = video.duration;
+  scrub.step = 1 / FPS;
+  updateTime();
+});
+video.addEventListener('seeked', updateTime);
+video.addEventListener('timeupdate', updateTime);
+video.addEventListener('play', () => {
+  playBtn.textContent = 'Pause';
+  if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+});
+video.addEventListener('pause', () => { playBtn.textContent = 'Play'; updateTime(); });
+video.addEventListener('click', togglePlay);
+
+playBtn.addEventListener('click', togglePlay);
+document.querySelectorAll('.ctl[data-step]').forEach((b) => {
+  b.addEventListener('click', () => step(Number(b.dataset.step)));
+});
+scrub.addEventListener('input', () => {
+  video.pause();
+  seek(Number(scrub.value));
+});
+
+/* Arrow keys step, Shift makes it a second, Space plays — except while
+   typing a note. */
+document.addEventListener('keydown', (e) => {
+  if (!current || editorEl.hidden) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'textarea' || (tag === 'input' && e.target !== scrub)) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    step((e.key === 'ArrowLeft' ? -1 : 1) * (e.shiftKey ? FPS : 1));
+  } else if (e.key === ' ' && tag !== 'button') {
+    e.preventDefault();
+    togglePlay();
+  }
+});
+
+/* --- the notes --------------------------------------------------------- */
+
+function renderPanel() {
+  const v = current;
+  const last = v.last_edit;
+  const busy = editing(v);
+
+  statusEl.hidden = true;
+  statusEl.className = 'status';
+  if (busy) {
+    statusEl.hidden = false;
+    statusEl.textContent = 'Editing now:\n' + last.instruction
+      + '\n\nThe new version will show up here, and in Output under Ready to review, when it’s done.';
+  } else if (last && last.status === 'failed') {
+    statusEl.hidden = false;
+    statusEl.className = 'status bad';
+    statusEl.textContent = 'The last edit didn’t work' + (last.error ? ': ' + last.error : '') + '. You can send your notes again.';
+  }
+
+  composeEl.hidden = busy;
+  sendRow.hidden = busy;
+  renderNotes();
+}
+
+function renderNotes() {
+  const list = draftFor(current);
+  const busy = editing(current);
+  notesEl.textContent = '';
+
+  list.forEach((n, i) => {
+    const li = document.createElement('li');
+    li.className = 'note';
+
+    if (n.thumb) {
+      const img = document.createElement('img');
+      img.src = n.thumb;
+      img.alt = '';
+      li.append(img);
+    } else {
+      const ph = document.createElement('span');
+      ph.className = 'nothumb';
+      ph.textContent = n.at == null ? 'Whole' : '';
+      li.append(ph);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'body';
+    if (n.at == null) {
+      const when = document.createElement('span');
+      when.className = 'when whole';
+      when.textContent = 'Whole video';
+      body.append(when);
+    } else {
+      const when = document.createElement('button');
+      when.type = 'button';
+      when.className = 'when';
+      when.textContent = timecode(n.at) + ' · frame ' + frameAt(n.at);
+      when.setAttribute('aria-label', 'Go to ' + timecode(n.at));
+      when.addEventListener('click', () => { video.pause(); seek(n.at); });
+      body.append(when);
+    }
+    const text = document.createElement('div');
+    text.className = 'text';
+    text.textContent = n.note;
+    body.append(text);
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'remove';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', 'Remove note ' + (i + 1));
+    remove.hidden = busy;
+    remove.addEventListener('click', () => {
+      list.splice(i, 1);
+      if (!list.length) delete drafts[current.id];
+      saveDrafts();
+      renderNotes();
+      renderPicker();
+    });
+
+    li.append(body, remove);
+    notesEl.append(li);
+  });
+
+  const n = list.length;
+  sendBtn.disabled = n === 0;
+  sendBtn.textContent = n > 1 ? 'Send ' + n + ' notes as one edit' : 'Send edit';
+  addFrameBtn.disabled = addWholeBtn.disabled = n >= MAX_NOTES;
+  sendNote.className = 'action-note';
+  sendNote.textContent = n >= MAX_NOTES ? 'That’s the most notes one edit can carry.'
+    : !n ? 'Add notes, then send them together.'
+    : current.has_source ? 'Only what your notes ask for will change.'
+    : 'This video was made before edits were possible, so it will be re-made with your notes.';
+}
+
+/* A small picture of the frame, for the note. If the browser won't allow it,
+   the note still keeps its time. */
+function grabThumb() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 90;
+    c.height = 160;
+    c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.7);
+  } catch {
+    return null;
+  }
+}
+
+function addNote(atFrame) {
+  if (!current || editing(current)) return;
+  const text = noteText.value.trim();
+  if (text.length < 3) {
+    composeError.textContent = 'Say what should change.';
+    composeError.hidden = false;
+    noteText.focus();
+    return;
+  }
+  composeError.hidden = true;
+  const list = drafts[current.id] || (drafts[current.id] = []);
+  if (list.length >= MAX_NOTES) return;
+
+  const note = { note: text, at: null, thumb: null };
+  if (atFrame) {
+    video.pause();
+    const f = Math.min(frameAt(video.currentTime), lastFrame());
+    note.at = Math.round((f / FPS) * 100) / 100;
+    note.thumb = grabThumb();
+  }
+  list.push(note);
+  /* In the order they happen in the video, whole-video notes last. */
+  list.sort((a, b) => (a.at == null ? Infinity : a.at) - (b.at == null ? Infinity : b.at));
+  noteText.value = '';
+  saveDrafts();
+  renderNotes();
+  renderPicker();
+}
+
+addFrameBtn.addEventListener('click', () => addNote(true));
+addWholeBtn.addEventListener('click', () => addNote(false));
+
+sendBtn.addEventListener('click', async () => {
+  const v = current;
+  const list = draftFor(v);
+  if (!list.length) return;
+
+  sendBtn.disabled = true;
+  sendNote.className = 'action-note';
+  sendNote.textContent = 'Starting the edit…';
+
+  let res = null;
+  let body = {};
+  try {
+    res = await fetch(WORKER_URL + '/videos/edit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: v.id, notes: list.map((n) => ({ at: n.at, note: n.note })) }),
+    });
+    body = await res.json().catch(() => ({}));
+  } catch { res = null; }
+
+  if (!res || !res.ok) {
+    sendBtn.disabled = false;
+    sendNote.className = 'action-note bad';
+    sendNote.textContent = res ? (body.error || 'Couldn’t start the edit (' + res.status + ').')
+      : 'Couldn’t reach the server. Try again.';
+    return;
+  }
+
+  v.last_edit = {
+    status: 'queued',
+    in_progress: true,
+    instruction: list.map((n) => (n.at == null ? 'Whole video: ' : 'At ' + clock(n.at) + ': ') + n.note).join('\n'),
+  };
+  delete drafts[v.id];
+  saveDrafts();
+  renderPicker();
+  renderPanel();
+  toast('Edit started');
+  schedulePoll();
+});
+
+/* --- while an edit runs ------------------------------------------------ */
+
+/* Check back every 30 seconds while anything is editing. A finished edit is a
+   new version with a new id, so the page follows the video's slot, not its id. */
+let pollTimer = null;
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  if (!videos.some(editing)) return;
+  pollTimer = setTimeout(async () => { await refresh(); schedulePoll(); }, POLL_MS);
+}
+
+async function refresh() {
+  let next;
+  try { next = await fetchVideos(); } catch { return; }
+  if (JSON.stringify(next) === JSON.stringify(videos)) return;
+
+  const was = current;
+  const wasEditing = editing(was);
+  videos = next;
+  if (!videos.length) { showEmpty(); return; }
+
+  const same = was && (videos.find((v) => v.id === was.id) || videos.find((v) => slotOf(v) === slotOf(was)));
+  if (same && same.id !== was.id) toast('The edited version is ready');
+  else if (same && wasEditing && !editing(same) && same.last_edit && same.last_edit.status === 'failed') {
+    toast('The edit didn’t work. See why above the notes.');
+  }
+  select(same || videos[0]);
+}
+
+let toastTimer;
+function toast(message) {
+  toastEl.textContent = message;
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2600);
+}
+
+load();
+
+if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
+</script>
+</body>
+</html>

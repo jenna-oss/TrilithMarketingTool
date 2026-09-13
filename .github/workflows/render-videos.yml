@@ -100,14 +100,29 @@ jobs:
             const edit = await call('kb_video_edit_start', { p_edit_id: editId, p_run_url: process.env.RUN_URL });
             const s = edit.plan_slot || {};
             const topic = text(edit.topic);
+            /* Notes from the Edit tab, most pinned to a moment of the video.
+             * Each pinned one gets a frame grab, cut in the next step and named
+             * in its line, so the agent can look at what the reviewer saw. */
+            const notes = Array.isArray(edit.notes) ? edit.notes : [];
+            const clock = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+            const frameDir = `${process.env.GITHUB_WORKSPACE}/video/remotion/.edit/frames`;
+            const frames = notes
+              .map((n, i) => (n.at == null ? null : { file: `note-${i + 1}.jpg`, at: Number(n.at) }))
+              .filter(Boolean);
+            const instruction = notes.length
+              ? notes.map((n, i) => (n.at == null
+                  ? `${i + 1}. Whole video: ${n.note}`
+                  : `${i + 1}. At ${clock(n.at)} (frame ${Math.round(n.at * 30)}; frame grab: ${frameDir}/note-${i + 1}.jpg): ${n.note}`)).join('\n')
+              : text(edit.instruction);
             const include = [{
               slot: edit.slot,
               name: nameOf(topic),
               topic,
               edit_id: edit.edit_id,
               edit_of: edit.render_id,
-              instruction: edit.instruction,
+              instruction,
               has_source: Boolean(edit.source_path),
+              has_frames: frames.length > 0,
               /* Only used when there is no source to edit: the pipeline then
                * re-makes the video from its brief, with the change added. */
               brief: JSON.stringify({
@@ -119,7 +134,7 @@ jobs:
                 product: text(s.product),
                 audience: text(s.audience),
                 source_ids: (s.source_ids || []).filter((x) => typeof x === 'string' && x.trim()),
-                revision: text(edit.instruction),
+                revision: instruction,
               }),
             }];
             console.log(`matrix=${JSON.stringify({ include })}`);
@@ -127,6 +142,9 @@ jobs:
             console.log('count=1');
             console.log(`has_source=${Boolean(edit.source_path)}`);
             console.log(`source_path=${edit.source_path || ''}`);
+            console.log(`has_frames=${frames.length > 0}`);
+            console.log(`frames=${JSON.stringify(frames)}`);
+            console.log(`video_path=${edit.storage_path || ''}`);
             process.exit(0);
           }
 
@@ -177,6 +195,9 @@ jobs:
           console.log(`count=${include.length}`);
           console.log('has_source=false');
           console.log('source_path=');
+          console.log('has_frames=false');
+          console.log('frames=[]');
+          console.log('video_path=');
           EOF
 
       # The source of the video being edited, fetched here because this job
@@ -202,6 +223,42 @@ jobs:
           name: edit-source
           path: edit-source/
           retention-days: 3
+
+      # The moments the reviewer's notes point at, cut from the stored video as
+      # images, so the agent sees exactly the frame a note is about. A frame
+      # that can't be cut costs that picture, not the edit: the note's text
+      # still says where to look.
+      - name: Grab the frames the notes point at
+        if: ${{ steps.build.outputs.has_frames == 'true' }}
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VIDEO_PATH: ${{ steps.build.outputs.video_path }}
+          FRAMES: ${{ steps.build.outputs.frames }}
+        run: |
+          set -uo pipefail
+          command -v ffmpeg >/dev/null || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
+          mkdir -p edit-frames
+          curl -sS --fail-with-body "${SUPABASE_URL%/}/storage/v1/object/videos/$VIDEO_PATH" \
+            -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -o /tmp/video.mp4
+          printf '%s' "$FRAMES" | jq -c '.[]' | while read -r f; do
+            file=$(printf '%s' "$f" | jq -r .file)
+            at=$(printf '%s' "$f" | jq -r .at)
+            ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$at" -i /tmp/video.mp4 \
+              -frames:v 1 -q:v 3 -vf scale=720:-2 "edit-frames/$file" \
+              || echo "::warning::Could not cut the frame at ${at}s."
+          done
+          ls -la edit-frames/
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ steps.build.outputs.has_frames == 'true' }}
+        with:
+          name: edit-frames
+          path: edit-frames/
+          retention-days: 3
+          if-no-files-found: ignore
 
       # A plan that fails after claiming an edit would leave the Output page
       # showing it as editing until it went stale. Say it failed instead.
@@ -276,6 +333,15 @@ jobs:
         run: |
           tar -xzf /tmp/edit-source/source.tar.gz -C video/remotion
           cat video/remotion/.edit/manifest.json
+
+      # The frames the notes point at, where the notes say they are. After the
+      # source, because the source unpacks its own .edit folder.
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.has_frames }}
+        continue-on-error: true
+        with:
+          name: edit-frames
+          path: video/remotion/.edit/frames
 
       - name: Render video ${{ matrix.slot }} — ${{ matrix.name }}
         env:

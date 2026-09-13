@@ -151,10 +151,11 @@ export default {
       }
     }
 
-    /* A typed change to a finished video. Queued in Supabase, then started in
-     * GitHub Actions straight away. Open by the user's choice (no token), so
-     * the limits live in kb_video_request_edit: 3 to 600 characters, one edit
-     * at a time per video, ten a day. */
+    /* Notes from the Edit tab, sent together as one edit of a finished video.
+     * Queued in Supabase, then started in GitHub Actions straight away. Open
+     * by the user's choice (no token), so the limits live in
+     * kb_video_request_edit: up to 8 notes of 3 to 400 characters, videos in
+     * Ready to review only, one edit at a time per video, ten a day. */
     if (path === '/videos/edit') {
       if (!env.GITHUB_TOKEN) {
         return json({ error: 'Edits aren’t set up yet: the Worker needs its GitHub token.' }, 503, headers);
@@ -167,10 +168,21 @@ export default {
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
         return json({ error: 'id must be a video id' }, 400, headers);
       }
-      const instruction = String(body.instruction ?? '').trim();
+      /* Each note says what to change; `at` pins it to a moment (seconds), or
+       * is null for the whole video. The database checks the limits and turns
+       * the notes into the text the agent reads. */
+      const notes = Array.isArray(body.notes)
+        ? body.notes.slice(0, 8).map((n) => {
+            const at = n && n.at != null && n.at !== '' ? Number(n.at) : NaN;
+            return {
+              note: String((n && n.note) ?? '').trim().slice(0, 400),
+              at: Number.isFinite(at) ? Math.max(0, at) : null,
+            };
+          })
+        : [];
 
       let queued;
-      try { queued = await rpc(env, 'kb_video_request_edit', { p_render_id: id, p_instruction: instruction }); }
+      try { queued = await rpc(env, 'kb_video_request_edit', { p_render_id: id, p_notes: notes }); }
       catch { return json({ error: 'Couldn’t queue the edit. Try again.' }, 502, headers); }
       if (!queued || !queued.ok) {
         return json({ error: (queued && queued.error) || 'Couldn’t queue the edit.' }, 409, headers);

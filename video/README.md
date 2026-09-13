@@ -89,9 +89,13 @@ public.
 
 ## Editing a finished video
 
-On the Output page, open a video and type the change under "Request a change".
-The Worker queues it in `kb.video_edits` and starts `render-videos.yml` with
-`edit_id` set, so the run covers that one video.
+On the Edit tab (`edit.html`), pick a video from Ready to review, step to the
+frame you want changed and leave a note there. Notes can also be about the
+whole video. They are sent together as one edit. The Worker queues it in
+`kb.video_edits` and starts `render-videos.yml` with `edit_id` set, so the run
+covers that one video. The plan job cuts each pinned moment out of the stored
+video as an image (`.edit/frames/note-N.jpg`) and names it in the note, so the
+agent sees exactly what the reviewer was looking at.
 
 - **Its source was kept.** Every render packs its scenes, narration script,
   recorded narration, clips and captions with `pack-source.sh` into the
@@ -107,6 +111,7 @@ The Worker queues it in `kb.video_edits` and starts `render-videos.yml` with
 
 Either way the result is judged by `find-output.sh` like any render, and stored
 as a new version of the same slot. It replaces the card and lands in Ready to
-review. The request box is open, so the limits live in the database: 3 to 600
-characters, one edit at a time per video, ten a day. The edit agent gets no web,
+review. The Edit tab is open, so the limits live in the database: up to 8 notes of 3 to
+400 characters, videos in Ready to review only, one edit at a time per video,
+ten a day. The edit agent gets no web,
 Workflow or Agent tools.
