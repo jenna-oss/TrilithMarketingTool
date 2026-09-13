@@ -283,6 +283,23 @@ jobs:
               exit 1 ;;
           esac
 
+      # The Assembly stage runs the brand check and fixes what it finds before
+      # rendering. It runs again here so anything that slipped through shows
+      # as a warning on the run, next to the video it's about. It checks the
+      # brand's rules, never a scene's layout.
+      - name: Brand check
+        if: always()
+        run: |
+          files=$(find video/remotion/src -maxdepth 1 -name '*.tsx' ! -name 'Root.tsx' -newer /tmp/render-start 2>/dev/null || true)
+          if [ -z "$files" ]; then echo "No new video component to check."; exit 0; fi
+          for f in $files; do
+            if out=$(node video/remotion/brand-lint.mjs "$f"); then
+              echo "$out"
+            else
+              echo "$out" | grep -v '^$' | sed 's/^/::warning::/'
+            fi
+          done
+
       # always(): a failed render's log is the only way to learn why, and it is
       # exactly what you want when nobody watched it happen.
       - name: Collect output

@@ -25,6 +25,8 @@ video/remotion/_voiceover/
 video/remotion/_voiceover_*/
 video/remotion/public/*/
 !video/remotion/public/fonts/
+# The Buy Box logo, which every video's closing frame uses.
+!video/remotion/public/brand/
 video/.env
 # The per-run copy of the pipeline script with the locked brief written in.
 video/remotion/.run/

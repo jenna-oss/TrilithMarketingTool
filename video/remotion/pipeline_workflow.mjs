@@ -77,11 +77,7 @@ function briefBlock() {
   ].filter(Boolean).join('\n\n')
 }
 
-const COMPONENT_NAMES = [
-  'Card', 'GiantStat', 'BuildList', 'DocumentCard',
-  'BoldStatementFullBleed', 'TwinSplit', 'StepProcess',
-  'SignalPulseClose', 'OpeningFullBleed',
-]
+const BACKGROUNDS = ['black', 'white', 'concrete', 'footage']
 
 const RESEARCH_SCHEMA = {
   type: 'object',
@@ -128,11 +124,17 @@ const SCRIPT_SCHEMA = {
       maxItems: 13,
       items: {
         type: 'object',
-        required: ['order', 'line', 'estSeconds'],
+        required: ['order', 'line', 'estSeconds', 'emphasis'],
         properties: {
           order: { type: 'number' },
           line: { type: 'string', description: 'natural spoken line for this beat, short and punchy -- this is what gets narrated' },
           estSeconds: { type: 'number' },
+          emphasis: {
+            type: 'array',
+            maxItems: 2,
+            items: { type: 'string' },
+            description: 'one or two words copied exactly from this line that carry it -- the number, the key term, the verdict. They turn Site Orange in the captions.',
+          },
         },
       },
     },
@@ -164,12 +166,13 @@ const VISUAL_PLAN_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
-        required: ['order', 'component', 'sizeTier', 'description', 'needsAsset'],
+        required: ['order', 'idea', 'background', 'accent', 'needsAsset'],
         properties: {
           order: { type: 'number' },
-          component: { type: 'string', enum: COMPONENT_NAMES },
-          sizeTier: { type: 'string', enum: ['giant', 'large', 'medium'] },
-          description: { type: 'string', description: 'what content/graphic goes in this beat -- specific enough for the assembly step to build real props from it' },
+          idea: { type: 'string', description: 'this scene\'s own visual idea: what is on screen and how it moves, specific to this line -- specific enough for the assembly step to build it' },
+          background: { type: 'string', enum: BACKGROUNDS },
+          accent: { type: 'string', enum: ['orange', 'green', 'none'] },
+          accentOn: { type: 'string', description: 'the word or number the accent colour goes on' },
           needsAsset: { type: 'boolean' },
           assetSearchHint: { type: 'string', description: 'if needsAsset, 2-3 keyword phrases for a Pexels VIDEO search specific to this beat\'s line' },
         },
@@ -192,11 +195,12 @@ const ASSET_BEAT_SCHEMA = {
 
 const ASSEMBLY_SCHEMA = {
   type: 'object',
-  required: ['tsxPath', 'compositionId', 'initialRenderOk'],
+  required: ['tsxPath', 'compositionId', 'initialRenderOk', 'brandCheckPassed'],
   properties: {
     tsxPath: { type: 'string' },
     compositionId: { type: 'string' },
     initialRenderOk: { type: 'boolean' },
+    brandCheckPassed: { type: 'boolean', description: 'whether brand-lint.mjs printed "brand check passed" for the final file' },
     renderError: { type: 'string' },
     sceneDurationsSeconds: { type: 'array', items: { type: 'number' }, description: 'the placeholder durationInFrames values (in seconds) used per scene, in order -- Voiceover stage needs these to compute the real ones' },
   },
@@ -213,21 +217,39 @@ const VOICEOVER_SCHEMA = {
   },
 }
 
-function componentReferenceBlock() {
-  return `
-Reference material -- read these before writing anything, they are the actual conventions in use:
-- ${REMOTION_ROOT}/src/MayweatherVideo.tsx
-- ${REMOTION_ROOT}/src/JPMorganVideo.tsx
-- ${REMOTION_ROOT}/src/DSCRVideo.tsx
-- ${REMOTION_ROOT}/src/ConstructionVideo.tsx
-- ${REMOTION_ROOT}/src/components/Card.tsx, GiantStat.tsx, BuildList.tsx, DocumentCard.tsx, BounceText.tsx
-- ${REMOTION_ROOT}/src/tokens.ts (color palette), ${REMOTION_ROOT}/src/fonts.ts (Fraunces font loading)
-- ${REMOTION_ROOT}/src/Root.tsx (composition registry -- follow its exact pattern for TOTAL_S and <Composition>)
-Components not yet extracted into components/ (BoldStatementFullBleed, TwinSplit-style layouts, step-process visuals,
-the signal-pulse closer, opening full-bleed video/photo treatments) are currently defined locally inside each video's
-own .tsx file -- follow that same convention: define new bespoke full-bleed components inline in the new video file,
-copying the closest existing implementation (e.g. the signal-pulse closer from JPMorganVideo.tsx/DSCRVideo.tsx) rather
-than reinventing it.`
+// The Buy Box brand guide's look, for the stages that design scenes. Rules,
+// never layouts: there is no component library, so every scene is designed
+// from scratch and the videos keep their variety.
+const BRAND_LOOK = `THE LOOK: The Buy Box brand guide. Every value lives in ${REMOTION_ROOT}/src/brand.ts; import it, never hard-code it.
+- Surfaces: BLACK or WHITE, full-bleed; CONCRETE for panels on white; GRAPHITE for small labels and rules. Extremely
+  high contrast is the point.
+- Accents carry meaning. ORANGE (Site Orange) marks the one thing to look at in a scene: the problem, the cost, the
+  key word or number. GREEN (Pencil) marks the answer: fundable, the fix, "after". One accent colour per scene at
+  most, and green only for an answer.
+- Type: HEAD (Archivo, weight 800-900) for every headline and number; BODY (Inter, weight 500-700) for labels. Go
+  big: headlines at least MIN_HEADLINE (110px), key numbers 220-420px, nothing below MIN_TEXT (40px). At most six
+  words of headline on screen at once. Sentence case, ending in a period: declarative, like the voice.
+- The guide's headline box: a line of Archivo in a tight BLACK box with WHITE text, the key line in an ORANGE box,
+  one box per line, stacked. Use it where a statement should hit, especially over footage.
+- Shapes: square corners, thick solid bars, flat colour. No gradients, shadows, rounded corners, cream or navy.
+- Safe zone: scene text and faces stay inside SAFE and above SCENE_BOTTOM (brand.ts); the band below that is where
+  the captions sit.
+- Motion: quick and sure. Boxes and lines slide in on a short stagger, numbers count up, things stop hard. No
+  wobble, bounce or flash.`
+
+const VARIETY = `VARIETY: there is no component library. Design every scene from scratch for its own line, and make them
+differ: composition (a number filling the frame, a left-aligned stack, a split screen, a list that builds, a simple
+diagram, one word alone), scale, alignment and motion should all change from scene to scene. Don't repeat a layout
+within the video, and don't copy one from this account's older videos.`
+
+function mechanicsBlock() {
+  return `Remotion mechanics -- read these for how things are wired, not for how they look (their look predates the brand):
+- ${REMOTION_ROOT}/src/DSCRVideo.tsx: TransitionSeries, the s() helper, SWIPE, OffthreadVideo for footage
+- ${REMOTION_ROOT}/src/Root.tsx: the composition registry -- follow its exact pattern for TOTAL_S and <Composition>
+- ${REMOTION_ROOT}/src/brand.ts: colours, fonts, logo, safe zone and size floors -- the only source for any of them
+- ${REMOTION_ROOT}/src/Captions.tsx: the caption overlay every video carries
+Don't import ./tokens, ./fonts or anything in ./components: they are the old look. Write the scene components
+inline in the new video file.`
 }
 
 phase('Research')
@@ -349,6 +371,9 @@ estSeconds guess. The script should read as one connected story, not isolated fa
 ${PROJECT_ROOT}/data/script_*.json show this account's beat length and pacing; use them for that only,
 because their tone predates the brand guide and the brand voice above wins.
 
+For each beat, give emphasis: the one or two words from that line a viewer should catch -- the number,
+the key term, the verdict -- copied exactly as they appear in the line. They turn orange in the captions.
+
 The last beat asks the viewer to follow The Buy Box, in the brand voice: one short line, tied to what the
 video just taught, with no hype (e.g. "Follow The Buy Box for the math on the next deal.").${draft ? `
 
@@ -425,6 +450,17 @@ function voiceIssues(s, from) {
   return out.length ? out.join('\n') : null
 }
 
+// Emphasis words have to be in their line, or the captions have nothing to
+// turn orange. Anything the writer invented is dropped here, not argued with.
+function cleanEmphasis(s) {
+  for (const b of s.beats) {
+    const line = String(b.line).toLowerCase()
+    b.emphasis = [...new Set((Array.isArray(b.emphasis) ? b.emphasis : [])
+      .map(e => String(e).trim())
+      .filter(e => e && line.includes(e.toLowerCase())))].slice(0, 2)
+  }
+}
+
 const combine = (...parts) => parts.filter(Boolean).join('\n') || null
 const skipLocked = BRIEF.hook ? 1 : 0
 const lockedLineFlags = BRIEF.hook ? lintLine(BRIEF.hook) : []
@@ -453,8 +489,10 @@ if (stillFlagged) {
 } else {
   log('Script check passed first time')
 }
+cleanEmphasis(script)
+const emphasisWords = [...new Set(script.beats.flatMap(b => b.emphasis))]
 log(`Takeaway: "${script.takeaway}" | the listener learned: "${review.whatILearned}"`)
-log(`Hook: [${script.hookCategory}] "${script.filledHook}"`)
+log(`Hook: [${script.hookCategory}] "${script.filledHook}" | caption emphasis: ${emphasisWords.join(', ') || '(none)'}`)
 
 function lockOpeningLine(s, hook) {
   const norm = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
@@ -479,45 +517,63 @@ let visualPlan = null
 for (let attempt = 0; attempt < 3; attempt++) {
   const feedback = visualPlan ? planViolations(visualPlan) : null
   const candidate = await agent(
-    `${componentReferenceBlock()}
+    `Plan the look of a short vertical (1080x1920) video, one scene per beat of the script below.
 
-Map each beat below to ONE component from this exact list: ${COMPONENT_NAMES.join(', ')}.
-Also assign a sizeTier for that beat's dominant text element: "giant" (140px+), "large" (95-140px), or "medium" (60-95px).
+${BRAND_LOOK}
 
-HARD RULES (a plan violating these will be rejected and you'll be asked again):
-1. No two consecutive beats use the same component.
-2. No two consecutive beats use the same sizeTier.
-3. Across the whole plan, use at least 3 different components and all 3 size tiers at least once.
+${VARIETY}
 
-For each beat also decide needsAsset (true if this beat should show a real photo/video rather than a
-pure graphic/text treatment) and, if true, assetSearchHint: 2-3 keyword phrases for a Pexels VIDEO search
-specific to THIS beat's line (not a generic topic keyword). Aim for roughly a third of beats needing an
-asset -- not every beat, and not zero.
+For each beat give:
+- idea: this scene's own visual idea -- what is on screen and how it moves, specific to its line (e.g. "0.83
+  fills the frame in Archivo, an orange bar wipes in under it, 'rent divided by the payment' types in below").
+- background: black, white, concrete, or footage (a real video clip behind the text).
+- accent: orange for the one thing to look at, green only when the beat is the answer or the fix, or none;
+  accentOn: the word or number it goes on.
+- needsAsset, and if true assetSearchHint: 2-3 keyword phrases for a Pexels VIDEO search specific to THIS
+  beat's line (not a generic topic keyword).
 
-The viewer may be brand new to real estate investing. Where a beat explains a term, its description puts
-the term and its plain meaning on screen together, and every number shown gets a plain label.
+HARD RULES (a plan that breaks these is rejected and you'll be asked again):
+1. No two beats in a row share a background.
+2. background is "footage" exactly when needsAsset is true. Aim for two or three footage beats: not zero, not
+   most of them.
+3. The last beat is the closing frame (the logo, the takeaway, "Follow @thebuyboxre"); its background is black
+   or white.
+4. At least one beat uses orange.
+5. One entry per beat, in order.
 
-Beats:
-${script.beats.map(b => `${b.order}. (${b.estSeconds}s) ${b.line}`).join('\n')}
-${feedback ? `\nYour previous attempt violated these rules, fix them: ${feedback}` : ''}`,
+The viewer may be brand new to real estate investing. Where a beat explains a term, its idea puts the term and
+its plain meaning on screen together, and every number shown gets a plain label.
+
+Beats (with the words the captions will turn orange):
+${script.beats.map(b => `${b.order}. (${b.estSeconds}s) ${b.line}${b.emphasis.length ? `  [emphasis: ${b.emphasis.join(', ')}]` : ''}`).join('\n')}
+${feedback ? `\nYour previous attempt broke these rules, fix them: ${feedback}` : ''}`,
     { schema: VISUAL_PLAN_SCHEMA, label: `visual-plan-attempt-${attempt}` }
   )
   const violations = planViolations(candidate)
   if (!violations) { visualPlan = candidate; break }
   visualPlan = candidate
-  log(`Visual plan attempt ${attempt + 1} had violations, retrying: ${violations}`)
+  log(`Visual plan attempt ${attempt + 1} broke the rules, retrying: ${violations}`)
 }
 
 function planViolations(plan) {
   const problems = []
-  for (let i = 1; i < plan.beats.length; i++) {
-    if (plan.beats[i].component === plan.beats[i - 1].component) {
-      problems.push(`beats ${plan.beats[i - 1].order}-${plan.beats[i].order} repeat component "${plan.beats[i].component}"`)
-    }
-    if (plan.beats[i].sizeTier === plan.beats[i - 1].sizeTier) {
-      problems.push(`beats ${plan.beats[i - 1].order}-${plan.beats[i].order} repeat sizeTier "${plan.beats[i].sizeTier}"`)
+  const beats = plan.beats || []
+  for (let i = 1; i < beats.length; i++) {
+    if (beats[i].background === beats[i - 1].background) {
+      problems.push(`beats ${beats[i - 1].order}-${beats[i].order} share the background "${beats[i].background}"`)
     }
   }
+  for (const b of beats) {
+    if ((b.background === 'footage') !== Boolean(b.needsAsset)) {
+      problems.push(`beat ${b.order}: background "footage" and needsAsset have to go together`)
+    }
+  }
+  const last = beats[beats.length - 1]
+  if (last && !['black', 'white'].includes(last.background)) {
+    problems.push(`beat ${last.order} is the closing frame, so its background must be black or white`)
+  }
+  if (beats.length && !beats.some(b => b.accent === 'orange')) problems.push('no beat uses orange; at least one scene needs it')
+  if (beats.length !== script.beats.length) problems.push(`the plan has ${beats.length} entries for ${script.beats.length} beats`)
   return problems.length ? problems.join('; ') : null
 }
 
@@ -565,64 +621,67 @@ log(`${approvedCount}/${flagged.length} asset beats approved; the rest fall back
 phase('Assembly')
 const PascalName = research.slug.split('-').map(s => s[0].toUpperCase() + s.slice(1)).join('') + 'Video'
 const assembly = await agent(
-  `${componentReferenceBlock()}
+  `${mechanicsBlock()}
 
 Write a new Remotion composition file at ${REMOTION_ROOT}/src/${PascalName}.tsx for the topic
 "${research.workingTitle}" (slug: ${research.slug}).
 
-Script (beat order, line, estimated seconds -- use estSeconds as the initial durationInFrames guess,
-these WILL be corrected in the Voiceover stage, so don't agonize over exact timing now):
+Script (beat order, line, estimated seconds, caption emphasis -- use estSeconds as the initial durationInFrames
+guess; these WILL be corrected in the Voiceover stage, so don't agonize over exact timing now):
 ${JSON.stringify(script.beats, null, 2)}
 
-Visual plan (component + size tier + description per beat):
+Visual plan (each scene's idea, background and accent):
 ${JSON.stringify(visualPlan.beats, null, 2)}
 
-Approved assets (beatOrder -> local file path + crop mode; beats not listed here got no asset and should
-use a pure graphic/text treatment per the visual plan's description instead):
+Approved assets (beatOrder -> local file path + crop mode). A footage beat whose asset is not listed here was
+not approved: design that scene on BLACK or WHITE instead.
 ${JSON.stringify(assetResults.filter(Boolean).filter(r => r.approved), null, 2)}
 
-For any beat with cropMode "contain-white": render that video/image contained (object-fit: contain) on the
-brand's cream background (t.BG) rather than force-cropping it, following the Card component's photo-inset
-convention -- do not invent a separate white; use the shared token.
+Footage plays full-bleed with <OffthreadVideo> for cropMode "cover", or contained (object-fit: contain) on BLACK
+or WHITE for "contain-white", with the scene's text over it in the guide's headline boxes.
 
-Brand and aesthetic direction -- this account's visual identity is cream + navy + brass (see tokens.ts:
-BG cream, INK navy, BAR_ACCENT brass), aiming for a SOPHISTICATED, editorial feel, not a loud/sporty one.
-Concretely: generous whitespace/padding, restrained motion (spring physics already in BounceText, don't
-add extra shake/flash effects unless the beat specifically calls for impact), thin brass hairlines rather
-than thick blocky bars, and text sizing that leans large and confident rather than merely "big" -- use the
-size tiers from the visual plan as real fontSize props: giant=170-200px, large=110-150px, medium=70-100px
-(pick specific values in range, vary them beat to beat within the tier too, don't reuse the exact same
-number every time).
+${BRAND_LOOK}
 
-CRITICAL -- overflow safety: giant/large sizes WILL overflow the 1080px-wide frame for anything but very
-short strings, and several of this codebase's text paths do NOT auto-wrap: any plain <div style={{fontSize}}>
-(not BounceText), and BounceText itself when centered with no maxWidth (Card's own header only gets a
-wrap-safe maxWidth when headerAlign="left" -- a centered Card header has none and WILL run off both edges
-at giant sizes if the string is more than ~10-12 characters). Before finalizing any fontSize on a specific
-string, sanity-check width yourself: roughly (character count) x (fontSize x 0.55) must stay under ~950px
-for a full-width element, or under the component's actual maxWidth/insetW for a constrained one. If a
-number or headline is long, either size it down, or wrap it (pass an explicit maxWidth to BounceText, or
-prefer headerAlign="left" on Card so its built-in maxWidth applies) rather than letting it run off-frame.
+${VARIETY}
 
-Plain labels: the viewer may be brand new to real estate investing. Every number or term on screen carries
-a short everyday label that matches what the narration calls it (e.g. "Rent: $4,500 a month"), never a
-bare acronym and never a label the narration does not use.
+CAPTIONS: wrap the TransitionSeries in an <AbsoluteFill> and put
+  <Captions slug="${research.slug}" emphasis={${JSON.stringify(emphasisWords)}} />
+after it, as the top layer (import { Captions } from "./Captions"). It shows the narration word by word, key words
+in orange, once the voiceover exists; before that it renders nothing. Don't draw running captions of your own:
+scene text is headlines and labels, not a transcript.
 
-Build the full <TransitionSeries> with varied transition types (slide/wipe/fade/flip/
-clockWipe in different directions, no two identical transitions back-to-back).
+CLOSING FRAME: the last scene carries the follow line. Design it fresh like every other scene, but it always shows
+the logo (<Img src={LOGO_WHITE} /> on BLACK, LOGO_BLACK on WHITE), the takeaway -- "${script.takeaway}" -- and the
+follow ask with HANDLE (@thebuyboxre).
+
+Overflow safety: Archivo at weight 900 runs about 0.62 x fontSize per character, so characters x fontSize x 0.62
+must fit SAFE_W (820px) or the element's own width. Wrap it (a maxWidth with normal wrapping) or size it down;
+never let text run off-frame.
+
+Plain labels: the viewer may be brand new to real estate investing. Every number or term on screen carries a short
+everyday label that matches what the narration calls it (e.g. "Rent: $4,500 a month"), never a bare acronym and
+never a label the narration does not use.
+
+Transitions: TransitionSeries with slide() and wipe() only, each SWIPE long (the voiceover timing assumes that
+overlap), directions varied, no two identical back to back.
 
 Register the new composition in ${REMOTION_ROOT}/src/Root.tsx following its exact existing pattern
 (a TOTAL_S constant summing scene seconds minus swipe overlaps, a new <Composition id="${PascalName.replace('Video','')}">).
 
+BRAND CHECK: before rendering, run
+  node ${REMOTION_ROOT}/brand-lint.mjs ${REMOTION_ROOT}/src/${PascalName}.tsx
+and fix everything it reports until it prints "brand check passed". It checks the rules above, never your layout.
+
 Then render it: cd ${REMOTION_ROOT} && npx remotion render src/index.ts ${PascalName.replace('Video', '')} out/${research.slug}.mp4
-Report the tsxPath, compositionId, whether the initial render succeeded, any render error text, and the
-list of scene durations in seconds you used (in beat order) -- Voiceover needs these as the starting point.`,
+Report the tsxPath, compositionId, whether the brand check passed, whether the initial render succeeded, any render
+error text, and the list of scene durations in seconds you used (in beat order) -- Voiceover needs these as the
+starting point.`,
   { schema: ASSEMBLY_SCHEMA, label: 'assembly' }
 )
 if (!assembly.initialRenderOk) {
   throw new Error(`Assembly render failed: ${assembly.renderError}`)
 }
-log(`Assembled and rendered ${assembly.compositionId} -> initial pass OK`)
+log(`Assembled and rendered ${assembly.compositionId} -> initial pass OK; brand check ${assembly.brandCheckPassed ? 'passed' : 'NOT passed'}`)
 
 phase('Voiceover')
 const voiceover = await agent(
@@ -647,6 +706,8 @@ ${script.beats.map(b => `- ${b.line}`).join('\n')}
 
 Steps:
 1. Fill in and run voiceover_${research.slug}.py to get the real per-scene durations (already speedup-adjusted).
+   It also writes ${REMOTION_ROOT}/public/${research.slug}/captions.json, the word timings the <Captions> overlay
+   reads; check that file exists before step 3, because the re-render is what puts the captions in.
 2. Apply those exact durations back into ${assembly.tsxPath} (each TransitionSeries.Sequence's s(...) call,
    in beat order) and the TOTAL_S constant in Root.tsx.
 3. Re-render: npx remotion render src/index.ts ${assembly.compositionId} out/${research.slug}.mp4
@@ -671,6 +732,7 @@ return {
     stillFlagged: stillFlagged || null,
     lockedLineFlags: lockedLineFlags.length ? lockedLineFlags : null,
   },
+  brandCheckPassed: Boolean(assembly.brandCheckPassed),
   finalVideoPath: voiceover.finalVideoPath,
   durationSeconds: voiceover.durationSeconds,
   approvedAssetCount: approvedCount,

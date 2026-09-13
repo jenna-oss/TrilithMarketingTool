@@ -267,21 +267,22 @@
   <h2><span class="num">03</span>Visual Plan</h2>
   <div class="stage-meta"><span class="pill agent">agent</span> <span class="pill">+ JS validation</span></div>
   <p>
-    Maps each beat to a component from the existing Remotion library
-    (<code>Card</code>, <code>GiantStat</code>, <code>BuildList</code>, <code>DocumentCard</code>,
-    a bold-statement full-bleed, a twin-split, a step-process visual, the signal-pulse closer,
-    an opening full-bleed). Hard rule enforced in code, not just prompted: <strong>no two
-    consecutive beats use the same component.</strong> Beats needing a real photo/video are
-    flagged for Stage 04.
+    Gives each beat <strong>its own visual idea</strong>: what is on screen and how it moves,
+    written for that line. There is no component library to pick from; scenes are designed from
+    scratch so the videos keep their variety. Each beat also gets a background (black, white,
+    concrete, or footage) and an accent: orange for the one thing to look at, green only for the
+    answer, or none. Beats needing a real video clip are flagged for Stage 04.
   </p>
   <div class="callout">
-    <span class="label">Large, varying text — enforced, not suggested</span>
-    Every beat also gets a text-size tier for its dominant text element —
-    <code>giant</code> (140px+), <code>large</code> (95–140px), or <code>medium</code> (60–95px) —
-    and the same no-repeat rule applies to this tier as to component choice: <strong>no two
-    consecutive beats share a size tier.</strong> This came out of repeated feedback across all
-    four hand-built videos ("make it a lot bigger") — baking it into the plan means every future
-    video starts oversized instead of needing a second pass to fix it.
+    <span class="label">The Buy Box rules: enforced, not suggested</span>
+    Checked in code, and the plan is sent back with the reasons if it fails any of these:
+    <ul>
+      <li>No two beats in a row share a background.</li>
+      <li>Footage exactly where a beat needs an asset.</li>
+      <li>The closing frame sits on black or white.</li>
+      <li>At least one scene uses Site Orange.</li>
+    </ul>
+    Text size is a floor, not a tier: headlines at least 110px, nothing under 40px.
   </div>
 
   <h2><span class="num">04</span>Asset Search</h2>
@@ -325,10 +326,9 @@
   <div class="callout">
     <span class="label">Crop failure ≠ rejection</span>
     A clip that's relevant and interesting but doesn't survive a 9:16 <em>cover</em> crop isn't
-    thrown away — Assembly renders it <strong>contained on a white frame</strong> instead (the clip
-    shown in full at its native aspect ratio, letterboxed on the app's white background token,
-    same as a photo inset in a <code>Card</code>) rather than force-cropping it and losing the
-    subject, or discarding a genuinely good asset over an aspect-ratio mismatch.
+    thrown away — Assembly renders it <strong>contained on black or white</strong> instead (the clip
+    shown in full at its native aspect ratio, on a brand surface) rather than force-cropping it and
+    losing the subject, or discarding a genuinely good asset over an aspect-ratio mismatch.
   </div>
 
   <div class="callout">
@@ -344,9 +344,27 @@
   <div class="stage-meta"><span class="pill agent">agent, writes the .tsx</span></div>
   <p>
     Generates the actual Remotion composition file from the visual plan + script + approved asset
-    paths, importing the shared component library rather than regenerating component code from
-    scratch each run. New composition registered in <span class="path">Root.tsx</span> with a
-    placeholder duration (corrected in Stage 07).
+    paths. <strong>Every scene is written from scratch</strong>, for variety. What is shared is
+    the brand, not layouts:
+  </p>
+  <ul>
+    <li><span class="path">src/brand.ts</span>: the colors, Archivo and Inter, the logo, the Reels
+      safe zone and the text-size floors.</li>
+    <li>The word-synced <span class="path">src/Captions.tsx</span> overlay.</li>
+    <li>A closing frame designed fresh each time, but always with the logo, the takeaway and
+      "Follow @thebuyboxre".</li>
+  </ul>
+  <p>
+    Before rendering, the agent must pass <span class="path">brand-lint.mjs</span>. It rejects:
+  </p>
+  <ul>
+    <li>off-palette colors, gradients, shadows and rounded corners</li>
+    <li>fonts other than Archivo and Inter, and text under 40px</li>
+    <li>a missing caption overlay, logo or follow ask</li>
+  </ul>
+  <p>
+    CI runs it again and shows anything left as a warning. The new composition is registered in
+    <span class="path">Root.tsx</span> with a placeholder duration (corrected in Stage 07).
   </p>
 
   <h2><span class="num">07</span>Voiceover</h2>

@@ -10,11 +10,19 @@ See [`PIPELINE_SPEC.html`](./PIPELINE_SPEC.html) for the full design spec
 ## What's in this repo
 
 - `remotion/` -- the Remotion project. `pipeline_workflow.mjs` is the actual
-  orchestration script (run via Claude Code's Workflow tool); `src/` holds
-  the shared component library (`Card`, `GiantStat`, `BuildList`,
-  `DocumentCard`, `BounceText`) and one `.tsx` file per generated video;
-  `voiceover_TEMPLATE.py` + `numeric_tts.py` are the canonical
-  timestamp-driven ElevenLabs voiceover approach every video uses.
+  orchestration script (run via Claude Code's Workflow tool).
+  - `src/` holds one `.tsx` file per generated video, each designed from
+    scratch.
+  - `src/brand.ts` is The Buy Box brand, from its brand guide: colors, fonts
+    (Archivo and Inter), logo, the Reels safe zone and text-size floors.
+  - `src/Captions.tsx` is the word-synced caption overlay every video carries.
+  - `brand-lint.mjs` checks a video against the brand's rules, never its
+    layout.
+  - The older `components/`, `tokens.ts` and `fonts.ts` are the pre-brand
+    look, kept for the videos made with them.
+  - `voiceover_TEMPLATE.py` + `numeric_tts.py` are the canonical
+    timestamp-driven ElevenLabs voiceover every video uses. It also writes the
+    captions' word timings.
 - `hook_templates_1000.json` -- the ~980-template hook library (Educational,
   Storytelling, Authority, Myth Busting, Comparison, Day in the Life,
   Random) the Script stage selects and fills in from.

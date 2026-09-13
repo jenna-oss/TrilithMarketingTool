@@ -89,6 +89,51 @@ def tts_with_timestamps(text: str):
         raise SystemExit(f"ElevenLabs TTS failed: {e.code} {e.read().decode()}")
 
 
+def write_captions(base, script_text, align, spoken_lines, line_indexes, total_dur):
+    """Word timings for the burned-in captions (src/Captions.tsx), from the
+    same character alignment. Captions show each line as written ("$4,500"),
+    but the voice read its spoken form ("four thousand five hundred dollars"),
+    so each written word is found in the spoken script by its own spoken form.
+    A word the search can't place is spread evenly between its neighbours."""
+    starts = align["character_start_times_seconds"]
+    ends = align.get("character_end_times_seconds") or starts
+    lowered = script_text.lower()
+    words = []
+    for beat, (line, spoken, line_idx) in enumerate(zip(LINES, spoken_lines, line_indexes), start=1):
+        pos, stop = line_idx, line_idx + len(spoken)
+        for w in line.split():
+            key = spoken_text(w).strip(" .,;:!?\"'()—-").lower()
+            found = lowered.find(key, pos, stop) if key else -1
+            if found < 0:
+                words.append({"text": w, "start": None, "end": None, "beat": beat})
+                continue
+            last = min(found + len(key) - 1, len(ends) - 1)
+            words.append({"text": w, "start": round(starts[found], 3), "end": round(ends[last], 3), "beat": beat})
+            pos = found + len(key)
+
+    unplaced = sum(1 for w in words if w["start"] is None)
+    i = 0
+    while i < len(words):
+        if words[i]["start"] is not None:
+            i += 1
+            continue
+        j = i
+        while j < len(words) and words[j]["start"] is None:
+            j += 1
+        a = words[i - 1]["end"] if i > 0 else 0.0
+        b = words[j]["start"] if j < len(words) else total_dur
+        step = max(b - a, 0.0) / (j - i)
+        for k in range(i, j):
+            words[k]["start"] = round(a + step * (k - i), 3)
+            words[k]["end"] = round(a + step * (k - i + 1), 3)
+        i = j
+
+    out_dir = base / "public" / SLUG
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "captions.json").write_text(json.dumps({"words": words}, indent=1))
+    print(f"Captions: {len(words)} words -> public/{SLUG}/captions.json ({unplaced} spread between neighbours)\n")
+
+
 def main():
     base = Path(__file__).parent  # remotion/
     voice_dir = base / f"_voiceover_{SLUG}"
@@ -126,11 +171,15 @@ def main():
     starts = align["character_start_times_seconds"]
     search_from = 0
     line_starts = []
+    line_indexes = []
     spoken_lines = [spoken_text(l) for l in LINES]
     for line in spoken_lines:
         idx = script_text.index(line, search_from)
         line_starts.append(starts[idx])
+        line_indexes.append(idx)
         search_from = idx + len(line)
+
+    write_captions(base, script_text, align, spoken_lines, line_indexes, total_dur)
 
     print("Per-line actual start times in the generated audio:")
     for line, st in zip(LINES, line_starts):
