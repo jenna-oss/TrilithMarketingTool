@@ -84,7 +84,7 @@ const COMPONENT_NAMES = [
 
 const RESEARCH_SCHEMA = {
   type: 'object',
-  required: ['slug', 'workingTitle', 'sourcedFacts', 'sourceUrls'],
+  required: ['slug', 'workingTitle', 'sourcedFacts', 'sourceUrls', 'keyTerms'],
   properties: {
     slug: { type: 'string', description: 'lowercase-hyphenated short identifier for this topic, e.g. "arnold-schwarzenegger"' },
     workingTitle: { type: 'string' },
@@ -98,16 +98,29 @@ const RESEARCH_SCHEMA = {
     },
     sourceUrls: { type: 'array', items: { type: 'string' } },
     missingNumbers: { type: 'string', description: 'note any hard numbers (rates, ratios, dates) the sources do not provide -- never invent them' },
+    keyTerms: {
+      type: 'array',
+      description: 'every term, acronym or concept in this topic that someone brand new to real estate investing would not know',
+      items: {
+        type: 'object',
+        required: ['term', 'plainMeaning'],
+        properties: {
+          term: { type: 'string' },
+          plainMeaning: { type: 'string', description: 'one sentence in everyday words, with no other jargon in it; for an acronym, what the letters stand for first' },
+        },
+      },
+    },
   },
 }
 
 const SCRIPT_SCHEMA = {
   type: 'object',
-  required: ['hookCategory', 'hookTemplate', 'filledHook', 'beats'],
+  required: ['hookCategory', 'hookTemplate', 'filledHook', 'beats', 'takeaway'],
   properties: {
     hookCategory: { type: 'string', description: 'the library category, or "LOCKED" when the brief has a locked opening line' },
     hookTemplate: { type: 'string', description: 'the raw template string chosen from hook_templates_1000.json, placeholders intact -- or "(locked on the Plan page)"' },
     filledHook: { type: 'string', description: 'the template with (insert X) placeholders filled from real facts -- or the locked opening line, verbatim' },
+    takeaway: { type: 'string', description: 'the one thing a complete beginner should remember, in one plain sentence' },
     beats: {
       type: 'array',
       minItems: 8,
@@ -122,6 +135,23 @@ const SCRIPT_SCHEMA = {
         },
       },
     },
+  },
+}
+
+const BEGINNER_CHECK_SCHEMA = {
+  type: 'object',
+  required: ['unexplainedTerms', 'confusingBeats', 'whatILearned'],
+  properties: {
+    unexplainedTerms: {
+      type: 'array',
+      description: 'words, acronyms or figures a first-time viewer would not understand at the moment they are said',
+      items: { type: 'object', required: ['term', 'beat'], properties: { term: { type: 'string' }, beat: { type: 'number' } } },
+    },
+    confusingBeats: {
+      type: 'array',
+      items: { type: 'object', required: ['beat', 'why'], properties: { beat: { type: 'number' }, why: { type: 'string' } } },
+    },
+    whatILearned: { type: 'string', description: 'in one plain sentence, what the viewer now understands; empty if nothing clear' },
   },
 }
 
@@ -214,11 +244,16 @@ gaps. Cross-check facts against 2-3 sources when possible. Extract dated, specif
 explicitly in missingNumbers rather than making them up. Where the brief's EVIDENCE or OPENING LINE states
 a figure, confirm it from a source, or say in missingNumbers that it could not be confirmed.
 
+The video is for people brand new to real estate investing. So also list keyTerms: every term, acronym
+or concept this topic depends on that such a person would not know (for example DSCR, PITIA, loan-to-cost,
+a construction draw, a bridge loan), each with a one-sentence plainMeaning in everyday words and with no
+other jargon inside it. For an acronym, say what the letters stand for first.
+
 Also produce a lowercase-hyphenated "slug" for this topic (e.g. "arnold-schwarzenegger", "cap-rate-explainer")
 -- it will be used as a file/folder name, so keep it short, no spaces, no special characters besides hyphens.`,
   { schema: RESEARCH_SCHEMA, label: 'research' }
 )
-log(`Researched "${research.workingTitle}" (slug: ${research.slug})`)
+log(`Researched "${research.workingTitle}" (slug: ${research.slug}), ${(research.keyTerms || []).length} key terms`)
 
 phase('Script')
 const hookStep = BRIEF.hook
@@ -236,10 +271,25 @@ Pick ONE category and ONE specific template from that library that fits this bri
 raw template (hookTemplate, placeholders intact) and the filled version (filledHook). The filledHook
 should be beat 1 or very close to it.`
 
-const script = await agent(
-  `Write the script for a short-form vertical video from this brief. The brief was locked by a person on
-the Plan page: the script carries its ANGLE, speaks to its AUDIENCE, and features its PRODUCT where it
-names one. Do not drift to a different story.
+// Every video has to work for someone who has never invested in real estate.
+const BEGINNER_RULES = `WHO THIS IS FOR: someone brand new to real estate investing. They should follow every line
+and come away having learned something real, with no background at all. People who already invest
+should still find it worth watching: clear, not dumbed down.
+- Explain every term in plain words the first time it comes up, in that beat or the very next one. The
+  key terms above come with plain meanings; use them. Never use a term before it has been explained,
+  except in a locked opening line, which stays as written; if that line uses jargon, beat 2 unpacks it.
+- For an acronym, say once what the letters stand for and what it means in everyday terms.
+- One idea per beat. Short sentences. Everyday words. Give every number its meaning ("$4,500 a month
+  in rent", not "four-point-five gross").
+- No insider slang ("pencil out", "BRRRR", "LTC", "points", "comp factors") unless you explain it.
+- Build to ONE clear takeaway a beginner could repeat to a friend. Say it plainly near the end, and
+  report it as takeaway.`
+
+function writeScript(fix, draft, round) {
+  return agent(
+    `Write the script for a short-form vertical video from this brief. The brief was locked by a person on
+the Plan page: the script carries its ANGLE, speaks to its AUDIENCE in a way a complete beginner can also
+follow, and features its PRODUCT where it names one. Do not drift to a different story.
 
 ${briefBlock()}
 
@@ -247,19 +297,81 @@ Working title: ${research.workingTitle}
 Facts (the only source for figures and claims):
 ${research.sourcedFacts.map(f => `- ${f.fact} (${f.source})`).join('\n')}
 
+Key terms, with plain meanings from the research:
+${(research.keyTerms || []).map(k => `- ${k.term}: ${k.plainMeaning}`).join('\n') || '- (none listed)'}
+
+${BEGINNER_RULES}
+
 ${hookStep}
 
 Then write a full beat-by-beat script: 8-13 beats, each a short natural spoken line (these get narrated
 by a cloned voice, so keep them punchy -- 8-14 words per beat is typical, not full paragraphs) with an
 estSeconds guess. The script should read as one connected story, not isolated facts -- reference the
 Mayweather/JPMorgan/DSCR/Construction videos' scripts in ${PROJECT_ROOT}/data/script_*.json for the tone
-and pacing this account uses.`,
-  { schema: SCRIPT_SCHEMA, label: 'script' }
-)
+and pacing this account uses.${draft ? `
+
+Your previous draft:
+${draft.beats.map(b => `${b.order}. ${b.line}`).join('\n')}
+
+Someone new to real estate investing listened to it and got stuck here. Fix these and keep what works:
+${fix}` : ''}`,
+    { schema: SCRIPT_SCHEMA, label: round ? `script-revision-${round}` : 'script' }
+  )
+}
+
+// A separate listener, given only the narration: no brief, no facts, no key
+// terms. Anything it needs explained, a first-time viewer will too.
+function beginnerCheck(s, round) {
+  return agent(
+    `You are watching a short video about real estate investing. You know nothing about the subject: you have
+never bought a property, never borrowed money for one, and don't know any industry terms or acronyms.
+
+This is everything the narrator says, beat by beat, in order. You hear each line once.
+
+${s.beats.map(b => `${b.order}. ${b.line}`).join('\n')}
+
+Be strict, as that viewer. Report:
+- unexplainedTerms: every word, acronym or figure you would not understand at the moment it is said, with
+  its beat number. If the same beat or the very next one explains it, it is fine: don't report it.
+- confusingBeats: any beat where you would lose the thread, and why, in a few words.
+- whatILearned: in one plain sentence, what you now understand that you didn't before. Leave it empty if
+  you came away with nothing clear.
+Report only real problems. A clear script comes back with both lists empty.`,
+    { schema: BEGINNER_CHECK_SCHEMA, label: `beginner-check-${round}` }
+  )
+}
+
+function beginnerIssues(r) {
+  const out = [
+    ...(r.unexplainedTerms || []).map(t => `beat ${t.beat}: "${t.term}" is used without a plain explanation`),
+    ...(r.confusingBeats || []).map(c => `beat ${c.beat}: ${c.why}`),
+  ]
+  if (!String(r.whatILearned || '').trim()) out.push('no clear takeaway: the listener came away with nothing they could name')
+  return out.length ? out.join('\n') : null
+}
+
+let script = await writeScript()
 // Not left to the prompt alone. In the first batch every script replaced the
 // locked hook with one from the template library, so the line is put in place
 // here, where no agent can talk its way out of it.
 if (BRIEF.hook) lockOpeningLine(script, BRIEF.hook)
+
+// Checked, not just asked for: one revision against what the listener flags,
+// then a second listen. If it still flags something, the run goes ahead and
+// says so in its result rather than looping on it.
+let review = await beginnerCheck(script, 1)
+let stillFlagged = beginnerIssues(review)
+if (stillFlagged) {
+  log(`Beginner check flagged:\n${stillFlagged}`)
+  script = await writeScript(stillFlagged, script, 1)
+  if (BRIEF.hook) lockOpeningLine(script, BRIEF.hook)
+  review = await beginnerCheck(script, 2)
+  stillFlagged = beginnerIssues(review)
+  log(stillFlagged ? `Still flagged after one revision, going ahead:\n${stillFlagged}` : 'Beginner check passed after one revision')
+} else {
+  log('Beginner check passed first time')
+}
+log(`Takeaway: "${script.takeaway}" | the listener learned: "${review.whatILearned}"`)
 log(`Hook: [${script.hookCategory}] "${script.filledHook}"`)
 
 function lockOpeningLine(s, hook) {
@@ -299,6 +411,9 @@ For each beat also decide needsAsset (true if this beat should show a real photo
 pure graphic/text treatment) and, if true, assetSearchHint: 2-3 keyword phrases for a Pexels VIDEO search
 specific to THIS beat's line (not a generic topic keyword). Aim for roughly a third of beats needing an
 asset -- not every beat, and not zero.
+
+The viewer may be brand new to real estate investing. Where a beat explains a term, its description puts
+the term and its plain meaning on screen together, and every number shown gets a plain label.
 
 Beats:
 ${script.beats.map(b => `${b.order}. (${b.estSeconds}s) ${b.line}`).join('\n')}
@@ -407,6 +522,10 @@ for a full-width element, or under the component's actual maxWidth/insetW for a 
 number or headline is long, either size it down, or wrap it (pass an explicit maxWidth to BounceText, or
 prefer headerAlign="left" on Card so its built-in maxWidth applies) rather than letting it run off-frame.
 
+Plain labels: the viewer may be brand new to real estate investing. Every number or term on screen carries
+a short everyday label that matches what the narration calls it (e.g. "Rent: $4,500 a month"), never a
+bare acronym and never a label the narration does not use.
+
 Build the full <TransitionSeries> with varied transition types (slide/wipe/fade/flip/
 clockWipe in different directions, no two identical transitions back-to-back).
 
@@ -463,6 +582,8 @@ return {
   slug: research.slug,
   workingTitle: research.workingTitle,
   hook: script.filledHook,
+  takeaway: script.takeaway,
+  beginnerCheck: { passed: !stillFlagged, whatILearned: review.whatILearned, stillFlagged: stillFlagged || null },
   finalVideoPath: voiceover.finalVideoPath,
   durationSeconds: voiceover.durationSeconds,
   approvedAssetCount: approvedCount,

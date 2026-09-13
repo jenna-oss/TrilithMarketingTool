@@ -29,11 +29,6 @@ on:
         description: 'Cap on agent turns per video — the runaway guard'
         type: string
         default: '120'
-      model:
-        description: 'Model the pipeline stages run on. A full video cost $6.19 on opus and $3.46 on sonnet; haiku is untested.'
-        type: choice
-        options: [sonnet, opus, haiku]
-        default: sonnet
 
 concurrency:
   group: render-videos
@@ -170,12 +165,6 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           BRIEF_JSON: ${{ matrix.brief }}
           MAX_TURNS: ${{ inputs.max_turns }}
-          # Every stage is an agent() call with no model of its own, so they all
-          # inherit this. On opus the first three videos cost $5.0-6.2 each,
-          # nearly all of it the stages; web lookups ran on haiku for ~$0.40.
-          # A choice, not a hardcode, so the two can be compared on the same
-          # brief before either becomes the default for good.
-          MODEL: ${{ inputs.model }}
           # The Workflow tool returns immediately with a task id and runs in the
           # background, so the agent has nothing to block on and says it will
           # report back later. Claude Code then waits 600s for background work
@@ -234,10 +223,15 @@ jobs:
           # digest goes to stdout. jq may fail without taking the step with it;
           # pass or fail is decided at the end of this step by what was produced,
           # not by any exit status in this pipe.
+          #
+          # --model sonnet, fixed. Every stage is an agent() call with no model of
+          # its own and inherits it. Measured on one full video each: opus $6.19,
+          # sonnet $3.46, haiku $1.47 but visibly rougher (a blank scene, plainer
+          # layouts). Sonnet chosen 2026-09-13.
           set +e
           claude -p \
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Workflow,Agent,WebFetch,WebSearch" \
-            --model "${MODEL:-sonnet}" --max-turns "$MAX_TURNS" \
+            --model sonnet --max-turns "$MAX_TURNS" \
             --output-format stream-json --verbose \
             "Run the video pipeline for one brief.
 
