@@ -136,6 +136,7 @@
   dialog.detail {
     border:1px solid var(--rule-strong); border-radius:8px; padding:0;
     background:var(--ground); color:var(--ink-body); max-width:52rem; width:calc(100vw - 2rem);
+    max-height:calc(100vh - 2rem); overflow:auto;
   }
   dialog.detail::backdrop { background:#07201799; }
   .detail-head {
@@ -165,6 +166,30 @@
   }
   .action-note { font-size:.8125rem; color:var(--ink-quiet); }
   .action-note.bad { color:var(--clay); }
+
+  /* Asking for a change: one box, one button. */
+  .edit-box { margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--rule); }
+  .edit-box label {
+    display:block; font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin-bottom:.375rem;
+  }
+  .edit-box textarea {
+    display:block; width:100%; min-height:5rem; resize:vertical;
+    font-family:var(--sans); font-size:.875rem; line-height:1.5; color:var(--ink);
+    background:var(--card); border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
+  }
+  .edit-box textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .edit-row { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; margin-top:.5rem; }
+  .edit-status {
+    margin:0; font-size:.8125rem; color:var(--ink-body);
+    background:var(--card-sunk); border-radius:4px; padding:.5rem .625rem;
+  }
+  .edit-last { margin:0 0 .5rem; font-size:.75rem; color:var(--ink-quiet); }
+  .vid .badge {
+    position:absolute; left:.375rem; top:.375rem;
+    font-size:.625rem; font-weight:700; letter-spacing:.04em;
+    color:#0B3529; background:#EAE9D5; padding:.125rem .5rem; border-radius:999px;
+  }
   @media (max-width:640px) { .detail-body { grid-template-columns:1fr; } }
 
 </style>
@@ -306,6 +331,7 @@ async function load() {
   }
   stateEl.hidden = true;
   render();
+  schedulePoll();
 }
 
 function setTab(name) {
@@ -363,6 +389,12 @@ function render() {
     const play = document.createElement('span');
     play.className = 'play';
     frame.append(preview, play);
+    if (v.last_edit && v.last_edit.in_progress) {
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = 'Editing…';
+      frame.append(badge);
+    }
     const dur = fmtDuration(v.duration);
     if (dur) {
       const d = document.createElement('span');
@@ -463,7 +495,7 @@ function open(v) {
   const left = document.createElement('div');
   left.append(player);
   const right = document.createElement('div');
-  right.append(dl, actions);
+  right.append(dl, actions, buildEditBox(v));
   detailBody.append(left, right);
   detail.showModal();
 }
@@ -484,6 +516,136 @@ async function setReview(id, status) {
     return { ok: false, error: 'Couldn’t save' + (body.error ? ': ' + body.error : ' (' + res.status + ')') + '.' };
   }
   return { ok: true, review_status: body.review_status ?? status, reviewed_at: body.reviewed_at ?? null };
+}
+
+/* The change box under a video's details. While an edit runs, it shows that
+   instead, so a second edit can't be stacked on the first. */
+function buildEditBox(v) {
+  const box = document.createElement('div');
+  box.className = 'edit-box';
+  const last = v.last_edit;
+
+  if (last && last.in_progress) {
+    const status = document.createElement('p');
+    status.className = 'edit-status';
+    status.textContent = 'Editing now: “' + last.instruction + '”. The new version will show up in Ready to review when it’s done.';
+    box.append(status);
+    return box;
+  }
+
+  if (last && last.status === 'done') {
+    const done = document.createElement('p');
+    done.className = 'edit-last';
+    done.textContent = 'Last change: “' + last.instruction + '”';
+    box.append(done);
+  }
+
+  const label = document.createElement('label');
+  label.htmlFor = 'edit-text';
+  label.textContent = 'Request a change';
+  const text = document.createElement('textarea');
+  text.id = 'edit-text';
+  text.maxLength = 600;
+  text.placeholder = 'e.g. Make the first headline bigger, and say “monthly payment” instead of “PITIA”.';
+
+  const row = document.createElement('div');
+  row.className = 'edit-row';
+  const send = document.createElement('button');
+  send.type = 'button';
+  send.className = 'btn';
+  send.textContent = 'Send edit';
+  const note = document.createElement('span');
+  note.className = 'action-note';
+  note.textContent = v.has_source
+    ? 'Only what you ask for will change.'
+    : 'This video was made before edits were possible, so it will be re-made with your change.';
+  if (last && last.status === 'failed') {
+    note.className = 'action-note bad';
+    note.textContent = 'The last edit didn’t work' + (last.error ? ': ' + last.error : '') + '. You can try again.';
+  }
+
+  send.addEventListener('click', async () => {
+    const change = text.value.trim();
+    if (change.length < 3) {
+      note.className = 'action-note bad';
+      note.textContent = 'Say what should change.';
+      text.focus();
+      return;
+    }
+    send.disabled = true;
+    text.disabled = true;
+    note.className = 'action-note';
+    note.textContent = 'Starting the edit…';
+    const result = await requestEdit(v.id, change);
+    if (!result.ok) {
+      send.disabled = false;
+      text.disabled = false;
+      note.className = 'action-note bad';
+      note.textContent = result.error;
+      return;
+    }
+    v.last_edit = { status: 'queued', instruction: change, in_progress: true, created_at: new Date().toISOString() };
+    closeDetail();
+    render();
+    toast('Edit started');
+    schedulePoll();
+  });
+
+  row.append(send, note);
+  box.append(label, text, row);
+  return box;
+}
+
+async function requestEdit(id, instruction) {
+  let res;
+  try {
+    res = await fetch(WORKER_URL + '/videos/edit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, instruction }),
+    });
+  } catch {
+    return { ok: false, error: 'Couldn’t reach the server. Try again.' };
+  }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return { ok: false, error: body.error || 'Couldn’t start the edit (' + res.status + ').' };
+  return { ok: true };
+}
+
+/* While an edit runs, check back every 30 seconds so the new version turns up
+   without a reload. Stops by itself once nothing is editing. */
+const POLL_MS = 30000;
+let pollTimer = null;
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  if (!videos.some((v) => v.last_edit && v.last_edit.in_progress)) return;
+  pollTimer = setTimeout(async () => { await refresh(); schedulePoll(); }, POLL_MS);
+}
+
+async function refresh() {
+  let next;
+  try {
+    const res = await fetch(WORKER_URL + '/videos', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    next = Array.isArray(data.videos) ? data.videos : [];
+  } catch { return; /* try again next time */ }
+  if (JSON.stringify(next) === JSON.stringify(videos)) return;
+
+  const slotOf = (v) => v.session_id + '#' + v.slot;
+  const wasEditing = new Set(videos.filter((v) => v.last_edit && v.last_edit.in_progress).map(slotOf));
+  const ended = next.filter((v) => wasEditing.has(slotOf(v)) && !(v.last_edit && v.last_edit.in_progress));
+  videos = next;
+  render();
+  if (ended.some((v) => v.last_edit && v.last_edit.status === 'failed')) {
+    toast('An edit didn’t work. Open the video to see why.');
+  } else if (ended.length) {
+    toast(ended.length === 1 ? 'Edited video ready to review' : ended.length + ' edited videos ready to review');
+  }
 }
 
 let toastTimer;

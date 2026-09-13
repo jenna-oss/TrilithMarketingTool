@@ -112,6 +112,8 @@ export default {
           rendered_at: r.rendered_at,
           review_status: r.review_status ?? null,
           reviewed_at: r.reviewed_at ?? null,
+          has_source: Boolean(r.has_source),
+          last_edit: r.last_edit ?? null,
           url: `${base}/storage/v1/object/public/videos/`
             + String(r.storage_path).split('/').map(encodeURIComponent).join('/'),
         }));
@@ -149,6 +151,42 @@ export default {
       }
     }
 
+    /* A typed change to a finished video. Queued in Supabase, then started in
+     * GitHub Actions straight away. Open by the user's choice (no token), so
+     * the limits live in kb_video_request_edit: 3 to 600 characters, one edit
+     * at a time per video, ten a day. */
+    if (path === '/videos/edit') {
+      if (!env.GITHUB_TOKEN) {
+        return json({ error: 'Edits aren’t set up yet: the Worker needs its GitHub token.' }, 503, headers);
+      }
+
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ error: 'body must be JSON' }, 400, headers); }
+      const id = String(body.id ?? '');
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return json({ error: 'id must be a video id' }, 400, headers);
+      }
+      const instruction = String(body.instruction ?? '').trim();
+
+      let queued;
+      try { queued = await rpc(env, 'kb_video_request_edit', { p_render_id: id, p_instruction: instruction }); }
+      catch { return json({ error: 'Couldn’t queue the edit. Try again.' }, 502, headers); }
+      if (!queued || !queued.ok) {
+        return json({ error: (queued && queued.error) || 'Couldn’t queue the edit.' }, 409, headers);
+      }
+
+      const started = await startEdit(env, queued.id);
+      if (!started.ok) {
+        /* Otherwise the video would show "editing" for three hours with
+         * nothing running. */
+        try { await rpc(env, 'kb_video_edit_abandon', { p_edit_id: queued.id, p_error: started.error }); }
+        catch { /* the request still fails below; the row goes stale on its own */ }
+        return json({ error: started.error }, 502, headers);
+      }
+      return json({ edit_id: queued.id }, 202, headers);
+    }
+
     /* The retired ask endpoint. Anything still POSTing here gets told where to
      * go rather than a bare 404 that looks like an outage. */
     return json({
@@ -156,6 +194,33 @@ export default {
     }, 404, headers);
   },
 };
+
+/* Start the render workflow for one edit. GITHUB_TOKEN is a fine-grained token
+ * that can only run this repo's workflows (Actions: read and write); the
+ * workflow does the rest, reading the request from Supabase by its id. */
+async function startEdit(env, editId) {
+  const repo = env.GITHUB_REPO || 'jenna-oss/TrilithMarketingTool';
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/render-videos.yml/dispatches`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        accept: 'application/vnd.github+json',
+        'x-github-api-version': '2022-11-28',
+        /* GitHub rejects API calls without one. */
+        'user-agent': 'trilith-ask-worker',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ ref: 'main', inputs: { edit_id: editId } }),
+    });
+    if (res.ok) return { ok: true };
+    console.error('workflow dispatch failed:', res.status, (await res.text()).slice(0, 300));
+    return { ok: false, error: `Couldn’t start the edit (GitHub answered ${res.status}).` };
+  } catch (err) {
+    console.error('workflow dispatch failed:', err?.message);
+    return { ok: false, error: 'Couldn’t reach GitHub to start the edit. Try again.' };
+  }
+}
 
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), {

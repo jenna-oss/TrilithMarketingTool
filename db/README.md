@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 27 | `kb_video_edits` | typed edits to finished videos: the `video_edits` queue, the private `video-sources` bucket, `kb_video_request_edit` (open, rate-limited) and `kb_video_edit_abandon` for the Worker, `kb_video_edit_start` / `kb_video_edit_finish` for the workflow; the library gains `has_source` and `last_edit` |
 | 26 | `kb_video_review` | replaces 25: `review_status` (`to_post` / `rejected`, null = ready to review) and `reviewed_at`, set by `kb_video_set_review`; rows marked posted carry over as `to_post`, and `posted_at` and `kb_video_set_posted` are dropped |
 | 25 | `kb_video_posted` | `posted_at` on renders, the library returns it, and `kb_video_set_posted` marks or unmarks a finished video (the Worker gates it with the team token) |
 | 24 | `kb_video_library` | finished videos for the Output page: rendered only, newest per slot, title and opening line from the plan |

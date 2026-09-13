@@ -86,3 +86,23 @@ The workflow runs Research -> Script -> Visual Plan -> Assets -> Assembly ->
 Voiceover and returns the finished video's path. It does not auto-publish
 anything -- the output is meant for human review before it goes anywhere
 public.
+
+## Editing a finished video
+
+On the Output page, open a video and type the change under "Request a change".
+The Worker queues it in `kb.video_edits` and starts `render-videos.yml` with
+`edit_id` set, so the run covers that one video.
+
+- **Its source was kept.** Every render packs its scenes, narration script,
+  recorded narration, clips and captions with `pack-source.sh` into the
+  private `video-sources` bucket. The run restores them and an agent, prompted
+  by `edit-prompt.mjs`, changes only what was asked. It records the narration
+  again only if the words change, then renders and muxes as usual.
+- **Its source wasn't kept** (videos made before this existed). The pipeline
+  re-makes the video from its brief, with the change added as `revision`.
+
+Either way the result is judged by `find-output.sh` like any render, and stored
+as a new version of the same slot. It replaces the card and lands in Ready to
+review. The request box is open, so the limits live in the database: 3 to 600
+characters, one edit at a time per video, ten a day. The edit agent gets no web,
+Workflow or Agent tools.
