@@ -56,11 +56,12 @@
     background:var(--emerald); color:#F4F2E7; border:none; border-radius:4px; padding:.625rem 1rem; cursor:pointer;
   }
   button.primary:disabled { opacity:.55; cursor:not-allowed; }
-  .links { display:flex; justify-content:space-between; gap:1rem; margin-top:1rem; font-size:.8125rem; }
+  .links { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; margin-top:1rem; font-size:.8125rem; }
   .links button {
     background:none; border:none; padding:0; font:inherit; color:var(--accent);
     cursor:pointer; text-decoration:underline; text-underline-offset:2px;
   }
+  .links .hint { color:var(--ink-quiet); }
   .msg { margin:1rem 0 0; font-size:.8125rem; border-radius:4px; padding:.5rem .625rem; }
   .msg.bad { background:var(--card-sunk); color:var(--clay); }
   .msg.ok { background:var(--card-sunk); color:var(--ink-body); }
@@ -88,6 +89,8 @@
     <h1 id="title">Sign in</h1>
     <p class="sub" id="sub">For people on this app’s list.</p>
 
+    <!-- No sign-up here: accounts are created in Supabase, for people on the
+         list. This page only signs them in and resets passwords. -->
     <form id="f-signin" novalidate>
       <label for="si-email">Email</label>
       <input id="si-email" type="email" autocomplete="username" required>
@@ -95,20 +98,9 @@
       <input id="si-password" type="password" autocomplete="current-password" required>
       <button class="primary" type="submit">Sign in</button>
       <div class="links">
-        <button type="button" data-go="signup">Create an account</button>
+        <span class="hint">No account? Ask to be added.</span>
         <button type="button" data-go="forgot">Forgot password?</button>
       </div>
-    </form>
-
-    <form id="f-signup" novalidate hidden>
-      <label for="su-email">Email</label>
-      <input id="su-email" type="email" autocomplete="username" required>
-      <label for="su-password">Password</label>
-      <input id="su-password" type="password" autocomplete="new-password" minlength="8" required>
-      <label for="su-confirm">Password again</label>
-      <input id="su-confirm" type="password" autocomplete="new-password" minlength="8" required>
-      <button class="primary" type="submit">Create account</button>
-      <div class="links"><button type="button" data-go="signin">I have an account</button></div>
     </form>
 
     <form id="f-forgot" novalidate hidden>
@@ -140,13 +132,11 @@ const MIN_PASSWORD = 8;
 
 const forms = {
   signin: document.getElementById('f-signin'),
-  signup: document.getElementById('f-signup'),
   forgot: document.getElementById('f-forgot'),
   reset: document.getElementById('f-reset'),
 };
 const titles = {
   signin: ['Sign in', 'For people on this app’s list.'],
-  signup: ['Create an account', 'Only emails on this app’s list can create one.'],
   forgot: ['Reset your password', 'We’ll email you a link.'],
   reset: ['Choose a new password', `At least ${MIN_PASSWORD} characters.`],
 };
@@ -205,11 +195,8 @@ async function call(path, body, token) {
 }
 
 function busy(form, on) {
-  const b = form.querySelector('button.primary');
-  b.disabled = on;
+  form.querySelector('button.primary').disabled = on;
 }
-
-const returnTo = location.origin + location.pathname;
 
 forms.signin.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -223,43 +210,18 @@ forms.signin.addEventListener('submit', async (e) => {
   say(r.data.error || 'Couldn’t sign in.', 'bad');
 });
 
-forms.signup.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('su-email').value.trim();
-  const password = document.getElementById('su-password').value;
-  if (password.length < MIN_PASSWORD) { say(`Use at least ${MIN_PASSWORD} characters for the password.`, 'bad'); return; }
-  if (password !== document.getElementById('su-confirm').value) { say('The two passwords don’t match.', 'bad'); return; }
-  busy(forms.signup, true);
-  const r = await call('/auth/signup', { email, password, redirect_to: returnTo });
-  busy(forms.signup, false);
-  if (r.ok && r.data.session) { keep(r.data.session); return; }
-  if (r.ok && r.data.exists) {
-    show('signin', true);
-    document.getElementById('si-email').value = email;
-    say('That email already has an account, perhaps from another AIKO tool. Sign in with that password, or reset it.', 'ok');
-    return;
-  }
-  if (r.ok && r.data.confirm) {
-    show('signin', true);
-    document.getElementById('si-email').value = email;
-    say('Check your email for a link to confirm your account, then sign in here.', 'ok');
-    return;
-  }
-  say(r.data.error || 'Couldn’t create the account.', 'bad');
-});
-
 forms.forgot.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('fp-email').value.trim();
   if (!email) { say('Enter your email.', 'bad'); return; }
   busy(forms.forgot, true);
-  await call('/auth/recover', { email, redirect_to: returnTo });
+  await call('/auth/recover', { email, redirect_to: location.origin + location.pathname });
   busy(forms.forgot, false);
   say('If that email is on this app’s list, a reset link is on its way.', 'ok');
 });
 
 /* A link from a Supabase email lands here with the session in the URL
-   fragment: after confirming an account, or to reset a password. */
+   fragment, to reset a password (or from any other sign-in link). */
 let recovery = null;
 forms.reset.addEventListener('submit', async (e) => {
   e.preventDefault();

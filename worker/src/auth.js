@@ -99,27 +99,9 @@ export async function handleAuth(path, request, env, headers, isAllowedOrigin) {
     return reply({ session: toSession(r.data) }, 200);
   }
 
-  if (path === '/auth/signup') {
-    if (!EMAIL.test(email)) return reply({ error: 'Enter a valid email.' }, 400);
-    if (String(body.password || '').length < MIN_PASSWORD) {
-      return reply({ error: `Use at least ${MIN_PASSWORD} characters for the password.` }, 400);
-    }
-    if (!(await isListed(env, email))) return reply({ error: NOT_LISTED }, 403);
-    const redirect = redirectFor(body.redirect_to, isAllowedOrigin);
-    const r = await gotrue(env, withRedirect('signup', redirect), { body: { email, password: String(body.password) } });
-    if (!r.ok) {
-      const msg = String(r.data.msg || r.data.error_description || r.data.message || '');
-      if (/password/i.test(msg)) return reply({ error: 'That password is too weak. Try a longer one.' }, 400);
-      return reply({ error: 'Couldn’t create the account. Try again.' }, 502);
-    }
-    /* A project that doesn't confirm emails answers with a session. */
-    if (r.data.access_token) return reply({ session: toSession(r.data) }, 200);
-    /* One that does answers with the user and no session. An email that
-     * already has an account (from another AIKO tool, say) comes back with no
-     * identities; Supabase hides it, but says that much. */
-    const exists = Array.isArray(r.data.identities) && r.data.identities.length === 0;
-    return reply({ confirm: true, exists }, 200);
-  }
+  /* There is no /auth/signup, by the user's choice: accounts are created in
+   * the Supabase dashboard for people on the list, and this app only signs
+   * them in. A POST to it gets the "unknown sign-in route" 404 below. */
 
   if (path === '/auth/refresh') {
     const token = String(body.refresh_token || '');
