@@ -27,7 +27,7 @@ ${ROOT}/out/${slug}_voice.mp4.
 
 Work in ${ROOT}, a Remotion project. This video's files, restored from when it was made:
 - ${component}: its scenes (composition id "${composition}")
-- voiceover_${slug}.py: the narration lines (LINES) and the script that voices them
+- voiceover_${slug}.py: the narration lines (LINES), how the voice delivers them, and the script that records them
 - ${voice}/: the narration already recorded for it (narration.mp3), with its word timings
 - public/${slug}/: its footage clips and captions.json (the word timings the captions read)
 - .edit/Root.as-run.tsx: src/Root.tsx as it was when the video was made
@@ -45,23 +45,44 @@ Steps:
 1. Register the composition. Copy its <Composition id="${composition}"> entry, the import of its component and
    its TOTAL_S constant from .edit/Root.as-run.tsx into src/Root.tsx, following that file's existing pattern.
    Leave every other entry alone.
-2. Decide whether the change alters what the narrator says.
-   - If it doesn't (on-screen text, sizes, colours, layout, a scene's animation): edit only ${component}
-     and keep the existing narration.
-   - If it does: change only the affected lines in LINES in voiceover_${slug}.py and keep the rest word for
-     word. Delete ${voice}/narration.mp3 and ${voice}/narration_raw.mp3 so the script records it again, then
-     run: python voiceover_${slug}.py (ELEVENLABS_API_KEY is already set). It rewrites
-     public/${slug}/captions.json and prints the real duration of each scene. Apply those durations to the
-     component's s(...) calls in scene order and to the TOTAL_S constant in src/Root.tsx. Update any
-     on-screen text that quotes a line you changed.
-3. Brand check: node brand-lint.mjs ${component}
+
+2. Work out what kind of change it is. It can be more than one.
+   - What's on screen (text, sizes, colours, layout, a scene's animation): edit only ${component}.
+   - What the narrator says: change only the affected lines in LINES in voiceover_${slug}.py and keep the
+     rest word for word. Update any on-screen text that quotes a line you changed.
+   - How the narration sounds (more enthusiastic, more expressive, more range, more energy, calmer, more
+     confident, faster, slower): leave LINES alone and change how the voice delivers them. In
+     voiceover_${slug}.py that is either named settings near the top (STABILITY, STYLE, SIMILARITY, SPEEDUP)
+     or, in older scripts, the numbers in voice_settings inside tts_with_timestamps plus the SPEEDUP
+     constant. Stay inside these ranges:
+       stability          0.05 to 0.6   lower = more range and emotion, less predictable; higher = steadier
+       style              0.3 to 1.0    higher = bolder, more dramatic delivery
+       similarity_boost   0.7 to 0.9    how closely it keeps to the narrator's cloned voice; leave it alone
+       SPEEDUP            1.0 to 1.2    applied after recording; faster = more energy
+     As a guide: "more enthusiastic" or "more energy" -> stability down about 0.1, style up to 1.0, SPEEDUP up
+     about 0.04. "More expressive" or "more range" -> stability down about 0.1, style up to 1.0. "Calmer" or
+     "more confident" -> stability up to about 0.4, style down to about 0.6. "Slower" -> SPEEDUP down about
+     0.05. If a setting is already at the end of its range, go as far as the range allows and say so in
+     your summary rather than going past it.
+
+3. If the narration changed in either of the last two ways, record it again. Delete ${voice}/narration.mp3 and
+   ${voice}/narration_raw.mp3, then run: python voiceover_${slug}.py (ELEVENLABS_API_KEY is already set). It
+   rewrites public/${slug}/captions.json and prints the real duration of each scene. Apply those durations to
+   the component's s(...) calls in scene order and to the TOTAL_S constant in src/Root.tsx. A new recording
+   re-voices every line, so the timing changes even when only the delivery did.
+   If only what's on screen changed, keep the existing narration.
+
+4. Brand check: node brand-lint.mjs ${component}
    Fix what it reports until it prints "brand check passed". Notes (text a little outside the safe zone)
    pass.
-4. Render: npx remotion render src/index.ts ${composition} out/${slug}.mp4
-5. Put the narration on it:
+
+5. Render: npx remotion render src/index.ts ${composition} out/${slug}.mp4
+
+6. Put the narration on it:
    ffmpeg -y -i out/${slug}.mp4 -i ${voice}/narration.mp3 -c:v copy -map 0:v:0 -map 1:a:0 -af apad -c:a aac -shortest out/${slug}_voice.mp4
    Keep the apad: the video runs a couple of seconds past the last line on purpose.
 
 When it's done, print the absolute path of out/${slug}_voice.mp4 on its own line, then one sentence saying
-what you changed. If the change can't be made, print why and stop.
+what you changed. For a change to how it sounds, name each setting you changed, from what to what. If the
+change can't be made, print why and stop.
 `);

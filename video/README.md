@@ -97,7 +97,11 @@ The Worker queues it in `kb.video_edits` and starts `render-videos.yml` with
   recorded narration, clips and captions with `pack-source.sh` into the
   private `video-sources` bucket. The run restores them and an agent, prompted
   by `edit-prompt.mjs`, changes only what was asked. It records the narration
-  again only if the words change, then renders and muxes as usual.
+  again only if the words or the delivery change, then renders and muxes as
+  usual. Delivery requests ("more enthusiastic", "calmer", "slower") move the
+  named settings at the top of the narration script (STABILITY, STYLE,
+  SIMILARITY, SPEEDUP) inside their stated ranges, rather than rewording the
+  lines.
 - **Its source wasn't kept** (videos made before this existed). The pipeline
   re-makes the video from its brief, with the change added as `revision`.
 

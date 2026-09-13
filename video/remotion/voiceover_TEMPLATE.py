@@ -41,7 +41,13 @@ MODEL_ID = "eleven_multilingual_v2"
 SWIPE = 0.35  # must match SWIPE in the video's .tsx
 FPS = 30
 TAIL_PAD = 2.0
-SPEEDUP = 1.12  # uniform post-generation speedup -- faster/more energetic without per-word slurring
+
+# How the voice delivers. An edit on the Output page ("more enthusiastic",
+# "calmer") changes these, inside the ranges given, and records again.
+STABILITY = 0.2   # 0.05-0.6: lower = more range and emotion, less predictable; higher = steadier
+STYLE = 0.9       # 0.3-1.0: higher = bolder, more dramatic delivery
+SIMILARITY = 0.8  # 0.7-0.9: how closely it keeps to the narrator's cloned voice
+SPEEDUP = 1.12    # 1.0-1.2: uniform speedup after recording -- faster/more energetic without per-word slurring
 
 SLUG = "REPLACE_ME"  # e.g. "arnold-schwarzenegger-real-estate" -- used for folder/file naming
 
@@ -75,7 +81,12 @@ def tts_with_timestamps(text: str):
         "text": text,
         "model_id": MODEL_ID,
         # lower stability + higher style = more expressive/enthusiastic delivery
-        "voice_settings": {"stability": 0.2, "similarity_boost": 0.8, "style": 0.9, "use_speaker_boost": True},
+        "voice_settings": {
+            "stability": STABILITY,
+            "similarity_boost": SIMILARITY,
+            "style": STYLE,
+            "use_speaker_boost": True,
+        },
     }).encode("utf-8")
     req = urllib.request.Request(
         url, data=body,

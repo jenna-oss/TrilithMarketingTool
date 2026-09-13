@@ -714,9 +714,14 @@ or its post-generation speedup step -- both are required, not optional:
   captions in the .tsx can keep the compact numeric form, e.g. "$240,000" -- this only affects what's sent
   to the voice model). Also spell out any acronyms with periods yourself if a beat has one (e.g. "D.S.C.R."),
   and avoid "--" in lines -- use commas instead.
-- the template generates at natural pace then applies a uniform 1.12x speedup for a faster, more
-  enthusiastic feel without per-word slurring, and already uses more expressive voice_settings
-  (stability 0.2, style 0.9) than earlier one-off scripts -- do not lower these back down.
+- the template generates at natural pace then applies a uniform speedup (SPEEDUP, 1.12) for a faster,
+  more enthusiastic feel without per-word slurring, and already uses expressive delivery settings
+  (STABILITY 0.2, STYLE 0.9) -- keep its defaults unless the change requested below is about the voice.${BRIEF.revision ? `
+
+${revisionBlock()}
+If that change is about how the narration sounds (more enthusiastic, more range, calmer, slower), make it
+with the delivery settings at the top of voiceover_${research.slug}.py, inside the ranges in their comments,
+and don't rewrite the lines for it.` : ''}
 
 Voice ID: ${VOICE_ID}, model eleven_multilingual_v2, ElevenLabs API key from ${ENV_HINT}.
 Lines, one continuous script in order:
