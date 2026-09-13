@@ -48,8 +48,13 @@ on:
 # keeps only one waiting run per group and cancels the one before it, so a
 # shared group would let an edit silently cancel a waiting render batch, or a
 # second edit cancel the first while the page still showed it as editing.
+#
+# Plans get a group each too, for the same reason. The Plan page can start a
+# render any time, and with one shared group a third batch pressed while one
+# rendered and one waited would silently cancel the waiting one, which the
+# database would then refuse to send again. Runs for the same plan still queue.
 concurrency:
-  group: ${{ inputs.edit_id != '' && format('render-videos-edit-{0}', inputs.edit_id) || 'render-videos' }}
+  group: ${{ inputs.edit_id != '' && format('render-videos-edit-{0}', inputs.edit_id) || format('render-videos-plan-{0}', inputs.session_id != '' && inputs.session_id || 'latest') }}
   cancel-in-progress: false
 
 permissions:

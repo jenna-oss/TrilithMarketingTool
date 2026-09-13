@@ -27,6 +27,23 @@ const PRODUCTS = ['dscr', 'fix-and-flip', 'bridge', 'ground-up', 'portfolio', 'b
 
 const str = (v, max = 400) => (typeof v === 'string' ? v.trim().slice(0, max) : null);
 
+/* The opening line is used word for word as the video's first line, so it is
+ * checked here, before it can be locked, rather than only flagged later by the
+ * video pipeline. The pipeline's voice rules, plus the ways a lender's voice
+ * slips in: plans were first written for Trilith, and a locked "Ours means..."
+ * went straight into a video. */
+const HOOK_RULES = [
+  [/\btrilith\b/i, 'it names Trilith'],
+  [/\bwe(?:'ll|'ve|'re)?\s+(?:fund|lend|financ|approv|close|offer)\w*|\bour\s+(?:rates?|loans?|programs?|terms|products?|lending|funding|money)\b|\bours\b/i, 'it speaks as a lender'],
+  [/\b(?:incredible|unbelievable|insane|crazy|mind-?blowing|game-?changer|jaw-?dropping)\b/i, 'it uses hype'],
+  [/\byou won'?t believe\b/i, 'it is clickbait'],
+  [/\b(?:obviously|everyone knows|as we all know)\b/i, 'it talks down'],
+  [/\b(?:guarantee[ds]?|risk-?free|can'?t lose|will definitely|sure thing)\b/i, 'it promises the future'],
+  [/!/, 'it has an exclamation mark'],
+];
+
+export const hookProblems = (line) => HOOK_RULES.filter(([re]) => re.test(line)).map(([, why]) => why);
+
 /* A source id was capped at 64 because chunk ids are UUIDs and 36 characters.
  * The agent cites URLs, which are longer, so every Trilith link in the first
  * exported plan was silently cut mid-slug — including one that still looked
@@ -133,7 +150,7 @@ export const PLAN_TOOLS = [
         slot: { type: 'integer', description: 'Which video, counting from 1.' },
         topic: { type: 'string', description: 'What the video is about, in one line.' },
         angle: { type: 'string', description: 'The specific argument it makes about that topic.' },
-        hook: { type: 'string', description: 'The opening line as it would be spoken, if it is settled.' },
+        hook: { type: 'string', description: 'The opening line as it would be spoken, if it is settled. In the channel voice (The Buy Box): never as a lender, never naming Trilith, no hype.' },
         evidence: { type: 'string', description: 'Why it is worth making, citing what a search returned.' },
         product: { type: 'string', enum: PRODUCTS },
         audience: { type: 'string', enum: ['broker', 'borrower'] },
@@ -201,6 +218,14 @@ export function applyPlanTool(plan, name, input) {
     }
     const topic = str(input.topic, 200);
     if (!topic) return { error: 'topic is required.' };
+
+    const hook = str(input.hook, 400);
+    const problems = hook ? hookProblems(hook) : [];
+    if (problems.length) {
+      return {
+        error: `That opening line can't be locked as written: ${problems.join('; ')}. Rewrite it in The Buy Box's voice, show them the new wording, and lock it once they agree.`,
+      };
+    }
 
     plan.slots[slot - 1] = {
       status: 'locked',
