@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Plan — Private Real Estate Lending</title>
 <script src="./assets/theme.js"></script>
+<script src="./assets/auth.js"></script>
 <link rel="stylesheet" href="./assets/nav.css">
 <link rel="stylesheet" href="./assets/chat.css">
 <style>
@@ -305,7 +306,6 @@ function drawTray() {
  * need parsers the Worker does not have, and half-extracting one would produce
  * confident citations with invisible gaps.
  * ------------------------------------------------------------------------ */
-const KB_TOKEN_KEY = 'trilith-kb-upload-token';
 const kbEligible = () => staged.filter((a) => a.ready && a.kind === 'text');
 
 function drawKbAdd() {
@@ -319,22 +319,11 @@ function kbSay(message, tone) {
   kbStatus.className = 'kb-status' + (tone ? ' ' + tone : '');
 }
 
-/* Kept in localStorage so it is asked for once per browser rather than once per
-   upload. Cleared on a 401, so a rotated token re-prompts instead of failing
-   silently forever. */
-function kbToken({ force } = {}) {
-  let token = force ? '' : (localStorage.getItem(KB_TOKEN_KEY) || '');
-  if (!token) {
-    token = (window.prompt('Upload token for the knowledge base:') || '').trim();
-    if (token) localStorage.setItem(KB_TOKEN_KEY, token);
-  }
-  return token;
-}
-
-async function kbUpload(entry, token, documentType) {
-  const res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/kb/upload', {
+async function kbUpload(entry, documentType) {
+  /* Signed in, so no upload token: AikoAuth adds the session. */
+  const res = await AikoAuth.fetch(WORKER_URL.replace(/\/+$/, '') + '/kb/upload', {
     method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       name: entry.name,
       text: entry.text,
@@ -349,9 +338,6 @@ kbSend.addEventListener('click', async () => {
   const files = kbEligible();
   if (!files.length) return;
 
-  let token = kbToken();
-  if (!token) { kbSay('No token — nothing uploaded.', 'bad'); return; }
-
   kbSend.disabled = true;
   const done = [];
   const failed = [];
@@ -360,19 +346,10 @@ kbSend.addEventListener('click', async () => {
     kbSay(`Uploading ${entry.name}…`);
     let result;
     try {
-      result = await kbUpload(entry, token, kbType.value);
+      result = await kbUpload(entry, kbType.value);
     } catch (err) {
       failed.push(`${entry.name}: could not reach the server`);
       continue;
-    }
-
-    /* A rotated token should cost one retry, not a mystery. */
-    if (result.status === 401) {
-      localStorage.removeItem(KB_TOKEN_KEY);
-      token = kbToken({ force: true });
-      if (!token) { failed.push(`${entry.name}: no token`); break; }
-      try { result = await kbUpload(entry, token, kbType.value); }
-      catch { failed.push(`${entry.name}: could not reach the server`); continue; }
     }
 
     if (result.ok) {
@@ -550,7 +527,7 @@ try {
 async function hydratePlan() {
   if (!WORKER_URL || !sessionFromUrl) return;
   try {
-    const res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/plan', {
+    const res = await AikoAuth.fetch(WORKER_URL.replace(/\/+$/, '') + '/plan', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId }),
@@ -666,7 +643,7 @@ async function sendToRender(card, btn, note, count) {
   let res = null;
   let body = {};
   try {
-    res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/plan/render', {
+    res = await AikoAuth.fetch(WORKER_URL.replace(/\/+$/, '') + '/plan/render', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId }),

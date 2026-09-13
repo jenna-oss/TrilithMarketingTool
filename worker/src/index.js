@@ -18,6 +18,7 @@
 import { handleIdeas } from './ideas.js';
 import { handleUpload } from './upload.js';
 import { rpc } from './db.js';
+import { handleAuth, requireUser } from './auth.js';
 
 /* Only the published pages may call this. The key lives here, so an open
  * endpoint would let anyone spend it. */
@@ -67,10 +68,24 @@ export default {
       return json({ error: 'POST a JSON body to /ideas or /kb/upload.' }, 405, headers);
     }
 
+    /* Sign-in routes are the only ones open without a session. */
+    if (path.startsWith('/auth/')) {
+      try { return await handleAuth(path, request, env, headers, isAllowed); }
+      catch { return json({ error: 'Couldn’t reach the sign-in service. Try again.' }, 502, headers); }
+    }
+
+    /* Everything else needs a signed-in session whose email is on this app's
+     * list (kb.app_users): chat, plans, renders, edits, uploads and the video
+     * library. The pages are public files; this is the lock. */
+    let gate;
+    try { gate = await requireUser(request, env, headers); }
+    catch { return json({ error: 'Couldn’t check your sign-in. Try again.' }, 502, headers); }
+    if (gate.response) return gate.response;
+
     if (path === '/ideas') return handleIdeas(request, env, headers, ctx);
 
-    /* The only write endpoint. Guarded by a shared token inside the handler,
-     * because the origin check above stops browsers and nothing else. */
+    /* Puts a file into the knowledge base permanently. Behind sign-in like
+     * every route; it used to need a shared upload token of its own. */
     if (path === '/kb/upload') return handleUpload(request, env, headers, ctx);
 
     /* Fetch a stored plan by id, so a session can be resumed in another browser

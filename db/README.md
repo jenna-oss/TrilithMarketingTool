@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 30 | `kb_app_users` | who may use the app: the allowlist the Worker checks at sign-in and on every request, and `kb_app_user_allowed` (anon, for the Worker). Supabase Auth is shared with other AIKO tools, so nothing is added to `auth.users` |
 | 29 | `kb_plan_renders` | the Plan page's Render button: `plan_renders` is the once-per-plan guard and the ledger for a 12-videos-a-day cap (a failed start still counts); `kb_plan_request_render` (open) and `kb_plan_render_abandon` for the Worker |
 | 28 | `kb_video_edit_notes` | edits arrive from the Edit tab as notes (`notes` jsonb: up to 8, each optionally pinned to a moment in seconds); `kb_video_request_edit(uuid, jsonb)` replaces the text version and refuses videos not in Ready to review; `kb_video_edit_start` also returns the notes and the video's storage path, for the frame grabs |
 | 28a | `kb_video_edit_finish_guard` | an edit's outcome can only be recorded while it is queued or running |

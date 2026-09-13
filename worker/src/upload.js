@@ -8,10 +8,11 @@
  * Two things this route is careful about.
  *
  * It is a WRITE endpoint on a public URL. The CORS allowlist in index.js stops
- * browsers and nothing else — curl sends whatever Origin it likes — so a shared
- * token is required here. Without it, anyone who found this URL could put text
- * into the corpus the planner cites and is instructed to trust, which would
- * quietly defeat every traceability guarantee in the system.
+ * browsers and nothing else — curl sends whatever Origin it likes — so it sits
+ * behind sign-in: index.js lets only a signed-in person on the app's list reach
+ * any route. Without that, anyone who found this URL could put text into the
+ * corpus the planner cites and is instructed to trust, which would quietly
+ * defeat every traceability guarantee in the system.
  *
  * It answers before the work is done. Spec sections 12 and 40 want ingestion
  * asynchronous, and the user should not sit watching a spinner while an
@@ -39,16 +40,6 @@ const MAX_CHUNKS = 400;
 const DOCUMENT_TYPES = new Set([
   'transcript', 'research', 'article', 'report', 'recording', 'interview', 'other',
 ]);
-
-/* Compare in constant time. A plain === leaks the token a character at a time
- * to anyone patient enough to measure, and the fix costs three lines. */
-function tokenMatches(given, expected) {
-  if (typeof given !== 'string' || typeof expected !== 'string') return false;
-  if (given.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < given.length; i += 1) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
-  return diff === 0;
-}
 
 function chunksFor({ name, text, documentType, topics, source }) {
   if (TRANSCRIPT_EXT.test(name) || documentType === 'transcript' || documentType === 'interview' || documentType === 'recording') {
@@ -110,20 +101,8 @@ async function embedChunks(env, chunks, cfg) {
 }
 
 export async function handleUpload(request, env, headers, ctx) {
-  if (!env.KB_UPLOAD_TOKEN) {
-    return json({
-      error: 'Uploads are not configured on the Worker.',
-      hint: 'Set one with `npx wrangler secret put KB_UPLOAD_TOKEN`.',
-    }, 503, headers);
-  }
-
-  const auth = request.headers.get('Authorization') || '';
-  const given = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  if (!tokenMatches(given, env.KB_UPLOAD_TOKEN)) {
-    /* Deliberately terse. Saying whether the token was absent, malformed or
-     * merely wrong tells a prober which of those to fix. */
-    return json({ error: 'Not authorised to upload.' }, 401, headers);
-  }
+  /* Who may upload was settled before this runs: index.js lets only a
+   * signed-in person on the app's list through. */
 
   let body;
   try { body = await request.json(); }

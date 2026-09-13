@@ -127,7 +127,7 @@
 
       let answer = '';
       try {
-        const res = await fetch(workerUrl.replace(/\/+$/, '') + '/ideas', {
+        const res = await (window.AikoAuth ? window.AikoAuth.fetch : fetch)(workerUrl.replace(/\/+$/, '') + '/ideas', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(payload),

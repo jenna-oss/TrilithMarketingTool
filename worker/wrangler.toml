@@ -17,7 +17,6 @@ GITHUB_REPO = "jenna-oss/TrilithMarketingTool"
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   npx wrangler secret put SUPABASE_ANON_KEY
 #   npx wrangler secret put VOYAGE_API_KEY
-#   npx wrangler secret put KB_UPLOAD_TOKEN
 #   npx wrangler secret put GITHUB_TOKEN
 #
 # GITHUB_TOKEN lets /videos/edit start an edit in GitHub Actions. Make it a
@@ -25,11 +24,10 @@ GITHUB_REPO = "jenna-oss/TrilithMarketingTool"
 # single permission Actions: Read and write. Without it, edit requests return
 # 503 and nothing else changes.
 #
-# KB_UPLOAD_TOKEN guards /kb/upload, the one route here that writes anything.
-# The origin allowlist in index.js stops browsers and nothing else — curl sends
-# whatever Origin it likes — so without this token anyone who found the URL
-# could put text into the corpus the planner cites. Unset it and uploads return
-# 503 rather than running unguarded.
+# Every route except /auth/* needs a signed-in session whose email is in
+# kb.app_users (see src/auth.js). The origin allowlist in index.js stops
+# browsers and nothing else, so sign-in is the lock. KB_UPLOAD_TOKEN is no
+# longer used: uploads are behind sign-in like everything else.
 #
 # VOYAGE_API_KEY is optional. Without it the knowledge-base tools still answer,
 # using keyword search alone, and every result they return is marked degraded so

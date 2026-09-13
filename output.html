@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Output — Private Real Estate Lending</title>
 <script src="./assets/theme.js"></script>
+<script src="./assets/auth.js"></script>
 <link rel="stylesheet" href="./assets/nav.css">
 <style>
   :root {
@@ -309,7 +310,7 @@ const fmtDate = (iso) => {
 
 async function load() {
   try {
-    const res = await fetch(WORKER_URL + '/videos', {
+    const res = await AikoAuth.fetch(WORKER_URL + '/videos', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{}',
@@ -496,7 +497,7 @@ function open(v) {
 async function setReview(id, status) {
   let res;
   try {
-    res = await fetch(WORKER_URL + '/videos/review', {
+    res = await AikoAuth.fetch(WORKER_URL + '/videos/review', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ id, status }),
@@ -560,7 +561,7 @@ function schedulePoll() {
 async function refresh() {
   let next;
   try {
-    const res = await fetch(WORKER_URL + '/videos', {
+    const res = await AikoAuth.fetch(WORKER_URL + '/videos', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{}',
