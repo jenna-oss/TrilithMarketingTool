@@ -84,14 +84,37 @@ jobs:
           const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
           if (!base || !key) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set');
 
+          /* Supabase's API sometimes times out for a few seconds (an edit was
+           * lost to two 504s that way on 2026-09-13), so a call is tried up to
+           * 4 times when the answer means "try again": no answer, 429, 502,
+           * 503 or 504. Repeating kb_plans_ready is harmless. Repeating
+           * kb_video_edit_start after an attempt that did go through is
+           * refused ("not waiting to start"), which fails the run cleanly, and
+           * the last step of this job then records the edit as failed. */
+          const RETRY_AFTER_MS = [5000, 10000, 20000];
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
           const call = async (fn, body) => {
-            const res = await fetch(`${base}/rest/v1/rpc/${fn}`, {
-              method: 'POST',
-              headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-              body: JSON.stringify(body),
-            });
-            if (!res.ok) throw new Error(`${fn} failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
-            return res.json();
+            for (let attempt = 0; ; attempt++) {
+              let res = null;
+              let problem;
+              try {
+                res = await fetch(`${base}/rest/v1/rpc/${fn}`, {
+                  method: 'POST',
+                  headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+                  body: JSON.stringify(body),
+                  signal: AbortSignal.timeout(30000),
+                });
+                if (res.ok) return res.json();
+                problem = `${res.status}: ${(await res.text()).slice(0, 300)}`;
+              } catch (err) {
+                problem = `no answer: ${err.message}`;
+              }
+              const again = !res || [429, 502, 503, 504].includes(res.status);
+              if (!again || attempt >= RETRY_AFTER_MS.length) throw new Error(`${fn} failed (${problem})`);
+              // stderr, because stdout is this step's outputs.
+              console.error(`${fn} failed (${problem}); trying again in ${RETRY_AFTER_MS[attempt] / 1000}s`);
+              await sleep(RETRY_AFTER_MS[attempt]);
+            }
           };
           const text = (v) => Array.isArray(v) ? v.filter(Boolean).join('; ').trim()
             : typeof v === 'string' ? v.trim() : v == null ? '' : String(v).trim();
@@ -217,7 +240,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p edit-source
-          curl -sS --fail-with-body "${SUPABASE_URL%/}/storage/v1/object/video-sources/$SOURCE_PATH" \
+          curl -sS --fail-with-body --retry 4 --retry-delay 8 --retry-connrefused \
+            "${SUPABASE_URL%/}/storage/v1/object/video-sources/$SOURCE_PATH" \
             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -o edit-source/source.tar.gz
           ls -la edit-source/
@@ -245,7 +269,8 @@ jobs:
           set -uo pipefail
           command -v ffmpeg >/dev/null || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
           mkdir -p edit-frames
-          curl -sS --fail-with-body "${SUPABASE_URL%/}/storage/v1/object/videos/$VIDEO_PATH" \
+          curl -sS --fail-with-body --retry 4 --retry-delay 8 --retry-connrefused \
+            "${SUPABASE_URL%/}/storage/v1/object/videos/$VIDEO_PATH" \
             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -o /tmp/video.mp4
           printf '%s' "$FRAMES" | jq -c '.[]' | while read -r f; do
@@ -266,7 +291,10 @@ jobs:
           if-no-files-found: ignore
 
       # A plan that fails after claiming an edit would leave the Output page
-      # showing it as editing until it went stale. Say it failed instead.
+      # showing it as editing until it went stale. Say it failed instead,
+      # retrying through the same kind of API timeout that may have stopped
+      # the plan (recording an edit's outcome twice changes nothing). If even
+      # that fails, say so loudly instead of leaving the edit stuck unseen.
       - name: Record an edit that could not start
         if: ${{ failure() && inputs.edit_id != '' }}
         env:
@@ -274,12 +302,16 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           EDIT_ID: ${{ inputs.edit_id }}
         run: |
-          curl -sS -X POST "${SUPABASE_URL%/}/rest/v1/rpc/kb_video_edit_finish" \
-            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H 'content-type: application/json' \
-            -d "$(jq -n --arg e "$EDIT_ID" '{p_edit_id: $e, p_status: "failed", p_error: "the edit could not start; see the run"}')" \
-            > /dev/null || true
+          if ! curl -sS --fail-with-body --retry 4 --retry-delay 8 --retry-connrefused \
+               -X POST "${SUPABASE_URL%/}/rest/v1/rpc/kb_video_edit_finish" \
+               -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+               -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+               -H 'content-type: application/json' \
+               -d "$(jq -n --arg e "$EDIT_ID" '{p_edit_id: $e, p_status: "failed", p_error: "the edit could not start; see the run"}')" \
+               > /dev/null; then
+            echo "::error::Could not record edit $EDIT_ID as failed, so the Output page will keep showing it as editing. To clear it, run this in the Supabase SQL editor: select public.kb_video_edit_finish('$EDIT_ID', 'failed', 'the edit could not start; see the run');"
+            exit 1
+          fi
 
   render:
     name: Render ${{ matrix.slot }} — ${{ matrix.name }}
@@ -596,19 +628,51 @@ jobs:
           # --fail-with-body on every call. Without it curl exits 0 on a 4xx or
           # 5xx: a rejected upload was followed by a row saying "rendered", and
           # a rejected row was not noticed at all.
+          # RETRY on every call that is safe to repeat (uploads upsert, and an
+          # edit's outcome is only recorded once), to ride out the few-second
+          # API timeouts Supabase sometimes has: curl tries again after no
+          # connection, a timeout, 408, 429, 500, 502, 503 or 504.
+          RETRY=(--retry 4 --retry-delay 8 --retry-connrefused)
+
           # Prints the new row's id; kb_record_render returns it as a JSON string.
+          # It adds a row, so it is not repeated after a 504 or a 500, which
+          # may have gone through; only when it surely never ran: no
+          # connection (curl 6 or 7), 429, 502 or 503.
           record() {
-            curl -sS --fail-with-body -X POST "$BASE/rest/v1/rpc/kb_record_render" \
-              -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-              -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-              -H 'content-type: application/json' \
-              -d "$1" | jq -r .
+            local out rc code try
+            out=$(mktemp)
+            for try in 1 2 3 4; do
+              rc=0
+              code=$(curl -sS -o "$out" -w '%{http_code}' -X POST "$BASE/rest/v1/rpc/kb_record_render" \
+                -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+                -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                -H 'content-type: application/json' \
+                -d "$1") || rc=$?
+              if [ "$rc" = 0 ] && [ "${code:0:1}" = 2 ]; then
+                # An answer jq can't read is a failure, not an empty id.
+                jq -r . < "$out" && rc=0 || rc=$?
+                rm -f "$out"
+                return "$rc"
+              fi
+              case "$rc:$code" in
+                6:*|7:*|0:429|0:502|0:503)
+                  if [ "$try" -lt 4 ]; then
+                    echo "kb_record_render: no luck (curl $rc, HTTP $code); trying again in $((try * 8))s" >&2
+                    sleep $((try * 8))
+                    continue
+                  fi ;;
+              esac
+              break
+            done
+            echo "::error::kb_record_render failed (curl $rc, HTTP $code): $(head -c 300 "$out" | tr '\n' ' ')" >&2
+            rm -f "$out"
+            return 1
           }
           # An edit's own row says how it ended, so the Output page can show it.
           # Losing that costs the status line, not the video, so it only warns.
           finish_edit() {
             [ -n "${EDIT_ID:-}" ] || return 0
-            curl -sS --fail-with-body -X POST "$BASE/rest/v1/rpc/kb_video_edit_finish" \
+            curl -sS --fail-with-body "${RETRY[@]}" -X POST "$BASE/rest/v1/rpc/kb_video_edit_finish" \
               -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
               -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
               -H 'content-type: application/json' \
@@ -659,7 +723,7 @@ jobs:
           DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$MP4" 2>/dev/null || echo "")
 
           echo "Uploading $MP4 ($BYTES bytes) -> videos/$PATH_IN_BUCKET"
-          if ! UPLOAD=$(curl -sS --fail-with-body -X POST "$BASE/storage/v1/object/videos/$PATH_IN_BUCKET" \
+          if ! UPLOAD=$(curl -sS --fail-with-body "${RETRY[@]}" -X POST "$BASE/storage/v1/object/videos/$PATH_IN_BUCKET" \
                 -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
                 -H 'content-type: video/mp4' \
                 -H 'x-upsert: true' \
@@ -676,7 +740,7 @@ jobs:
           SOURCE_PATH=""
           if [ -s artifact/source.tar.gz ]; then
             SRC_KEY="$SESSION_ID/$SLOT-$NAME-$GITHUB_RUN_ID.tar.gz"
-            if curl -sS --fail-with-body -X POST "$BASE/storage/v1/object/video-sources/$SRC_KEY" \
+            if curl -sS --fail-with-body "${RETRY[@]}" -X POST "$BASE/storage/v1/object/video-sources/$SRC_KEY" \
                  -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
                  -H 'content-type: application/gzip' \
                  -H 'x-upsert: true' \
@@ -702,7 +766,7 @@ jobs:
           # A signed link in the job summary, so reviewing is a click rather than
           # a download. The bucket is private; this is the only way in. A failure
           # here costs the link, not the video, so it does not fail the step.
-          SIGNED=$(curl -sS --fail-with-body -X POST "$BASE/storage/v1/object/sign/videos/$PATH_IN_BUCKET" \
+          SIGNED=$(curl -sS --fail-with-body "${RETRY[@]}" -X POST "$BASE/storage/v1/object/sign/videos/$PATH_IN_BUCKET" \
             -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H 'content-type: application/json' \
             -d '{"expiresIn": 2592000}' | jq -r '.signedURL // empty') || SIGNED=""
