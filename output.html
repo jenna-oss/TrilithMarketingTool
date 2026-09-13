@@ -258,10 +258,6 @@ const countEls = Object.fromEntries(
   [...document.querySelectorAll('.tabs .count')].map((el) => [el.dataset.count, el]));
 const toastEl = document.getElementById('toast');
 
-/* Shared with the Plan page, which asks for the same token when a file is
-   added to the library — one team token, asked for once per browser. */
-const TOKEN_KEY = 'trilith-kb-upload-token';
-
 /* Three places a video can be. Ready to review is the absence of a decision;
    the other two are decisions, and either can be changed later. */
 const TABS = ['review', 'to_post', 'rejected'];
@@ -472,45 +468,22 @@ function open(v) {
   detail.showModal();
 }
 
-function teamToken(force) {
-  let token = '';
-  try { if (!force) token = localStorage.getItem(TOKEN_KEY) || ''; } catch { /* private mode */ }
-  if (!token) {
-    token = (window.prompt('Team token (the same one used to add files to the library):') || '').trim();
-    if (token) { try { localStorage.setItem(TOKEN_KEY, token); } catch { /* private mode */ } }
-  }
-  return token;
-}
-
-/* A rotated or mistyped token costs one re-ask, not a dead button. */
 async function setReview(id, status) {
-  let token = teamToken(false);
-  if (!token) return { ok: false, error: 'No team token, so nothing changed.' };
-
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    let res;
-    try {
-      res = await fetch(WORKER_URL + '/videos/review', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
-        body: JSON.stringify({ id, status }),
-      });
-    } catch {
-      return { ok: false, error: 'Couldn’t reach the server. Try again.' };
-    }
-    if (res.status === 401 && attempt === 0) {
-      try { localStorage.removeItem(TOKEN_KEY); } catch { /* private mode */ }
-      token = teamToken(true);
-      if (!token) return { ok: false, error: 'No team token, so nothing changed.' };
-      continue;
-    }
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return { ok: false, error: 'Couldn’t save' + (body.error ? ': ' + body.error : ' (' + res.status + ')') + '.' };
-    }
-    return { ok: true, review_status: body.review_status ?? status, reviewed_at: body.reviewed_at ?? null };
+  let res;
+  try {
+    res = await fetch(WORKER_URL + '/videos/review', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+  } catch {
+    return { ok: false, error: 'Couldn’t reach the server. Try again.' };
   }
-  return { ok: false, error: 'That team token wasn’t accepted.' };
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return { ok: false, error: 'Couldn’t save' + (body.error ? ': ' + body.error : ' (' + res.status + ')') + '.' };
+  }
+  return { ok: true, review_status: body.review_status ?? status, reviewed_at: body.reviewed_at ?? null };
 }
 
 let toastTimer;

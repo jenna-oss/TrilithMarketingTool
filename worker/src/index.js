@@ -16,7 +16,7 @@
  * ------------------------------------------------------------------------ */
 
 import { handleIdeas } from './ideas.js';
-import { handleUpload, tokenMatches } from './upload.js';
+import { handleUpload } from './upload.js';
 import { rpc } from './db.js';
 
 /* Only the published pages may call this. The key lives here, so an open
@@ -122,18 +122,11 @@ export default {
     }
 
     /* Record a review decision on a finished video: to_post or rejected.
-     * Either can be changed later. A write, so it takes the same team token as
-     * /kb/upload: the origin check above is a browser control, not a lock. */
+     * Either can be changed later. No token, by choice: asking for one on every
+     * move got in the way, and the most a stranger with this URL could do is
+     * flip a review label on a finished video. The origin check above keeps
+     * other sites' pages out; it does not stop curl. */
     if (path === '/videos/review') {
-      if (!env.KB_UPLOAD_TOKEN) {
-        return json({ error: 'posting is not configured on the Worker' }, 503, headers);
-      }
-      const auth = request.headers.get('authorization') || '';
-      const given = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-      if (!tokenMatches(given, env.KB_UPLOAD_TOKEN)) {
-        return json({ error: 'wrong or missing team token' }, 401, headers);
-      }
-
       let body;
       try { body = await request.json(); }
       catch { return json({ error: 'body must be JSON' }, 400, headers); }
