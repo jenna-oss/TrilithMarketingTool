@@ -688,6 +688,25 @@ jobs:
             finish_edit failed "$1"
             echo "### Slot $SLOT — not stored: $1" >> "$GITHUB_STEP_SUMMARY"
           }
+          # The agent's last words in render.log, for an edit that made no
+          # video. The agent wrote that log, so this is only ever text: one
+          # line, at most 300 characters, passed on through jq --arg.
+          said() {
+            node -e '
+              const fs = require("fs");
+              let last = "";
+              try {
+                for (const line of fs.readFileSync(process.argv[1], "utf8").split("\n")) {
+                  let m;
+                  try { m = JSON.parse(line); } catch { continue; }
+                  if (!m || m.type !== "result") continue;
+                  last = typeof m.result === "string" && m.result.trim() ? m.result
+                    : m.subtype && m.subtype !== "success" ? "it stopped early (" + m.subtype + ")" : "";
+                }
+              } catch { /* no log, so nothing to say */ }
+              process.stdout.write(last.replace(/\s+/g, " ").trim().slice(0, 300));
+            ' artifact/render.log 2>/dev/null || true
+          }
 
           # The same judgement the render step made, by the same script, on the
           # same files. This used to store the first mp4 find returned: slot 1
@@ -704,6 +723,13 @@ jobs:
               silent)     WHY="narrated file is silent (mean ${OUT_mean_db:-n/a} dB)" ;;
               *)          WHY="render produced no mp4" ;;
             esac
+            # An edit that can't be made is told to say why and stop, and
+            # render.log is the only place that reason exists. It goes on the
+            # edit, where the Edit and Output pages show it.
+            if [ -n "${EDIT_ID:-}" ]; then
+              SAID=$(said)
+              if [ -n "$SAID" ]; then WHY="$WHY. Claude said: ${SAID%.}"; fi
+            fi
             # Not uploaded. An unnarrated render is not the deliverable, and under
             # the canonical path it would read as one. It stays in the artifact.
             echo "Not storing: $WHY"
@@ -781,3 +807,36 @@ jobs:
             echo "- **Source kept:** ${SOURCE_PATH:-no, so it can only be re-made, not edited exactly}"
             [ -n "$SIGNED" ] && echo "- **Watch (30-day link):** ${BASE}/storage/v1${SIGNED}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # An edit run that ends without recording how the edit went leaves the pages
+  # showing the video as editing for 3 hours, then dropping it without a word.
+  # A run cancelled in GitHub does that: it skips the plan job's failure step
+  # and the store job. So this runs last, whatever happened, and marks the
+  # edit failed if it is still open. After a normal finish it changes nothing,
+  # because kb_video_edit_finish only touches an edit that is queued or
+  # running. (A run GitHub refuses to start never gets here; the Worker
+  # records that one.)
+  close-edit:
+    name: Close the edit
+    needs: [plan, render, store]
+    if: ${{ always() && inputs.edit_id != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Mark the edit failed if nothing recorded how it ended
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EDIT_ID: ${{ inputs.edit_id }}
+          HOW: ${{ (needs.plan.result == 'cancelled' || needs.render.result == 'cancelled' || needs.store.result == 'cancelled') && 'the edit was cancelled before it finished' || 'the run ended without recording how the edit went; see the run' }}
+        run: |
+          if ! curl -sS --fail-with-body --retry 4 --retry-delay 8 --retry-connrefused \
+               -X POST "${SUPABASE_URL%/}/rest/v1/rpc/kb_video_edit_finish" \
+               -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+               -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+               -H 'content-type: application/json' \
+               -d "$(jq -n --arg e "$EDIT_ID" --arg w "$HOW" '{p_edit_id: $e, p_status: "failed", p_error: $w}')" \
+               > /dev/null; then
+            echo "::error::Could not close edit $EDIT_ID, so the Output page may keep showing it as editing. To clear it, run this in the Supabase SQL editor: select public.kb_video_edit_finish('$EDIT_ID', 'failed', 'the edit stopped before it finished');"
+            exit 1
+          fi

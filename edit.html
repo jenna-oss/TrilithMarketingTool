@@ -636,6 +636,29 @@ function addNote(atFrame) {
 addFrameBtn.addEventListener('click', () => addNote(true));
 addWholeBtn.addEventListener('click', () => addNote(false));
 
+/* Only the newest version of a video can be edited. If one came in for v's
+   slot since this page loaded, show it and carry v's unsent notes over, in
+   video order, rather than leave them on a version nobody can edit. */
+async function followNewerVersion(v) {
+  let next;
+  try { next = await fetchVideos(); } catch { return false; }
+  const newer = next.find((x) => slotOf(x) === slotOf(v) && x.id !== v.id);
+  if (!newer) return false;
+  if (drafts[v.id]) {
+    drafts[newer.id] = draftFor(newer).concat(drafts[v.id])
+      .sort((a, b) => (a.at == null ? Infinity : a.at) - (b.at == null ? Infinity : b.at))
+      .slice(0, MAX_NOTES);
+    delete drafts[v.id];
+    saveDrafts();
+  }
+  videos = next;
+  select(newer);
+  schedulePoll();
+  sendNote.className = 'action-note bad';
+  sendNote.textContent = 'A newer version of this video came in, so nothing was sent. Your notes are on it now: check each one still points at the right moment, then send again.';
+  return true;
+}
+
 sendBtn.addEventListener('click', async () => {
   const v = current;
   const list = draftFor(v);
@@ -657,6 +680,9 @@ sendBtn.addEventListener('click', async () => {
   } catch { res = null; }
 
   if (!res || !res.ok) {
+    /* Refused because a newer version of this video came in after the page
+       loaded (another reviewer's edit, say): the notes move onto it. */
+    if (res && res.status === 409 && await followNewerVersion(v)) return;
     sendBtn.disabled = false;
     sendNote.className = 'action-note bad';
     sendNote.textContent = res ? (body.error || 'Couldn’t start the edit (' + res.status + ').')
