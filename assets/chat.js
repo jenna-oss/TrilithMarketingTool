@@ -191,6 +191,9 @@
             } else if (event === 'done') {
               console.info('[aiko] ' + data.model + ' · ' + data.usage.searches + ' searches · '
                 + data.usage.output + ' output tokens · ' + data.usage.cacheRead + ' cached');
+              /* The end of a turn, carrying whether the plan is now complete.
+                 The Plan page shows its confirm-and-render list from here. */
+              if (opts.onDone) opts.onDone(wrapper, data);
             }
           }
         }

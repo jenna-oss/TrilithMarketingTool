@@ -510,6 +510,7 @@ chat = AikoChat.create({
   onSubmitted: () => { staged.length = 0; showError(''); drawTray(); },
   onPlan: renderPlan,
   onPlanState,
+  onDone: showConfirm,
 });
 const render = AikoChat.render;
 
@@ -571,6 +572,123 @@ async function hydratePlan() {
    it back with the next message. */
 function onPlanState(next) {
   plan = next;
+}
+
+/* --- confirm and render ---------------------------------------------------
+ * When the last topic locks, the turn ends with plan_complete and this shows
+ * the agreed videos as a list with one Render button. Pressing it asks the
+ * Worker to start one render per row. The Worker checks the saved plan and the
+ * limits in the database, so this list is a view of the plan, not the authority.
+ *
+ * A list goes stale if the plan changes after it was shown (a topic swapped, a
+ * video unlocked), and a fresh one appears when the plan is complete again.
+ * Once a plan has been sent, no new list is offered for it.
+ * ------------------------------------------------------------------------ */
+let confirmCard = null;
+let confirmedKey = null;
+let planSent = false;
+
+const planKey = (p) => JSON.stringify((p.slots || []).map((s) => s.topic || ''));
+const videos = (n) => (n === 1 ? '1 video' : `${n} videos`);
+
+function markStale(card) {
+  if (!card || card.dataset.state === 'sent') return;
+  card.classList.add('stale');
+  card.dataset.state = 'stale';
+  card.querySelector('button').hidden = true;
+  const note = card.querySelector('.pc-note');
+  note.className = 'pc-note';
+  note.textContent = 'The plan changed after this list.';
+}
+
+function showConfirm(wrapper, data) {
+  if (planSent) return;
+  if (!data.plan_complete) {
+    markStale(confirmCard);
+    confirmCard = confirmedKey = null;
+    return;
+  }
+  /* Same plan, list already on screen: a follow-up question shouldn't stack a
+     second copy under every answer. */
+  const key = planKey(plan);
+  if (confirmCard && key === confirmedKey) return;
+  markStale(confirmCard);
+
+  const slots = plan.slots || [];
+  const card = document.createElement('div');
+  card.className = 'plan-confirm';
+
+  const head = document.createElement('div');
+  head.className = 'pc-head';
+  head.textContent = `${videos(slots.length)}, ready to render`;
+
+  const table = document.createElement('table');
+  const headRow = table.createTHead().insertRow();
+  ['#', 'Topic'].forEach((label) => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headRow.append(th);
+  });
+  const body = table.createTBody();
+  slots.forEach((s, i) => {
+    const row = body.insertRow();
+    const num = row.insertCell();
+    num.className = 'pc-num';
+    num.textContent = String(i + 1);
+    row.insertCell().textContent = s.topic || '';
+  });
+
+  const foot = document.createElement('div');
+  foot.className = 'pc-foot';
+  const note = document.createElement('span');
+  note.className = 'pc-note';
+  note.textContent = 'Each row becomes one video. Want a change? Just say so.';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = `Render ${videos(slots.length)}`;
+  btn.addEventListener('click', () => sendToRender(card, btn, note, slots.length));
+  foot.append(note, btn);
+
+  card.append(head, table, foot);
+  wrapper.append(card);
+  card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  confirmCard = card;
+  confirmedKey = key;
+}
+
+async function sendToRender(card, btn, note, count) {
+  if (card.dataset.state) return;
+  btn.disabled = true;
+  btn.textContent = 'Starting…';
+  note.className = 'pc-note';
+  note.textContent = '';
+
+  let res = null;
+  let body = {};
+  try {
+    res = await fetch(WORKER_URL.replace(/\/+$/, '') + '/plan/render', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    body = await res.json().catch(() => ({}));
+  } catch { /* shown below */ }
+
+  if (res && (res.ok || (res.status === 409 && body.already))) {
+    planSent = true;
+    card.dataset.state = 'sent';
+    btn.hidden = true;
+    note.className = res.ok ? 'pc-note ok' : 'pc-note';
+    note.textContent = res.ok
+      ? `Rendering ${videos(body.count || count)}. They’ll be in Ready to review on the Output page in about 30 minutes.`
+      : body.error;
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = `Render ${videos(count)}`;
+  note.className = 'pc-note bad';
+  note.textContent = body.error || 'Couldn’t reach the server. Try again.';
 }
 
 function buildPayload(brief, history) {

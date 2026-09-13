@@ -177,3 +177,36 @@
 .chat .kb-status { font-family: var(--chat-mono); font-size: .6875rem; }
 .chat .kb-status.ok { color: var(--chat-go); }
 .chat .kb-status.bad { color: var(--chat-clay); }
+
+/* The end of a planning session: the agreed videos, one per row, and the one
+   button that sends them to render. */
+.chat .plan-confirm {
+  margin-top: .875rem; border: 1px solid var(--chat-rule); border-radius: 4px;
+  background: var(--chat-card); overflow: hidden;
+}
+.chat .plan-confirm .pc-head {
+  padding: .625rem .875rem; font-size: .8125rem; font-weight: 600; color: var(--chat-ink);
+}
+.chat .plan-confirm table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.chat .plan-confirm th,
+.chat .plan-confirm td { text-align: left; padding: .5rem .875rem; vertical-align: top; }
+.chat .plan-confirm th {
+  font-family: var(--chat-mono); font-size: .6875rem; font-weight: 500; color: var(--chat-quiet);
+  text-transform: uppercase; letter-spacing: .04em; border-top: 1px solid var(--chat-rule);
+}
+.chat .plan-confirm td { border-top: 1px solid var(--chat-rule); color: var(--chat-ink); }
+.chat .plan-confirm td.pc-num { width: 2.75rem; font-family: var(--chat-mono); color: var(--chat-quiet); }
+.chat .plan-confirm .pc-foot {
+  display: flex; flex-wrap: wrap; gap: .625rem; align-items: center;
+  padding: .75rem .875rem; border-top: 1px solid var(--chat-rule); background: var(--chat-sunk);
+}
+.chat .plan-confirm .pc-note { font-size: .8125rem; color: var(--chat-body); margin-right: auto; }
+.chat .plan-confirm .pc-note.bad { color: var(--chat-clay); }
+.chat .plan-confirm .pc-note.ok { color: var(--chat-go); }
+.chat .plan-confirm button {
+  font-family: var(--chat-sans); font-size: .8125rem; font-weight: 600; border: none; border-radius: 4px;
+  padding: .4375rem 1rem; cursor: pointer; background: var(--chat-go); color: #F4F2E7;
+}
+.chat .plan-confirm button:disabled { opacity: .5; cursor: not-allowed; }
+.chat .plan-confirm button[hidden] { display: none; }
+.chat .plan-confirm.stale { opacity: .55; }

@@ -199,6 +199,43 @@ export default {
       return json({ edit_id: queued.id }, 202, headers);
     }
 
+    /* Render from the Plan page's confirm list: one video per locked slot.
+     * Open like /videos/edit, so the limits live in kb_plan_request_render:
+     * the plan has to be complete, each plan is sent once, and no more than
+     * 12 videos a day. The render job reads the plan itself, by session id,
+     * from the copy the agent saved at the end of the turn that finished it. */
+    if (path === '/plan/render') {
+      if (!env.GITHUB_TOKEN) {
+        return json({ error: 'Rendering isn’t set up yet: the Worker needs its GitHub token.' }, 503, headers);
+      }
+
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ error: 'body must be JSON' }, 400, headers); }
+      const id = String(body.session_id ?? '').slice(0, 64);
+      if (!id) return json({ error: 'session_id is required' }, 400, headers);
+
+      let queued;
+      try { queued = await rpc(env, 'kb_plan_request_render', { p_session_id: id }); }
+      catch { return json({ error: 'Couldn’t start the render. Try again.' }, 502, headers); }
+      if (!queued || !queued.ok) {
+        return json({
+          error: (queued && queued.error) || 'Couldn’t start the render.',
+          already: Boolean(queued && queued.already),
+        }, 409, headers);
+      }
+
+      const started = await dispatchRender(env, { session_id: id }, 'the render');
+      if (!started.ok) {
+        /* Frees the plan to be sent again; the attempt still counts toward
+         * the day's cap. */
+        try { await rpc(env, 'kb_plan_render_abandon', { p_request_id: queued.id, p_error: started.error }); }
+        catch { /* the request still fails below */ }
+        return json({ error: started.error }, 502, headers);
+      }
+      return json({ count: queued.count }, 202, headers);
+    }
+
     /* The retired ask endpoint. Anything still POSTing here gets told where to
      * go rather than a bare 404 that looks like an outage. */
     return json({
@@ -207,10 +244,10 @@ export default {
   },
 };
 
-/* Start the render workflow for one edit. GITHUB_TOKEN is a fine-grained token
- * that can only run this repo's workflows (Actions: read and write); the
- * workflow does the rest, reading the request from Supabase by its id. */
-async function startEdit(env, editId) {
+/* Start render-videos.yml. GITHUB_TOKEN is a fine-grained token that can only
+ * run this repo's workflows (Actions: read and write); the workflow does the
+ * rest, reading what to render from Supabase. `what` names the job in errors. */
+async function dispatchRender(env, inputs, what) {
   const repo = env.GITHUB_REPO || 'jenna-oss/TrilithMarketingTool';
   try {
     const res = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/render-videos.yml/dispatches`, {
@@ -223,16 +260,19 @@ async function startEdit(env, editId) {
         'user-agent': 'trilith-ask-worker',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ ref: 'main', inputs: { edit_id: editId } }),
+      body: JSON.stringify({ ref: 'main', inputs }),
     });
     if (res.ok) return { ok: true };
     console.error('workflow dispatch failed:', res.status, (await res.text()).slice(0, 300));
-    return { ok: false, error: `Couldn’t start the edit (GitHub answered ${res.status}).` };
+    return { ok: false, error: `Couldn’t start ${what} (GitHub answered ${res.status}).` };
   } catch (err) {
     console.error('workflow dispatch failed:', err?.message);
-    return { ok: false, error: 'Couldn’t reach GitHub to start the edit. Try again.' };
+    return { ok: false, error: `Couldn’t reach GitHub to start ${what}. Try again.` };
   }
 }
+
+/* One edit: the workflow reads the request from Supabase by its id. */
+const startEdit = (env, editId) => dispatchRender(env, { edit_id: editId }, 'the edit');
 
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), {
