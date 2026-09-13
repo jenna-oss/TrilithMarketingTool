@@ -3,6 +3,7 @@
 //
 // There are no layouts in this file on purpose: every video designs its own
 // scenes from scratch, for variety. What stays fixed is the brand.
+import React from "react";
 import { staticFile } from "remotion";
 import { loadFont as loadArchivo } from "@remotion/google-fonts/Archivo";
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
@@ -43,6 +44,20 @@ export const SAFE_W = W - SAFE.left - SAFE.right;
 /** Captions sit at the bottom of the safe zone; scene text stays above them. */
 export const CAPTION_SIZE = 56;
 export const SCENE_BOTTOM = H - SAFE.bottom - 200;
+/** How far up from the bottom edge scene content has to stay. */
+export const SCENE_FLOOR = H - SCENE_BOTTOM;
+
+/** The part of the frame scene text may use: inside the Reels safe zone and
+ *  above the captions. It is a positioned box, so absolute children are
+ *  placed relative to it: `bottom: 0` in here sits just above the captions.
+ *  Full-bleed backgrounds and footage go outside it; text goes inside.
+ *  Plumbing, not a layout -- what goes in it is designed per scene. */
+export const SafeArea: React.FC<{ children?: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) =>
+  React.createElement(
+    "div",
+    { style: { position: "absolute", top: SAFE.top, left: SAFE.left, right: SAFE.right, bottom: SCENE_FLOOR, ...style } },
+    children,
+  );
 
 /** Text-size floors, px on the 1080x1920 frame. */
 export const MIN_HEADLINE = 110;

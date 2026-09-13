@@ -361,7 +361,15 @@
     <li>off-palette colors, gradients, shadows and rounded corners</li>
     <li>fonts other than Archivo and Inter, and text under 40px</li>
     <li>a missing caption overlay, logo or follow ask</li>
+    <li>scene text placed in the caption band or outside Instagram's safe zone. This is read from
+      the component's real structure, so an offset inside a card or <code>&lt;SafeArea&gt;</code> is
+      judged against that box, not the frame.</li>
   </ul>
+  <p>
+    Scene text goes inside <code>&lt;SafeArea&gt;</code> from <span class="path">brand.ts</span>:
+    the region inside the safe zone and above the captions. It is plumbing, not a layout; what goes
+    in it is designed per scene.
+  </p>
   <p>
     CI runs it again and shows anything left as a warning. The new composition is registered in
     <span class="path">Root.tsx</span> with a placeholder duration (corrected in Stage 07).

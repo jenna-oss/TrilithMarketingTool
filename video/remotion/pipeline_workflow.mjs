@@ -232,8 +232,10 @@ const BRAND_LOOK = `THE LOOK: The Buy Box brand guide. Every value lives in ${RE
 - The guide's headline box: a line of Archivo in a tight BLACK box with WHITE text, the key line in an ORANGE box,
   one box per line, stacked. Use it where a statement should hit, especially over footage.
 - Shapes: square corners, thick solid bars, flat colour. No gradients, shadows, rounded corners, cream or navy.
-- Safe zone: scene text and faces stay inside SAFE and above SCENE_BOTTOM (brand.ts); the band below that is where
-  the captions sit.
+- Safe zone: every scene's text goes inside <SafeArea> (from ./brand), the part of the frame inside Instagram's
+  safe zone and above the captions. Absolute offsets inside it are relative to it, so bottom: 0 sits just above the
+  captions. Only full-bleed backgrounds and footage go outside it. The brand check rejects frame-level text in the
+  caption band or outside the safe zone.
 - Motion: quick and sure. Boxes and lines slide in on a short stagger, numbers count up, things stop hard. No
   wobble, bounce or flash.`
 
