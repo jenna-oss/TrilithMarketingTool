@@ -1,4 +1,4 @@
-# Trilith Video Pipeline
+# The Buy Box Video Pipeline
 
 Automated topic-to-video pipeline: give it a topic (a short description or a
 source article URL) and it produces a finished, voiced, vertical (1080x1920)

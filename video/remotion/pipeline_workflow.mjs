@@ -6,7 +6,7 @@
 //
 // By hand: Workflow({ scriptPath: "<this file>", args: { root, topic } }), where
 // topic is a short description, a source URL, or an object with the Plan page's
-// fields (topic, angle, hook, evidence, product, audience, source_ids).
+// fields (topic, angle, hook, evidence, audience, source_ids).
 
 export const meta = {
   name: 'topic-to-video',
@@ -55,7 +55,6 @@ function normaliseBrief(b) {
     angle: text(b.angle),
     hook: text(b.hook) || text(b.opening_line),
     evidence: text(b.evidence),
-    product: text(b.product),
     audience: text(b.audience),
     sources: sources.filter(s => typeof s === 'string' && s.trim()).map(s => s.trim()),
   }
@@ -63,6 +62,9 @@ function normaliseBrief(b) {
   return brief
 }
 
+// No PRODUCT line, even when the plan has one: plans carried a lender's
+// product from before the channel became The Buy Box, and the videos pitch
+// nothing. Their only ask is to follow the channel.
 function briefBlock() {
   return [
     `TOPIC: ${BRIEF.topic}`,
@@ -70,7 +72,6 @@ function briefBlock() {
     BRIEF.angle && `ANGLE: ${BRIEF.angle}`,
     BRIEF.hook && `OPENING LINE (locked, spoken to camera): ${BRIEF.hook}`,
     BRIEF.evidence && `EVIDENCE ALREADY GATHERED: ${BRIEF.evidence}`,
-    BRIEF.product && `PRODUCT: ${BRIEF.product}`,
     BRIEF.audience && `AUDIENCE: ${BRIEF.audience}`,
     BRIEF.sources.length && `SOURCES:\n${BRIEF.sources.map(s => `- ${s}`).join('\n')}`,
   ].filter(Boolean).join('\n\n')
@@ -117,8 +118,8 @@ const SCRIPT_SCHEMA = {
   type: 'object',
   required: ['hookCategory', 'hookTemplate', 'filledHook', 'beats', 'takeaway'],
   properties: {
-    hookCategory: { type: 'string', description: 'the library category, or "LOCKED" when the brief has a locked opening line' },
-    hookTemplate: { type: 'string', description: 'the raw template string chosen from hook_templates_1000.json, placeholders intact -- or "(locked on the Plan page)"' },
+    hookCategory: { type: 'string', description: 'the library category; "LOCKED" when the brief has a locked opening line; "BRAND" when no library template fit the brand hook tone' },
+    hookTemplate: { type: 'string', description: 'the raw template string chosen from hook_templates_1000.json, placeholders intact -- or "(locked on the Plan page)" / "(written to the brand guide)"' },
     filledHook: { type: 'string', description: 'the template with (insert X) placeholders filled from real facts -- or the locked opening line, verbatim' },
     takeaway: { type: 'string', description: 'the one thing a complete beginner should remember, in one plain sentence' },
     beats: {
@@ -256,6 +257,40 @@ Also produce a lowercase-hyphenated "slug" for this topic (e.g. "arnold-schwarze
 log(`Researched "${research.workingTitle}" (slug: ${research.slug}), ${(research.keyTerms || []).length} key terms`)
 
 phase('Script')
+
+// The Buy Box brand guide (v1.1, Sep 2026): personality, voice and tone, as
+// the Script stage's standing orders. The Say this / Not this pairs are the
+// guide's own examples.
+const BRAND_VOICE = `THE CHANNEL: The Buy Box (@thebuyboxre), a real estate investing channel. Never mention Trilith, and
+never speak as a lender or pitch a product ("we fund", "our rates", "ours means"). Some briefs and sources
+still carry a lender's name or products from before the channel launched: keep the idea, drop the name.
+These videos build the channel; their only ask is to follow it.
+
+WHO IS TALKING: the person on the other side of the underwriting desk, who wants your deal to work and
+will tell you plainly when it doesn't. They have been deep in hundreds of deals, the good, the bad and the
+ugly, and it has not made them arrogant toward investors at the start of their journey. They are patient,
+and use deep expertise to turn complex ideas into simple lessons for beginners.
+
+VOICE (fixed, whatever the topic): an experienced real estate investor-operator. Confident, backed by
+data, to the point. Credibility over reach.
+- We are: experienced, beginner friendly, confident about the math.
+- We are not: superior, dumbed down, certain about the future.
+So: no hype, no talking down ("obviously", "everyone knows"), and no promises or predictions. Say what
+the numbers show, not what will happen.
+
+TONE (depends on the beat):
+- Hook: sharp, declarative, a little confrontational.
+  Say this: "This deal made four thousand dollars. It took eleven months."
+  Not this: "You won't BELIEVE what happened with this flip."
+- Deal breakdown: neutral; let the numbers carry it.
+  Say this: "185 purchase, 60 rehab, comps at 340. That is 72% all-in on ARV, with about 15k of room."
+  Not this: "The numbers on this one are absolutely incredible."
+- Beginner explainer: patient and plain.
+  Say this: "Points are prepaid interest. Two points on 300k is 6,000 at closing, and it buys down your rate."
+  Not this: "Obviously you'll want to weigh points against rate."
+The examples set the register, not a licence for jargon: terms like ARV and comps still get explained the
+first time they come up, as the beginner rules below require.`
+
 const hookStep = BRIEF.hook
   ? `The opening line is already decided: it was locked on the Plan page. Beat 1 is exactly this line,
 word for word, with no change to its wording or punctuation:
@@ -266,10 +301,12 @@ Do not pick a hook from the template library and do not rewrite this line. Repor
 hookTemplate "(locked on the Plan page)", and filledHook as the line above. Beat 2 onward must follow on
 from it.`
   : `Read the hook template library at ${HOOK_LIBRARY_PATH} (a JSON object of {category: [templates...]}).
-Pick ONE category and ONE specific template from that library that fits this brief's angle. Fill its
-(insert X) placeholders with real details from the facts above -- do not invent facts. Report both the
-raw template (hookTemplate, placeholders intact) and the filled version (filledHook). The filledHook
-should be beat 1 or very close to it.`
+Pick ONE category and ONE specific template that fits this brief's angle AND, once filled, reads as the
+brand's hook tone: sharp, declarative, a little confrontational. Skip anything that reads as hype or
+clickbait. Fill its (insert X) placeholders with real details from the facts above -- do not invent facts.
+Report both the raw template (hookTemplate, placeholders intact) and the filled version (filledHook). If
+no template can meet the hook tone, write the hook yourself in that tone and report hookCategory "BRAND"
+and hookTemplate "(written to the brand guide)". The filledHook is beat 1.`
 
 // Every video has to work for someone who has never invested in real estate.
 const BEGINNER_RULES = `WHO THIS IS FOR: someone brand new to real estate investing. They should follow every line
@@ -288,8 +325,8 @@ should still find it worth watching: clear, not dumbed down.
 function writeScript(fix, draft, round) {
   return agent(
     `Write the script for a short-form vertical video from this brief. The brief was locked by a person on
-the Plan page: the script carries its ANGLE, speaks to its AUDIENCE in a way a complete beginner can also
-follow, and features its PRODUCT where it names one. Do not drift to a different story.
+the Plan page: the script carries its ANGLE and speaks to its AUDIENCE in a way a complete beginner can
+also follow. Do not drift to a different story.
 
 ${briefBlock()}
 
@@ -300,27 +337,34 @@ ${research.sourcedFacts.map(f => `- ${f.fact} (${f.source})`).join('\n')}
 Key terms, with plain meanings from the research:
 ${(research.keyTerms || []).map(k => `- ${k.term}: ${k.plainMeaning}`).join('\n') || '- (none listed)'}
 
+${BRAND_VOICE}
+
 ${BEGINNER_RULES}
 
 ${hookStep}
 
 Then write a full beat-by-beat script: 8-13 beats, each a short natural spoken line (these get narrated
 by a cloned voice, so keep them punchy -- 8-14 words per beat is typical, not full paragraphs) with an
-estSeconds guess. The script should read as one connected story, not isolated facts -- reference the
-Mayweather/JPMorgan/DSCR/Construction videos' scripts in ${PROJECT_ROOT}/data/script_*.json for the tone
-and pacing this account uses.${draft ? `
+estSeconds guess. The script should read as one connected story, not isolated facts. The scripts in
+${PROJECT_ROOT}/data/script_*.json show this account's beat length and pacing; use them for that only,
+because their tone predates the brand guide and the brand voice above wins.
+
+The last beat asks the viewer to follow The Buy Box, in the brand voice: one short line, tied to what the
+video just taught, with no hype (e.g. "Follow The Buy Box for the math on the next deal.").${draft ? `
 
 Your previous draft:
 ${draft.beats.map(b => `${b.order}. ${b.line}`).join('\n')}
 
-Someone new to real estate investing listened to it and got stuck here. Fix these and keep what works:
+It was checked by someone new to real estate investing and against the brand guide. Fix these and keep
+what works:
 ${fix}` : ''}`,
     { schema: SCRIPT_SCHEMA, label: round ? `script-revision-${round}` : 'script' }
   )
 }
 
 // A separate listener, given only the narration: no brief, no facts, no key
-// terms. Anything it needs explained, a first-time viewer will too.
+// terms, no brand guide. Anything it needs explained, a first-time viewer
+// will too.
 function beginnerCheck(s, round) {
   return agent(
     `You are watching a short video about real estate investing. You know nothing about the subject: you have
@@ -350,26 +394,64 @@ function beginnerIssues(r) {
   return out.length ? out.join('\n') : null
 }
 
+// What the brand guide rules out, as words a line can be caught using. A lint,
+// not the judge of tone: it catches the plain cases cheaply and the same way
+// every time, and the prompt carries the rest.
+const VOICE_LINT = [
+  [/\btrilith\b/i, 'names Trilith; the channel is The Buy Box'],
+  [/\b(incredible|unbelievable|insane|crazy|mind-?blowing|game-?changer|jaw-?dropping)\b/i, 'hype, which the voice rules out'],
+  [/\byou won'?t believe\b/i, 'clickbait, which the voice rules out'],
+  [/\b(obviously|everyone knows|as we all know)\b/i, 'talks down to the viewer'],
+  [/\b(guarantee[ds]?|risk-?free|can'?t lose|will definitely|sure thing)\b/i, 'certain about the future'],
+  [/!/, 'exclamation mark: the voice is confident, not excited'],
+]
+
+function lintLine(line) {
+  return VOICE_LINT.filter(([re]) => re.test(line)).map(([, why]) => why)
+}
+
+// `from` skips a locked opening line: the writer cannot change it, so it is
+// reported on its own rather than sent back as something to fix.
+function voiceIssues(s, from) {
+  const out = []
+  s.beats.forEach((b, i) => {
+    if (i < from) return
+    for (const why of lintLine(b.line)) out.push(`beat ${b.order}: ${why} ("${b.line}")`)
+  })
+  const last = s.beats[s.beats.length - 1]
+  if (!/\bfollow\b/i.test(last ? last.line : '')) {
+    out.push(`beat ${last ? last.order : '?'}: the last beat has to ask the viewer to follow The Buy Box`)
+  }
+  return out.length ? out.join('\n') : null
+}
+
+const combine = (...parts) => parts.filter(Boolean).join('\n') || null
+const skipLocked = BRIEF.hook ? 1 : 0
+const lockedLineFlags = BRIEF.hook ? lintLine(BRIEF.hook) : []
+if (lockedLineFlags.length) {
+  log(`The locked opening line breaks the brand voice (${lockedLineFlags.join('; ')}). It stays as locked; re-lock it on the Plan page to change it.`)
+}
+
 let script = await writeScript()
 // Not left to the prompt alone. In the first batch every script replaced the
 // locked hook with one from the template library, so the line is put in place
 // here, where no agent can talk its way out of it.
 if (BRIEF.hook) lockOpeningLine(script, BRIEF.hook)
 
-// Checked, not just asked for: one revision against what the listener flags,
-// then a second listen. If it still flags something, the run goes ahead and
-// says so in its result rather than looping on it.
+// Checked, not just asked for: the listener's notes and the voice lint go back
+// together for one revision, then both run again. If something is still
+// flagged, the run goes ahead and says so in its result rather than looping.
 let review = await beginnerCheck(script, 1)
-let stillFlagged = beginnerIssues(review)
+let stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked))
 if (stillFlagged) {
-  log(`Beginner check flagged:\n${stillFlagged}`)
+  log(`Script check flagged:\n${stillFlagged}`)
   script = await writeScript(stillFlagged, script, 1)
   if (BRIEF.hook) lockOpeningLine(script, BRIEF.hook)
   review = await beginnerCheck(script, 2)
-  stillFlagged = beginnerIssues(review)
-  log(stillFlagged ? `Still flagged after one revision, going ahead:\n${stillFlagged}` : 'Beginner check passed after one revision')
+  stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked))
+  log(stillFlagged ? `Still flagged after one revision, going ahead:\n${stillFlagged}` : 'Script check passed after one revision')
 } else {
-  log('Beginner check passed first time')
+  log('Script check passed first time')
 }
 log(`Takeaway: "${script.takeaway}" | the listener learned: "${review.whatILearned}"`)
 log(`Hook: [${script.hookCategory}] "${script.filledHook}"`)
@@ -583,7 +665,12 @@ return {
   workingTitle: research.workingTitle,
   hook: script.filledHook,
   takeaway: script.takeaway,
-  beginnerCheck: { passed: !stillFlagged, whatILearned: review.whatILearned, stillFlagged: stillFlagged || null },
+  scriptCheck: {
+    passed: !stillFlagged,
+    whatILearned: review.whatILearned,
+    stillFlagged: stillFlagged || null,
+    lockedLineFlags: lockedLineFlags.length ? lockedLineFlags : null,
+  },
   finalVideoPath: voiceover.finalVideoPath,
   durationSeconds: voiceover.durationSeconds,
   approvedAssetCount: approvedCount,
