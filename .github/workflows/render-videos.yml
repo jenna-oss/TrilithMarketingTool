@@ -21,6 +21,11 @@ name: Render videos
 # changes only what was asked. If not — videos made before sources were kept —
 # the pipeline re-makes it from its brief with the change added. Either way the
 # result is stored as a new version of the same slot.
+#
+# A re-make, chosen on the Edit page when the problem is what the video says,
+# always takes the second path, kept source or not, and its change may overrule
+# the plan (the opening line included). Lines rewritten on the Edit page's
+# script panel reach the edit agent as data (SCRIPT_CHANGES).
 
 run-name: ${{ inputs.edit_id != '' && 'Edit video' || 'Render videos' }}
 
@@ -137,11 +142,24 @@ jobs:
             const frames = notes
               .map((n, i) => (n.at == null ? null : { file: `note-${i + 1}.jpg`, at: Number(n.at) }))
               .filter(Boolean);
-            const instruction = notes.length
-              ? notes.map((n, i) => (n.at == null
-                  ? `${i + 1}. Whole video: ${n.note}`
-                  : `${i + 1}. At ${clock(n.at)} (frame ${Math.round(n.at * 30)}; frame grab: ${frameDir}/note-${i + 1}.jpg): ${n.note}`)).join('\n')
+            /* Narration lines rewritten on the Edit page's script panel,
+             * numbered from 1. They follow the notes in the instruction, and go
+             * to the edit agent as data as well, so it can put each in place. */
+            const scriptChanges = (Array.isArray(edit.script_changes) ? edit.script_changes : [])
+              .filter((c) => c && Number.isInteger(c.line) && typeof c.to === 'string');
+            const asked = [
+              ...notes.map((n, i) => (n.at == null
+                ? `Whole video: ${n.note}`
+                : `At ${clock(n.at)} (frame ${Math.round(n.at * 30)}; frame grab: ${frameDir}/note-${i + 1}.jpg): ${n.note}`)),
+              ...scriptChanges.map((c) => `Narration line ${c.line}: change "${c.from}" to "${c.to}"`),
+            ];
+            const instruction = asked.length
+              ? asked.map((line, i) => `${i + 1}. ${line}`).join('\n')
               : text(edit.instruction);
+            /* A re-make is the pipeline again, from the plan, with the change
+             * requested in its brief: a kept source is not used. */
+            const remake = edit.mode === 'remake';
+            const hasSource = Boolean(edit.source_path) && !remake;
             const include = [{
               slot: edit.slot,
               name: nameOf(topic),
@@ -149,8 +167,9 @@ jobs:
               edit_id: edit.edit_id,
               edit_of: edit.render_id,
               instruction,
-              has_source: Boolean(edit.source_path),
+              has_source: hasSource,
               has_frames: frames.length > 0,
+              script_changes: JSON.stringify(scriptChanges),
               /* Only used when there is no source to edit: the pipeline then
                * re-makes the video from its brief, with the change added. */
               brief: JSON.stringify({
@@ -163,13 +182,14 @@ jobs:
                 audience: text(s.audience),
                 source_ids: (s.source_ids || []).filter((x) => typeof x === 'string' && x.trim()),
                 revision: instruction,
+                remake,
               }),
             }];
             console.log(`matrix=${JSON.stringify({ include })}`);
             console.log(`session=${edit.session_id}`);
             console.log('count=1');
-            console.log(`has_source=${Boolean(edit.source_path)}`);
-            console.log(`source_path=${edit.source_path || ''}`);
+            console.log(`has_source=${hasSource}`);
+            console.log(`source_path=${hasSource ? edit.source_path : ''}`);
             console.log(`has_frames=${frames.length > 0}`);
             console.log(`frames=${JSON.stringify(frames)}`);
             console.log(`video_path=${edit.storage_path || ''}`);
@@ -391,6 +411,9 @@ jobs:
           # through the shell.
           EDIT_INSTRUCTION: ${{ matrix.instruction }}
           HAS_SOURCE: ${{ matrix.has_source }}
+          # Narration lines rewritten on the Edit page's script panel, as JSON.
+          # Read by video/edit-prompt.mjs, like the instruction.
+          SCRIPT_CHANGES: ${{ matrix.script_changes }}
           # The Workflow tool returns immediately with a task id and runs in the
           # background, so the agent has nothing to block on and says it will
           # report back later. Claude Code then waits 600s for background work
@@ -777,15 +800,25 @@ jobs:
             fi
           fi
 
+          # The narration lines, for the Edit page's script panel, whose line
+          # edits need the kept source. video/script-lines.py reads LINES from
+          # the voiceover script in the bundle; it parses that file, never runs it.
+          SCRIPT_JSON=null
+          if [ -n "$SOURCE_PATH" ]; then
+            SCRIPT_JSON=$(python3 video/script-lines.py artifact/source.tar.gz 2>/dev/null) || SCRIPT_JSON=null
+            printf '%s' "$SCRIPT_JSON" | jq -e 'type == "array"' > /dev/null 2>&1 || SCRIPT_JSON=null
+          fi
+
           NEW_ID=$(record "$(jq -n --arg s "$SESSION_ID" --argjson n "$SLOT" --arg t "$TOPIC" \
             --arg p "$PATH_IN_BUCKET" --argjson b "$BYTES" --arg d "${DUR:-0}" --arg r "$RUN_URL" \
             --arg f "$(basename "$MP4")" --arg m "${OUT_mean_db:-}" \
-            --arg src "$SOURCE_PATH" --arg ei "${EDIT_ID:-}" --arg eo "${EDIT_OF:-}" \
+            --arg src "$SOURCE_PATH" --arg ei "${EDIT_ID:-}" --arg eo "${EDIT_OF:-}" --argjson script "$SCRIPT_JSON" \
             '{payload:{brand_slug:"trilith",session_id:$s,slot:$n,topic:$t,
                        storage_path:$p,bytes:$b,duration_seconds:($d|tonumber),
                        status:"rendered",run_url:$r,
                        metadata:({source_file:$f,mean_volume_db:$m}
                          + (if $src != "" then {source_path:$src} else {} end)
+                         + (if $script != null then {script:$script} else {} end)
                          + (if $ei != "" then {edit_id:$ei,edit_of:$eo} else {} end))}}')")
           finish_edit done "" "$NEW_ID"
 

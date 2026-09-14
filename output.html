@@ -386,7 +386,7 @@ function render() {
     if (v.last_edit && v.last_edit.in_progress) {
       const badge = document.createElement('span');
       badge.className = 'badge';
-      badge.textContent = 'Editing…';
+      badge.textContent = v.last_edit.mode === 'remake' ? 'Re-making…' : 'Editing…';
       frame.append(badge);
     }
     const dur = fmtDuration(v.duration);
@@ -522,7 +522,8 @@ function buildEditBox(v) {
   if (last && last.in_progress) {
     const status = document.createElement('p');
     status.className = 'edit-status';
-    status.textContent = 'Editing now:\n' + last.instruction + '\nThe new version will show up in Ready to review when it’s done.';
+    status.textContent = (last.mode === 'remake' ? 'Re-making now:\n' : 'Editing now:\n') + last.instruction
+      + '\nThe new version will show up in Ready to review when it’s done.';
     box.append(status);
     return box;
   }

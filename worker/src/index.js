@@ -19,6 +19,7 @@ import { handleIdeas } from './ideas.js';
 import { handleUpload } from './upload.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
+import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
 
 /* Only the published pages may call this. The key lives here, so an open
  * endpoint would let anyone spend it. */
@@ -166,11 +167,12 @@ export default {
       }
     }
 
-    /* Notes from the Edit tab, sent together as one edit of a finished video.
-     * Queued in Supabase, then started in GitHub Actions straight away. Open
-     * by the user's choice (no token), so the limits live in
-     * kb_video_request_edit: up to 8 notes of 3 to 400 characters, videos in
-     * Ready to review only, one edit at a time per video, ten a day. */
+    /* Notes and script changes from the Edit tab, sent together as one edit
+     * of a finished video. Queued in Supabase, then started in GitHub Actions
+     * straight away. The limits live in kb_video_request_edit: up to 8 notes
+     * of 3 to 400 characters and 20 changed lines, the newest version of a
+     * video in Ready to review only, one edit at a time per video, ten a day,
+     * three of them re-makes. */
     if (path === '/videos/edit') {
       if (!env.GITHUB_TOKEN) {
         return json({ error: 'Edits aren’t set up yet: the Worker needs its GitHub token.' }, 503, headers);
@@ -196,9 +198,22 @@ export default {
           })
         : [];
 
+      /* 'remake' makes the video again from its plan with the notes as the
+       * change requested, instead of changing only what they ask. Script
+       * changes are lines rewritten on the script panel, numbered from 1; the
+       * database checks them against the lines saved with the video. */
+      const mode = body.mode === 'remake' ? 'remake' : 'exact';
+      const script = Array.isArray(body.script)
+        ? body.script.slice(0, 20).map((c) => ({
+            line: Number.isInteger(c?.line) ? c.line : null,
+            text: String(c?.text ?? '').replace(/\s+/g, ' ').trim().slice(0, MAX_LINE_CHARS),
+          }))
+        : [];
+
       let queued;
-      try { queued = await rpc(env, 'kb_video_request_edit', { p_render_id: id, p_notes: notes }); }
-      catch { return json({ error: 'Couldn’t queue the edit. Try again.' }, 502, headers); }
+      try {
+        queued = await rpc(env, 'kb_video_request_edit', { p_render_id: id, p_notes: notes, p_mode: mode, p_script: script });
+      } catch { return json({ error: 'Couldn’t queue the edit. Try again.' }, 502, headers); }
       if (!queued || !queued.ok) {
         return json({ error: (queued && queued.error) || 'Couldn’t queue the edit.' }, 409, headers);
       }
@@ -211,7 +226,45 @@ export default {
         catch { /* the request still fails below; the row goes stale on its own */ }
         return json({ error: started.error }, 502, headers);
       }
-      return json({ edit_id: queued.id }, 202, headers);
+      return json({ edit_id: queued.id, mode: queued.mode || mode }, 202, headers);
+    }
+
+    /* A finished video's narration lines, for the Edit tab's script panel.
+     * lines is null when none were saved: videos stored before the panel
+     * existed, or without a kept source. */
+    if (path === '/videos/script') {
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ error: 'body must be JSON' }, 400, headers); }
+      const id = String(body.id ?? '');
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return json({ error: 'id must be a video id' }, 400, headers);
+      }
+      try {
+        const out = await rpc(env, 'kb_video_script', { p_render_id: id });
+        return json({ lines: Array.isArray(out?.lines) ? out.lines : null, has_source: Boolean(out?.has_source) }, 200, headers);
+      } catch {
+        return json({ error: 'could not load that script' }, 502, headers);
+      }
+    }
+
+    /* Rewritten script lines, checked before they're sent: the brand-voice
+     * lint and the beginner listener, as the pipeline's Script stage runs
+     * them. Advice for the page, never a block. */
+    if (path === '/videos/script-check') {
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ error: 'body must be JSON' }, 400, headers); }
+      const lines = Array.isArray(body.lines)
+        ? body.lines.map((l) => String(l ?? '').replace(/\s+/g, ' ').trim())
+        : [];
+      if (!lines.length || lines.length > MAX_LINES || lines.some((l) => !l || l.length > MAX_LINE_CHARS)) {
+        return json({ error: `lines must be 1 to ${MAX_LINES} lines of text, each under ${MAX_LINE_CHARS} characters` }, 400, headers);
+      }
+      const changed = [...new Set((Array.isArray(body.changed) ? body.changed : [])
+        .filter((n) => Number.isInteger(n) && n >= 1 && n <= lines.length))];
+      if (!changed.length) return json({ error: 'changed must name the lines that changed' }, 400, headers);
+      return json(await checkScript(env, lines, changed), 200, headers);
     }
 
     /* Render from the Plan page's confirm list: one video per locked slot.

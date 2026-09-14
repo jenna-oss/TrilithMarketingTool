@@ -80,7 +80,9 @@
     display:grid; gap:var(--s4); align-items:start;
     grid-template-columns:190px minmax(0, 340px) minmax(0, 1fr);
   }
-  @media (max-width:980px) { .editor { grid-template-columns:1fr; } }
+  /* minmax(0, …): with a plain 1fr the picker's row of cards set the column's
+     minimum, and three videos pushed the whole page wider than a phone. */
+  @media (max-width:980px) { .editor { grid-template-columns:minmax(0, 1fr); } }
 
   .picker ul { list-style:none; margin:0; padding:0; display:grid; gap:.5rem; }
   @media (max-width:980px) {
@@ -167,6 +169,39 @@
   .action-note { font-size:.8125rem; color:var(--ink-quiet); }
   .action-note.bad { color:var(--clay); }
 
+  /* Classes that set display (.send is flex) would otherwise beat the hidden
+     attribute, and the Send row showed under "Editing now". */
+  [hidden] { display:none !important; }
+
+  /* The script panel: what the narrator says, one box per line. */
+  .script { margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--rule); }
+  .script summary { cursor:pointer; font-size:.875rem; font-weight:600; color:var(--ink); }
+  .script summary .count { font-weight:500; color:var(--accent); margin-left:.375rem; }
+  .script-hint { font-size:.75rem; color:var(--ink-quiet); margin:.5rem 0 0; max-width:60ch; }
+  .lines { list-style:none; margin:.75rem 0 0; padding:0; display:grid; gap:.625rem; }
+  .line { display:grid; grid-template-columns:1.5rem minmax(0, 1fr); gap:.5rem; align-items:start; }
+  .line .n { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); padding-top:.5rem; text-align:right; }
+  .line textarea {
+    display:block; width:100%; min-height:2.75rem; resize:vertical;
+    font-family:var(--sans); font-size:.875rem; line-height:1.45; color:var(--ink);
+    background:var(--card); border:1px solid var(--rule-strong); border-radius:4px; padding:.375rem .5rem;
+  }
+  .line textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .line.changed textarea { border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent); }
+  .line .was { font-size:.6875rem; color:var(--ink-quiet); margin:.25rem 0 0; overflow-wrap:anywhere; }
+  .line .was button {
+    background:none; border:none; padding:0; margin-left:.375rem; font:inherit; color:var(--accent);
+    cursor:pointer; text-decoration:underline; text-underline-offset:2px;
+  }
+  .line .flag { font-size:.75rem; color:var(--clay); margin:.25rem 0 0; }
+
+  .confirm {
+    margin-top:var(--s3); padding:.75rem; border:1px solid var(--rule-strong); border-radius:4px;
+    background:var(--card); font-size:.8125rem; color:var(--ink-body);
+  }
+  .confirm p { margin:0 0 .625rem; max-width:60ch; }
+  .confirm .row { display:flex; flex-wrap:wrap; gap:.5rem; }
+
   .toast {
     position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
     background:var(--panel); color:var(--cream-text); font-size:.875rem;
@@ -211,7 +246,7 @@
 <main class="wrap">
   <p class="eyebrow">Production</p>
   <h2>Edit</h2>
-  <p class="lede">Pick a video, go to the frame you want changed and leave a note. Send your notes together as one edit.</p>
+  <p class="lede">Pick a video, go to the frame you want changed and leave a note, or change what the narrator says in its script. Send them together as one edit, or have the video re-made with them.</p>
 
   <p class="state" id="state" role="status">Loading videos…</p>
 
@@ -258,9 +293,23 @@
 
       <ol class="notes" id="notes"></ol>
 
+      <details class="script" id="script" hidden>
+        <summary>Script<span class="count" id="script-count"></span></summary>
+        <p class="script-hint">What the narrator says, line by line. Change the words here and they're recorded again. New lines are checked for beginners and against the brand voice before they're sent.</p>
+        <ol class="lines" id="script-lines"></ol>
+      </details>
+
       <div class="send" id="send-row">
         <button class="btn" id="send" type="button" disabled>Send edit</button>
+        <button class="btn secondary" id="remake" type="button" disabled>Re-make with these notes</button>
         <span class="action-note" id="send-note" role="status"></span>
+      </div>
+      <div class="confirm" id="remake-confirm" hidden>
+        <p id="remake-what"></p>
+        <div class="row">
+          <button class="btn" id="remake-go" type="button">Re-make it</button>
+          <button class="btn secondary" id="remake-cancel" type="button">Cancel</button>
+        </div>
       </div>
     </section>
   </div>
@@ -276,6 +325,7 @@ const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
 const FPS = 30;
 const MAX_NOTES = 8;
 const DRAFT_KEY = 'trilith-edit-drafts';
+const SCRIPT_KEY = 'trilith-script-drafts';
 const POLL_MS = 30000;
 
 const $ = (id) => document.getElementById(id);
@@ -299,17 +349,52 @@ const sendRow = $('send-row');
 const sendBtn = $('send');
 const sendNote = $('send-note');
 const toastEl = $('toast');
+const scriptEl = $('script');
+const scriptCount = $('script-count');
+const scriptLinesEl = $('script-lines');
+const remakeBtn = $('remake');
+const remakeConfirm = $('remake-confirm');
+const remakeWhat = $('remake-what');
+const remakeGo = $('remake-go');
+const remakeCancel = $('remake-cancel');
 
 let videos = [];     /* Ready to review, newest first */
 let current = null;  /* the video on screen */
 /* Notes not sent yet, by video id. Kept in the browser so a reload or a
    wander to another tab doesn't lose them. */
 let drafts = loadDrafts();
+/* Rewritten script lines not sent yet: video id -> { line number: text },
+   only the lines that differ from the saved script. */
+let scriptDrafts = loadScriptDrafts();
+/* Each video's saved narration lines, fetched when it's first shown: an
+   array, null when none were saved, undefined until known. */
+const scripts = {};
+const scriptLoads = {};
+/* The last check of rewritten lines: which video, which wording, what was
+   flagged. Sending the same wording again doesn't check it again. */
+let checked = null;
+let sending = false;
 
 const slotOf = (v) => v.session_id + '#' + v.slot;
 const editing = (v) => Boolean(v && v.last_edit && v.last_edit.in_progress);
+const remaking = (v) => Boolean(v && v.last_edit && v.last_edit.mode === 'remake');
 const frameAt = (t) => Math.max(0, Math.round(t * FPS));
 const draftFor = (v) => (v && drafts[v.id]) || [];
+const tidy = (s) => String(s).replace(/\s+/g, ' ').trim();
+
+/* v's rewritten lines, in order: [{line, text}]. */
+function changesFor(v) {
+  const lines = v && scripts[v.id];
+  const d = (v && scriptDrafts[v.id]) || {};
+  if (!Array.isArray(lines)) return [];
+  return Object.keys(d).map(Number)
+    .filter((n) => n >= 1 && n <= lines.length && tidy(d[n]) && tidy(d[n]) !== lines[n - 1])
+    .sort((a, b) => a - b)
+    .map((n) => ({ line: n, text: tidy(d[n]) }));
+}
+const signature = (v) => JSON.stringify(changesFor(v));
+const pendingTotal = (v) => draftFor(v).length + changesFor(v).length;
+const unsentCount = (v) => draftFor(v).length + Object.keys((v && scriptDrafts[v.id]) || {}).length;
 
 /* 0:42.13 — minutes, seconds and the frame within that second. */
 function timecode(t) {
@@ -329,6 +414,14 @@ function loadDrafts() {
 function saveDrafts() {
   try { localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts)); }
   catch { /* full or private mode: the notes just won't survive a reload */ }
+}
+function loadScriptDrafts() {
+  try { return JSON.parse(localStorage.getItem(SCRIPT_KEY) || '{}') || {}; }
+  catch { return {}; }
+}
+function saveScriptDrafts() {
+  try { localStorage.setItem(SCRIPT_KEY, JSON.stringify(scriptDrafts)); }
+  catch { /* as above */ }
 }
 
 async function fetchVideos() {
@@ -390,9 +483,9 @@ function renderPicker() {
     t.textContent = v.topic || 'Untitled';
     const m = document.createElement('span');
     m.className = 'm';
-    const n = draftFor(v).length;
-    m.textContent = editing(v) ? 'Editing…'
-      : n ? n + (n === 1 ? ' note' : ' notes') + ' not sent'
+    const n = unsentCount(v);
+    m.textContent = editing(v) ? (remaking(v) ? 'Re-making…' : 'Editing…')
+      : n ? n + (n === 1 ? ' change' : ' changes') + ' not sent'
       : clock(v.duration || 0);
     body.append(t, m);
 
@@ -419,6 +512,7 @@ function select(v) {
   renderPicker();
   renderPanel();
   updateTime();
+  loadScript(v);
 }
 
 /* --- the player -------------------------------------------------------- */
@@ -506,8 +600,9 @@ function renderPanel() {
   statusEl.className = 'status';
   if (busy) {
     statusEl.hidden = false;
-    statusEl.textContent = 'Editing now:\n' + last.instruction
-      + '\n\nThe new version will show up here, and in Output under Ready to review, when it’s done.';
+    statusEl.textContent = (remaking(v) ? 'Re-making now:\n' : 'Editing now:\n') + last.instruction
+      + '\n\nThe new version will show up here, and in Output under Ready to review, when it’s done'
+      + (remaking(v) ? ', in about 25–30 minutes.' : '.');
   } else if (last && last.status === 'failed') {
     statusEl.hidden = false;
     statusEl.className = 'status bad';
@@ -516,7 +611,9 @@ function renderPanel() {
 
   composeEl.hidden = busy;
   sendRow.hidden = busy;
+  remakeConfirm.hidden = true;
   renderNotes();
+  renderScript();
 }
 
 function renderNotes() {
@@ -579,15 +676,157 @@ function renderNotes() {
     notesEl.append(li);
   });
 
-  const n = list.length;
-  sendBtn.disabled = n === 0;
-  sendBtn.textContent = n > 1 ? 'Send ' + n + ' notes as one edit' : 'Send edit';
-  addFrameBtn.disabled = addWholeBtn.disabled = n >= MAX_NOTES;
-  sendNote.className = 'action-note';
-  sendNote.textContent = n >= MAX_NOTES ? 'That’s the most notes one edit can carry.'
-    : !n ? 'Add notes, then send them together.'
-    : current.has_source ? 'Only what your notes ask for will change.'
-    : 'This video was made before edits were possible, so it will be re-made with your notes.';
+  updateSend();
+}
+
+/* The buttons and the line beside them, from what's waiting to be sent. A
+   video without a kept source can only be re-made, so it has no Send edit. */
+function updateSend() {
+  const v = current;
+  if (!v) return;
+  const notes = draftFor(v).length;
+  const total = pendingTotal(v);
+  const exact = Boolean(v.has_source);
+  const lines = changesFor(v).length;
+  const flagged = exact && lines > 0 && checked && checked.id === v.id && checked.sig === signature(v)
+    && (checked.flags.length > 0 || !checked.ok);
+  sendBtn.hidden = !exact;
+  sendBtn.disabled = sending || total === 0;
+  sendBtn.textContent = flagged ? 'Send anyway' : total > 1 ? 'Send ' + total + ' changes as one edit' : 'Send edit';
+  remakeBtn.className = exact ? 'btn secondary' : 'btn';
+  remakeBtn.disabled = sending || total === 0;
+  addFrameBtn.disabled = addWholeBtn.disabled = notes >= MAX_NOTES;
+  if (sending) return;
+  say(notes >= MAX_NOTES ? 'That’s the most notes one edit can carry.'
+    : !total ? 'Add notes or change the script, then send them together.'
+    : exact ? 'Send edit changes only what you ask for. Re-make writes a new script and new visuals.'
+    : 'This video’s source wasn’t kept, so it can only be re-made with your changes.');
+}
+
+function say(text, bad) {
+  sendNote.className = 'action-note' + (bad ? ' bad' : '');
+  sendNote.textContent = text;
+}
+
+/* --- the script -------------------------------------------------------- */
+
+function loadScript(v) {
+  if (!v.has_source || scripts[v.id] !== undefined || scriptLoads[v.id]) { renderScript(); return; }
+  scriptLoads[v.id] = AikoAuth.fetch(WORKER_URL + '/videos/script', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id: v.id }),
+  })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => { if (data) scripts[v.id] = Array.isArray(data.lines) ? data.lines : null; })
+    .catch(() => { /* tried again the next time the video is shown */ })
+    .finally(() => {
+      delete scriptLoads[v.id];
+      if (current && current.id === v.id) { renderScript(); updateSend(); renderPicker(); }
+    });
+}
+
+function renderScript() {
+  const v = current;
+  const lines = v && scripts[v.id];
+  const show = Boolean(v && v.has_source && Array.isArray(lines) && !editing(v));
+  scriptEl.hidden = !show;
+  scriptLinesEl.textContent = '';
+  if (!show) return;
+  lines.forEach((original, i) => {
+    const n = i + 1;
+    const li = document.createElement('li');
+    li.className = 'line';
+    const num = document.createElement('span');
+    num.className = 'n';
+    num.textContent = n;
+    const body = document.createElement('div');
+    const box = document.createElement('textarea');
+    const d = scriptDrafts[v.id] || {};
+    box.value = n in d ? d[n] : original;
+    box.maxLength = 300;
+    box.rows = 2;
+    box.setAttribute('aria-label', 'Script line ' + n);
+    box.addEventListener('input', () => {
+      const all = scriptDrafts[v.id] || (scriptDrafts[v.id] = {});
+      if (tidy(box.value) === original) delete all[n];
+      else all[n] = box.value;
+      if (!Object.keys(all).length) delete scriptDrafts[v.id];
+      saveScriptDrafts();
+      markLine(li, n, original);
+      updateScriptCount();
+      updateSend();
+      renderPicker();
+    });
+    body.append(box);
+    li.append(num, body);
+    scriptLinesEl.append(li);
+    markLine(li, n, original);
+  });
+  updateScriptCount();
+}
+
+/* A changed line shows what it was, a way back, and what the check said. */
+function markLine(li, n, original) {
+  const v = current;
+  const changed = n in (scriptDrafts[v.id] || {});
+  const body = li.lastChild;
+  li.classList.toggle('changed', changed);
+  body.querySelectorAll('.was, .flag').forEach((e) => e.remove());
+  if (!changed) return;
+
+  const was = document.createElement('p');
+  was.className = 'was';
+  was.textContent = 'Was: ' + original;
+  const undo = document.createElement('button');
+  undo.type = 'button';
+  undo.textContent = 'Undo';
+  undo.addEventListener('click', () => {
+    const all = scriptDrafts[v.id] || {};
+    delete all[n];
+    if (!Object.keys(all).length) delete scriptDrafts[v.id];
+    saveScriptDrafts();
+    body.querySelector('textarea').value = original;
+    markLine(li, n, original);
+    updateScriptCount();
+    updateSend();
+    renderPicker();
+  });
+  was.append(undo);
+  body.append(was);
+
+  const f = checked && checked.id === v.id && checked.sig === signature(v)
+    ? checked.flags.find((x) => x.line === n) : null;
+  (f ? f.issues : []).forEach((issue) => {
+    const p = document.createElement('p');
+    p.className = 'flag';
+    p.textContent = 'Check: ' + issue;
+    body.append(p);
+  });
+}
+
+function updateScriptCount() {
+  const k = Object.keys(scriptDrafts[current.id] || {}).length;
+  scriptCount.textContent = k ? '· ' + k + (k === 1 ? ' line changed' : ' lines changed') : '';
+}
+
+/* The brand-voice and beginner checks on the rewritten lines, in the whole
+   script. ok is false when they couldn't all run. */
+async function checkLines(v, changes) {
+  const lines = scripts[v.id].slice();
+  changes.forEach((c) => { lines[c.line - 1] = c.text; });
+  try {
+    const res = await AikoAuth.fetch(WORKER_URL + '/videos/script-check', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ lines, changed: changes.map((c) => c.line) }),
+    });
+    if (!res.ok) return { ok: false, flags: [] };
+    const data = await res.json();
+    return { ok: data.listened !== false, flags: Array.isArray(data.flags) ? data.flags : [] };
+  } catch {
+    return { ok: false, flags: [] };
+  }
 }
 
 /* A small picture of the frame, for the note. If the browser won't allow it,
@@ -638,35 +877,101 @@ addWholeBtn.addEventListener('click', () => addNote(false));
 
 /* Only the newest version of a video can be edited. If one came in for v's
    slot since this page loaded, show it and carry v's unsent notes over, in
-   video order, rather than leave them on a version nobody can edit. */
+   video order, rather than leave them on a version nobody can edit. Its
+   script may differ, so rewritten lines come over as notes saying what to
+   say instead. */
 async function followNewerVersion(v) {
   let next;
   try { next = await fetchVideos(); } catch { return false; }
   const newer = next.find((x) => slotOf(x) === slotOf(v) && x.id !== v.id);
   if (!newer) return false;
-  if (drafts[v.id]) {
-    drafts[newer.id] = draftFor(newer).concat(drafts[v.id])
+  const oldLines = scripts[v.id];
+  const fromScript = Object.entries(scriptDrafts[v.id] || {}).map(([n, text]) => {
+    const from = Array.isArray(oldLines) ? oldLines[Number(n) - 1] : '';
+    const said = 'Say “' + tidy(text) + '”';
+    const note = from ? said + ' instead of “' + from + '”' : said;
+    return { note: (note.length > 400 ? said : note).slice(0, 400), at: null, thumb: null };
+  });
+  const carried = draftFor(v).concat(fromScript);
+  if (carried.length) {
+    drafts[newer.id] = draftFor(newer).concat(carried)
       .sort((a, b) => (a.at == null ? Infinity : a.at) - (b.at == null ? Infinity : b.at))
       .slice(0, MAX_NOTES);
-    delete drafts[v.id];
-    saveDrafts();
   }
+  delete drafts[v.id];
+  delete scriptDrafts[v.id];
+  saveDrafts();
+  saveScriptDrafts();
   videos = next;
   select(newer);
   schedulePoll();
-  sendNote.className = 'action-note bad';
-  sendNote.textContent = 'A newer version of this video came in, so nothing was sent. Your notes are on it now: check each one still points at the right moment, then send again.';
+  say('A newer version of this video came in, so nothing was sent. Your notes are on it now'
+    + (fromScript.length ? ', and your script changes became notes' : '')
+    + ': check each one still fits, then send again.', true);
   return true;
 }
 
+/* Send edit: only what's asked for changes. Rewritten lines are checked
+   first; if anything is flagged, the page says what and the button becomes
+   Send anyway. */
 sendBtn.addEventListener('click', async () => {
   const v = current;
-  const list = draftFor(v);
-  if (!list.length) return;
+  if (!v || !pendingTotal(v) || sending) return;
+  const changes = changesFor(v);
+  const sig = signature(v);
+  if (changes.length && !(checked && checked.id === v.id && checked.sig === sig)) {
+    sending = true;
+    updateSend();
+    say('Checking the new lines…');
+    const result = await checkLines(v, changes);
+    sending = false;
+    if (current !== v) return;
+    checked = { id: v.id, sig, flags: result.flags, ok: result.ok };
+    renderScript();
+    updateSend();
+    if (result.flags.length) {
+      scriptEl.open = true;
+      say('Some new lines were flagged, shown under each one. Change them, or send anyway.'
+        + (result.ok ? '' : ' The beginner check couldn’t run.'), true);
+      return;
+    }
+    if (!result.ok) {
+      say('Couldn’t check the new lines. You can send them anyway.', true);
+      return;
+    }
+  }
+  await submit(v, 'exact');
+});
 
-  sendBtn.disabled = true;
-  sendNote.className = 'action-note';
-  sendNote.textContent = 'Starting the edit…';
+/* Re-make: the pipeline again, from the plan, with everything waiting here
+   as the change requested. It costs as much as a render, so it asks first. */
+remakeBtn.addEventListener('click', () => {
+  const v = current;
+  if (!v || !pendingTotal(v) || sending) return;
+  remakeWhat.textContent = 'A re-make writes a new script and new visuals from the plan, with your '
+    + (changesFor(v).length ? (draftFor(v).length ? 'notes and script changes' : 'script changes') : 'notes')
+    + ' as the change requested, and becomes the newest version of this video. It takes about 25–30 minutes, and there can be 3 a day.';
+  sendRow.hidden = true;
+  remakeConfirm.hidden = false;
+  remakeGo.focus();
+});
+remakeCancel.addEventListener('click', () => {
+  remakeConfirm.hidden = true;
+  sendRow.hidden = false;
+});
+remakeGo.addEventListener('click', async () => {
+  remakeConfirm.hidden = true;
+  sendRow.hidden = false;
+  if (current) await submit(current, 'remake');
+});
+
+async function submit(v, mode) {
+  const notes = draftFor(v);
+  const changes = changesFor(v);
+  const what = mode === 'remake' ? 're-make' : 'edit';
+  sending = true;
+  updateSend();
+  say('Starting the ' + what + '…');
 
   let res = null;
   let body = {};
@@ -674,34 +979,42 @@ sendBtn.addEventListener('click', async () => {
     res = await AikoAuth.fetch(WORKER_URL + '/videos/edit', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: v.id, notes: list.map((n) => ({ at: n.at, note: n.note })) }),
+      body: JSON.stringify({ id: v.id, mode, notes: notes.map((n) => ({ at: n.at, note: n.note })), script: changes }),
     });
     body = await res.json().catch(() => ({}));
   } catch { res = null; }
+  sending = false;
 
   if (!res || !res.ok) {
     /* Refused because a newer version of this video came in after the page
        loaded (another reviewer's edit, say): the notes move onto it. */
     if (res && res.status === 409 && await followNewerVersion(v)) return;
-    sendBtn.disabled = false;
-    sendNote.className = 'action-note bad';
-    sendNote.textContent = res ? (body.error || 'Couldn’t start the edit (' + res.status + ').')
-      : 'Couldn’t reach the server. Try again.';
+    updateSend();
+    say(res ? (body.error || 'Couldn’t start the ' + what + ' (' + res.status + ').')
+      : 'Couldn’t reach the server. Try again.', true);
     return;
   }
 
+  const lines = scripts[v.id];
   v.last_edit = {
     status: 'queued',
     in_progress: true,
-    instruction: list.map((n) => (n.at == null ? 'Whole video: ' : 'At ' + clock(n.at) + ': ') + n.note).join('\n'),
+    mode: body.mode || mode,
+    instruction: [
+      ...notes.map((n) => (n.at == null ? 'Whole video: ' : 'At ' + clock(n.at) + ': ') + n.note),
+      ...changes.map((c) => 'Narration line ' + c.line + ': change “' + (Array.isArray(lines) ? lines[c.line - 1] : '') + '” to “' + c.text + '”'),
+    ].join('\n'),
   };
   delete drafts[v.id];
+  delete scriptDrafts[v.id];
   saveDrafts();
+  saveScriptDrafts();
+  checked = null;
   renderPicker();
   renderPanel();
-  toast('Edit started');
+  toast(v.last_edit.mode === 'remake' ? 'Re-make started' : 'Edit started');
   schedulePoll();
-});
+}
 
 /* --- while an edit runs ------------------------------------------------ */
 
