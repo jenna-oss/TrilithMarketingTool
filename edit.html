@@ -64,7 +64,7 @@
   .btn.secondary { background:transparent; color:var(--ink-body); border-color:var(--rule-strong); }
   .btn.secondary:hover { background:var(--card-sunk); }
   .btn:disabled { opacity:.55; cursor:default; }
-  .btn:focus-visible, .ctl:focus-visible, .pick:focus-visible, .when:focus-visible, .remove:focus-visible {
+  .btn:focus-visible, .ctl:focus-visible, .pick:focus-visible, .when:focus-visible, .remove:focus-visible, .scope-opt:focus-visible {
     outline:2px solid var(--accent); outline-offset:2px;
   }
 
@@ -129,6 +129,30 @@
     background:var(--card-sunk); border-radius:4px; padding:.625rem .75rem;
   }
   .status.bad { color:var(--clay); }
+  /* What a note is about, chosen before it's written: the frame on screen,
+     or the whole video. Frame things are solid and green, whole-video things
+     dashed and grey, here and in the list of notes. */
+  .scope { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin:0 0 .875rem; }
+  @media (max-width:420px) { .scope { grid-template-columns:1fr; } }
+  .scope-opt {
+    display:flex; gap:.625rem; align-items:center; text-align:left; cursor:pointer;
+    font-family:var(--sans); color:var(--ink-body); background:var(--card);
+    border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
+  }
+  .scope-opt:hover { border-color:var(--accent); }
+  .scope-opt[aria-checked="true"] { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:var(--card-sunk); }
+  .scope-opt canvas, .whole-mark {
+    width:27px; height:48px; flex:none; border-radius:2px; background:var(--card-sunk);
+  }
+  .scope-opt canvas { border:1px solid var(--accent); }
+  .whole-mark {
+    display:flex; align-items:center; justify-content:center; border:1px dashed var(--rule-strong);
+    font-size:.5625rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-quiet);
+  }
+  .scope-title { display:block; font-size:.8125rem; font-weight:700; color:var(--ink); line-height:1.3; }
+  .scope-sub { display:block; font-size:.6875rem; color:var(--ink-quiet); line-height:1.35; margin-top:.125rem; }
+  .scope-sub.time { font-family:var(--mono); }
+
   .compose label { display:block; font-size:.875rem; font-weight:600; color:var(--ink); margin-bottom:.375rem; }
   .compose textarea {
     display:block; width:100%; min-height:4.5rem; resize:vertical;
@@ -147,14 +171,19 @@
   .note img, .note .nothumb {
     width:45px; aspect-ratio:9/16; object-fit:cover; border-radius:2px; flex:none; background:var(--card-sunk);
   }
-  .note .nothumb { display:flex; align-items:center; justify-content:center; font-size:.625rem; color:var(--ink-quiet); text-align:center; }
+  .note img { border:1px solid var(--accent); }
+  .note .nothumb { height:auto; }
   .note .body { flex:1; min-width:0; }
   .when {
-    font-family:var(--mono); font-size:.6875rem; font-weight:600; color:var(--accent);
-    background:none; border:none; padding:0; cursor:pointer;
-    text-decoration:underline; text-underline-offset:2px;
+    display:inline-block; font-family:var(--mono); font-size:.6875rem; font-weight:600; line-height:1.5;
+    color:var(--accent); background:none; border:1px solid var(--accent); border-radius:999px;
+    padding:0 .5rem; cursor:pointer;
   }
-  .when.whole { text-decoration:none; cursor:default; color:var(--ink-quiet); }
+  .when:hover { background:var(--card-sunk); }
+  .when.whole {
+    font-family:var(--sans); color:var(--ink-quiet); border:1px dashed var(--rule-strong); cursor:default;
+  }
+  .when.whole:hover { background:none; }
   .note .text { font-size:.875rem; color:var(--ink); margin-top:.125rem; overflow-wrap:anywhere; }
   .remove {
     background:none; border:none; color:var(--ink-quiet); font-size:1.125rem;
@@ -281,12 +310,27 @@
       <p class="status" id="status" role="status" hidden></p>
 
       <div class="compose" id="compose">
-        <label for="note-text">What should change?</label>
+        <div class="scope" role="radiogroup" aria-label="What this note is about">
+          <button class="scope-opt" type="button" role="radio" aria-checked="true" data-scope="frame">
+            <canvas id="scope-thumb" width="54" height="96" aria-hidden="true"></canvas>
+            <span>
+              <span class="scope-title">This frame</span>
+              <span class="scope-sub time" id="scope-time">0:00.00 · frame 0</span>
+            </span>
+          </button>
+          <button class="scope-opt" type="button" role="radio" aria-checked="false" data-scope="whole">
+            <span class="whole-mark" aria-hidden="true">All</span>
+            <span>
+              <span class="scope-title">Whole video</span>
+              <span class="scope-sub">The voice, the pace, the captions: things all the way through</span>
+            </span>
+          </button>
+        </div>
+        <label for="note-text" id="note-label">What should change in this frame?</label>
         <textarea id="note-text" maxlength="400"
                   placeholder="e.g. Make this headline bigger, or use a photo of a house here"></textarea>
         <div class="row">
-          <button class="btn" id="add-frame" type="button">Add note at this frame</button>
-          <button class="btn secondary" id="add-whole" type="button">Note for the whole video</button>
+          <button class="btn" id="add-note" type="button">Add note at this frame</button>
         </div>
         <p class="compose-error" id="compose-error" role="alert" hidden></p>
       </div>
@@ -341,8 +385,11 @@ const titleEl = $('title');
 const statusEl = $('status');
 const composeEl = $('compose');
 const noteText = $('note-text');
-const addFrameBtn = $('add-frame');
-const addWholeBtn = $('add-whole');
+const addBtn = $('add-note');
+const noteLabel = $('note-label');
+const scopeBtns = [...document.querySelectorAll('.scope-opt')];
+const scopeThumb = $('scope-thumb');
+const scopeTime = $('scope-time');
 const composeError = $('compose-error');
 const notesEl = $('notes');
 const sendRow = $('send-row');
@@ -541,8 +588,45 @@ function updateTime() {
   const total = Number.isFinite(video.duration) ? video.duration : 0;
   timecodeEl.textContent = timecode(t) + ' · frame ' + frameAt(t) + (total ? ' of ' + lastFrame() : '');
   if (document.activeElement !== scrub) scrub.value = t;
-  addFrameBtn.textContent = 'Add note at ' + timecode(t);
+  scopeTime.textContent = timecode(t) + ' · frame ' + frameAt(t);
+  updateComposer();
 }
+
+/* --- what a note is about ------------------------------------------------ */
+
+/* 'frame' pins the note to the frame on screen; 'whole' is the whole video.
+   The label and the button say which, so it's clear before a word is typed. */
+let noteScope = 'frame';
+
+function setScope(scope) {
+  noteScope = scope;
+  scopeBtns.forEach((b) => b.setAttribute('aria-checked', String(b.dataset.scope === scope)));
+  updateComposer();
+  noteText.focus();
+}
+scopeBtns.forEach((b) => b.addEventListener('click', () => setScope(b.dataset.scope)));
+
+function updateComposer() {
+  const t = video.currentTime || 0;
+  if (noteScope === 'frame') {
+    noteLabel.textContent = 'What should change at ' + clock(t) + '?';
+    noteText.placeholder = 'e.g. Make this headline bigger, or use a photo of a house here';
+    addBtn.textContent = 'Add note at ' + timecode(t);
+  } else {
+    noteLabel.textContent = 'What should change in the whole video?';
+    noteText.placeholder = 'e.g. Make the voice calmer, or use more real footage';
+    addBtn.textContent = 'Add note for the whole video';
+  }
+}
+
+/* The frame on screen, small, in the This frame button. Drawn when the video
+   stops somewhere, not while it plays. */
+function drawScopeThumb() {
+  try {
+    scopeThumb.getContext('2d').drawImage(video, 0, 0, scopeThumb.width, scopeThumb.height);
+  } catch { /* not drawable yet: the button still shows the time */ }
+}
+['loadeddata', 'seeked', 'pause'].forEach((ev) => video.addEventListener(ev, drawScopeThumb));
 
 let ticking = false;
 function tick() {
@@ -632,8 +716,8 @@ function renderNotes() {
       li.append(img);
     } else {
       const ph = document.createElement('span');
-      ph.className = 'nothumb';
-      ph.textContent = n.at == null ? 'Whole' : '';
+      ph.className = n.at == null ? 'nothumb whole-mark' : 'nothumb';
+      ph.textContent = n.at == null ? 'All' : '';
       li.append(ph);
     }
 
@@ -648,7 +732,7 @@ function renderNotes() {
       const when = document.createElement('button');
       when.type = 'button';
       when.className = 'when';
-      when.textContent = timecode(n.at) + ' · frame ' + frameAt(n.at);
+      when.textContent = 'At ' + timecode(n.at) + ' · frame ' + frameAt(n.at);
       when.setAttribute('aria-label', 'Go to ' + timecode(n.at));
       when.addEventListener('click', () => { video.pause(); seek(n.at); });
       body.append(when);
@@ -695,7 +779,7 @@ function updateSend() {
   sendBtn.textContent = flagged ? 'Send anyway' : total > 1 ? 'Send ' + total + ' changes as one edit' : 'Send edit';
   remakeBtn.className = exact ? 'btn secondary' : 'btn';
   remakeBtn.disabled = sending || total === 0;
-  addFrameBtn.disabled = addWholeBtn.disabled = notes >= MAX_NOTES;
+  addBtn.disabled = notes >= MAX_NOTES;
   if (sending) return;
   say(notes >= MAX_NOTES ? 'That’s the most notes one edit can carry.'
     : !total ? 'Add notes or change the script, then send them together.'
@@ -872,8 +956,7 @@ function addNote(atFrame) {
   renderPicker();
 }
 
-addFrameBtn.addEventListener('click', () => addNote(true));
-addWholeBtn.addEventListener('click', () => addNote(false));
+addBtn.addEventListener('click', () => addNote(noteScope === 'frame'));
 
 /* Only the newest version of a video can be edited. If one came in for v's
    slot since this page loaded, show it and carry v's unsent notes over, in
