@@ -567,6 +567,17 @@ jobs:
             fi
           done
 
+      # The frame check looks at a finished frame of every scene, fixes what it
+      # can and writes down anything still overlapping or cut off. Those show
+      # as warnings on the run, next to the video they're about.
+      - name: Frame check
+        if: always()
+        run: |
+          report=video/remotion/out/frame-check.txt
+          if [ ! -f "$report" ]; then echo "No frame check was written."; exit 0; fi
+          if ! grep -q '[^[:space:]]' "$report"; then echo "Frame check passed."; exit 0; fi
+          grep '[^[:space:]]' "$report" | head -n 20 | cut -c1-300 | sed 's/^/::warning::Frame check: /'
+
       # always(): a failed render's log is the only way to learn why, and it is
       # exactly what you want when nobody watched it happen.
       - name: Collect output
@@ -575,6 +586,8 @@ jobs:
           mkdir -p artifact
           cp render.log artifact/ 2>/dev/null || true
           cp video/remotion/.run/pipeline.mjs artifact/pipeline-as-run.mjs 2>/dev/null || true
+          cp video/remotion/out/frame-check.txt artifact/ 2>/dev/null || true
+          mkdir -p artifact/frame-check && cp video/remotion/out/frame-check/*.jpg artifact/frame-check/ 2>/dev/null || true
           find video/remotion/out -name '*.mp4' -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion/src -maxdepth 1 -name '*.tsx' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true

@@ -18,6 +18,7 @@ export const meta = {
     { title: 'Assets' },
     { title: 'Assembly' },
     { title: 'Voiceover' },
+    { title: 'Frame check' },
   ],
 }
 
@@ -249,9 +250,53 @@ const VOICEOVER_SCHEMA = {
     finalVideoPath: { type: 'string' },
     durationSeconds: { type: 'number' },
     muxOk: { type: 'boolean' },
+    sceneDurationsSeconds: {
+      type: 'array',
+      items: { type: 'number' },
+      description: 'the real scene durations in seconds you applied to the s(...) calls, in beat order -- the frame check uses them to find each scene',
+    },
     notes: { type: 'string' },
   },
 }
+
+const FRAME_CHECK_SCHEMA = {
+  type: 'object',
+  required: ['framesChecked', 'problems'],
+  properties: {
+    framesChecked: { type: 'number', description: 'how many frame images you actually looked at' },
+    problems: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['scene', 'what'],
+        properties: {
+          scene: { type: 'number', description: 'the scene (beat) number the frame belongs to' },
+          what: { type: 'string', description: 'what overlaps or is cut off, and where, in a few words' },
+        },
+      },
+    },
+  },
+}
+
+const FRAME_FIX_SCHEMA = {
+  type: 'object',
+  required: ['renderOk', 'muxOk'],
+  properties: {
+    renderOk: { type: 'boolean' },
+    muxOk: { type: 'boolean' },
+    changed: { type: 'string', description: 'what you moved or resized, per scene' },
+    error: { type: 'string' },
+  },
+}
+
+// Nothing may overlap text. Its own constant because the frame fix needs it
+// too; video/edit-prompt.mjs words it the same way for edits.
+const NO_OVERLAP = `- Nothing overlaps text. No line, arrow, bar, dot, shape, image or other piece of text may cross, touch or sit on
+  a piece of text at any moment of its scene, including where an animation ends. (A headline box behind its own
+  text is the one exception.) Give each piece of text its own clear area and keep graphics out of it with at least
+  24px to spare. In a chart or diagram, place the labels first and fit the lines around them: a label for a point
+  sits beside the point, never where a line ends or passes, and a line that rises to a value stops short of that
+  value's label. Every scene's frames are checked for this after the render.`
 
 // The Buy Box brand guide's look, for the stages that design scenes. Rules,
 // never layouts: there is no component library, so every scene is designed
@@ -274,6 +319,7 @@ const BRAND_LOOK = `THE LOOK: The Buy Box brand guide. Every value lives in ${RE
   to keep its text from overlapping, text may go up to SAFE_SLACK (40px) past the safe zone's top, left or right
   edge, or dip below SafeArea's bottom, but never lower than CAPTION_TOP: below that it hits the captions, and
   below the safe zone it sits under Instagram's own controls.
+${NO_OVERLAP}
 - Motion: quick and sure. Boxes and lines slide in on a short stagger, numbers count up, things stop hard. No
   wobble, bounce or flash.`
 
@@ -772,9 +818,109 @@ Steps:
    -map 1:a:0 -af apad -c:a aac -shortest) to out/${research.slug}_voice.mp4. Keep the apad: the video runs
    a couple of seconds past the last line on purpose, and a plain -shortest cuts that closing hold off.
 
-Report the finalVideoPath, durationSeconds, whether the mux succeeded, and any notes.`,
+Report the finalVideoPath, durationSeconds, whether the mux succeeded, the scene durations in seconds you
+applied (sceneDurationsSeconds, in beat order), and any notes.`,
   { schema: VOICEOVER_SCHEMA, label: 'voiceover' }
 )
+
+// Nothing else looks at a finished frame: the brand check reads the code, and
+// a label drawn where a chart's line ends passes it (the 5% on a Treasury
+// yield chart, 2026-09-14), as did a follow line that ran off both sides. So
+// a separate agent looks at one settled frame per scene. Anything it finds is
+// fixed once and checked again; what is still wrong goes ahead, flagged.
+phase('Frame check')
+const FINAL_MP4 = `${REMOTION_ROOT}/out/${research.slug}_voice.mp4`
+const FRAME_DIR = `${REMOTION_ROOT}/out/frame-check`
+const FRAME_REPORT = `${REMOTION_ROOT}/out/frame-check.txt`
+const SWIPE_S = 0.35
+const frameTimes = settleTimes(voiceover.sceneDurationsSeconds, script.beats.length, voiceover.durationSeconds)
+
+// One moment per scene once its animation has landed and before the next
+// swipe starts: near the end of the scene, less the swipe. Scenes overlap by
+// SWIPE, so each starts SWIPE before the last one ends. If the durations
+// don't match the beats, frames are spread evenly instead.
+function settleTimes(durations, beats, total) {
+  const ok = Array.isArray(durations) && durations.length === beats && durations.every(d => Number(d) > 0)
+  if (!ok) {
+    const len = Number(total) > 0 ? Number(total) : beats * 5
+    return Array.from({ length: beats }, (_, i) => round2((i + 0.7) * len / beats))
+  }
+  const out = []
+  let start = 0
+  durations.forEach((raw, i) => {
+    const d = Number(raw)
+    const settled = start + Math.max(d * 0.6, d - SWIPE_S - 0.5)
+    out.push(round2(i === durations.length - 1 ? Math.min(settled, start + d - 0.2) : settled))
+    start += d - SWIPE_S
+  })
+  return out
+}
+function round2(n) { return Math.round(n * 100) / 100 }
+
+function frameCheck(round) {
+  return agent(
+    `Check the finished frames of a short vertical (1080x1920) video for layout faults. You are not judging design or
+taste, only whether everything can be read.
+
+1. Grab one frame per scene: bash ${REMOTION_ROOT}/frame-grab.sh ${FINAL_MP4} ${FRAME_DIR} ${frameTimes.join(' ')}
+   frame-01.jpg is scene 1, frame-02.jpg scene 2, and so on, each taken once the scene has settled.
+2. Read every frame image, one by one, and look closely. If one is hard to judge at that size, grab that moment
+   at full size (ffmpeg -ss <seconds> -i ${FINAL_MP4} -frames:v 1 /tmp/full.png) and Read that.
+3. Report as a problem, with its scene number:
+   - text with a line, arrow, bar, dot, shape, image or other text crossing it, touching it or sitting on it
+   - text cut off by the edge of the frame or hidden behind something
+   - scene text colliding with the word-by-word captions near the bottom of the frame
+   Not a problem: a headline box behind its own text, the captions themselves, text in a full-bleed footage
+   scene over its own backing box, empty space, a design you would have done differently.
+4. Write your findings to ${FRAME_REPORT}, replacing anything already there: one line per problem, "scene N:
+   what", or an empty file if there are none.
+Report framesChecked and the problems.`,
+    { schema: FRAME_CHECK_SCHEMA, label: `frame-check-${round}` }
+  )
+}
+
+const frameProblems = (c) => (c && Array.isArray(c.problems) && c.problems.length)
+  ? c.problems.map(p => `scene ${p.scene}: ${p.what}`).join('\n')
+  : null
+
+let frames = await frameCheck(1)
+const frameFound = frameProblems(frames)
+let frameFlags = frameFound
+if (frameFound) {
+  log(`Frame check found:\n${frameFound}`)
+  const fix = await agent(
+    `A check of the finished video found layout faults in these scenes of ${assembly.tsxPath}:
+${frameFound}
+
+The frames it looked at are in ${FRAME_DIR} (frame-01.jpg is scene 1, and so on); Read the ones named above first.
+
+Fix each one in its scene by moving, resizing or re-flowing the elements so nothing overlaps text or cuts it off:
+${NO_OVERLAP}
+Change only those scenes. Leave every s(...) duration, TOTAL_S, SWIPE, the <Captions> layer and the narration as
+they are: the timing already matches the voice.
+
+Then:
+1. Brand check: node ${REMOTION_ROOT}/brand-lint.mjs ${assembly.tsxPath} -- fix what it reports until it prints "brand
+   check passed".
+2. Render to a new file, so the finished video survives a failed render:
+   cd ${REMOTION_ROOT} && npx remotion render src/index.ts ${assembly.compositionId} out/${research.slug}_fixed.mp4
+3. Only if that worked, put the SAME narration on it (don't record it again), then swap it in:
+   ffmpeg -y -i out/${research.slug}_fixed.mp4 -i _voiceover_${research.slug}/narration.mp3 -c:v copy -map 0:v:0 -map 1:a:0 -af apad -c:a aac -shortest out/${research.slug}_voice.tmp.mp4
+   mv out/${research.slug}_voice.tmp.mp4 out/${research.slug}_voice.mp4 && rm -f out/${research.slug}_fixed.mp4
+   Keep the apad: the video runs a couple of seconds past the last line on purpose.
+Report whether the render and the mux worked, what you changed, and any error.`,
+    { schema: FRAME_FIX_SCHEMA, label: 'frame-fix' }
+  )
+  if (fix.renderOk && fix.muxOk) {
+    frames = await frameCheck(2)
+    frameFlags = frameProblems(frames)
+    log(frameFlags ? `Still flagged after one fix, going ahead:\n${frameFlags}` : 'Frame check passed after one fix')
+  } else {
+    log(`The frame fix didn't render (${fix.error || 'no error given'}); the video goes ahead as it was, flagged`)
+  }
+} else {
+  log(`Frame check passed first time (${frames.framesChecked} frames)`)
+}
 
 return {
   topic: BRIEF.topic,
@@ -791,6 +937,11 @@ return {
     lockedLineFlags: lockedLineFlags.length ? lockedLineFlags : null,
   },
   brandCheckPassed: Boolean(assembly.brandCheckPassed),
+  frameCheck: {
+    passed: !frameFlags,
+    foundFirst: frameFound || null,
+    stillFlagged: frameFlags || null,
+  },
   finalVideoPath: voiceover.finalVideoPath,
   durationSeconds: voiceover.durationSeconds,
   approvedAssetCount: approvedCount,

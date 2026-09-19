@@ -115,6 +115,15 @@ Steps:
    ffmpeg -y -i out/${slug}.mp4 -i ${voice}/narration.mp3 -c:v copy -map 0:v:0 -map 1:a:0 -af apad -c:a aac -shortest out/${slug}_voice.mp4
    Keep the apad: the video runs a couple of seconds past the last line on purpose.
 
+7. Check the frames. Nothing may overlap text: no line, arrow, bar, dot, shape, image or other text crossing,
+   touching or sitting on it (a headline box behind its own text is fine), and no text cut off by the frame's
+   edge. For every scene you changed, and every moment a note points at, grab the finished frame once the scene
+   has settled (near its end, before the next swipe):
+     bash frame-grab.sh out/${slug}_voice.mp4 out/frame-check <seconds> [<seconds> ...]
+   and Read each image. If something overlaps or is cut off, move or resize it in ${component} (never the
+   s(...) durations), then repeat steps 4 to 6 once and check again. Write what is still wrong to
+   out/frame-check.txt, one line per problem ("scene N: what"), or leave that file empty if nothing is.
+
 When it's done, print the absolute path of out/${slug}_voice.mp4 on its own line, then one sentence saying
 what you changed. For a change to how it sounds, name each setting you changed, from what to what. If the
 change can't be made, print why and stop.

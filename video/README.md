@@ -83,7 +83,11 @@ and runs that. Args are typed out by the model driving the run, and a brief
 passed that way once reached the Research stage as `[object Object]`.
 
 The workflow runs Research -> Script -> Visual Plan -> Assets -> Assembly ->
-Voiceover and returns the finished video's path. It does not auto-publish
+Voiceover -> Frame check and returns the finished video's path. The frame
+check grabs one settled frame per scene (`remotion/frame-grab.sh`), has a
+separate agent look for text that something overlaps or the edge cuts off,
+fixes what it finds once and looks again; anything still wrong is written to
+`out/frame-check.txt` and shown as a warning on the run. It does not auto-publish
 anything -- the output is meant for human review before it goes anywhere
 public.
 
