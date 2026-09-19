@@ -58,11 +58,22 @@ export const SAFE_SLACK = 40;
  *  above the captions. It is a positioned box, so absolute children are
  *  placed relative to it: `bottom: 0` in here sits just above the captions.
  *  Full-bleed backgrounds and footage go outside it; text goes inside.
- *  Plumbing, not a layout -- what goes in it is designed per scene. */
+ *  Plumbing, not a layout -- what goes in it is designed per scene.
+ *
+ *  A flex column, so a scene's alignItems / justifyContent take effect. It
+ *  was a plain block, which silently ignored them: every scene that asked to
+ *  be centred stacked top-left instead (found 2026-09-19). With no style it
+ *  still stacks top to bottom at full width, as a block did. */
 export const SafeArea: React.FC<{ children?: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) =>
   React.createElement(
     "div",
-    { style: { position: "absolute", top: SAFE.top, left: SAFE.left, right: SAFE.right, bottom: SCENE_FLOOR, ...style } },
+    {
+      style: {
+        position: "absolute", top: SAFE.top, left: SAFE.left, right: SAFE.right, bottom: SCENE_FLOOR,
+        display: "flex", flexDirection: "column",
+        ...style,
+      },
+    },
     children,
   );
 

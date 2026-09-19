@@ -319,14 +319,19 @@ const BRAND_LOOK = `THE LOOK: The Buy Box brand guide. Every value lives in ${RE
   to keep its text from overlapping, text may go up to SAFE_SLACK (40px) past the safe zone's top, left or right
   edge, or dip below SafeArea's bottom, but never lower than CAPTION_TOP: below that it hits the captions, and
   below the safe zone it sits under Instagram's own controls.
+- Alignment: centred by default. Centre a scene's text both ways inside <SafeArea> (it is a flex column: set
+  alignItems: "center" and justifyContent: "center", and textAlign: "center" on text that wraps) rather than
+  starting it at the top-left. Left-aligned text is the exception, used in at most two scenes where a list or a
+  stack reads better that way, and where footage needs the text kept off the subject.
 ${NO_OVERLAP}
 - Motion: quick and sure. Boxes and lines slide in on a short stagger, numbers count up, things stop hard. No
   wobble, bounce or flash.`
 
 const VARIETY = `VARIETY: there is no component library. Design every scene from scratch for its own line, and make them
-differ: composition (a number filling the frame, a left-aligned stack, a split screen, a list that builds, a simple
-diagram, one word alone), scale, alignment and motion should all change from scene to scene. Don't repeat a layout
-within the video, and don't copy one from this account's older videos.`
+differ: composition (a number filling the frame, a stack of headline boxes, a split screen, a list that builds, a
+simple diagram, one word alone), scale and motion should all change from scene to scene. Vary those, not the
+alignment: text stays centred, as THE LOOK says, apart from its few exceptions. Don't repeat a layout within the
+video, and don't copy one from this account's older videos.`
 
 function mechanicsBlock() {
   return `Remotion mechanics -- read these for how things are wired, not for how they look (their look predates the brand):

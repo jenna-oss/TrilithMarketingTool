@@ -81,6 +81,9 @@ Steps:
 
 2. Work out what kind of change it is. It can be more than one.
    - What's on screen (text, sizes, colours, layout, a scene's animation): edit only ${component}.
+     <SafeArea> (from ./brand) is a flex column, so alignItems / justifyContent on it take effect. Videos made
+     before 2026-09-19 were laid out when they didn't, so scenes that asked to be centred may now sit centred
+     where the original sat top-left. That is intended; don't undo it.
    - What the narrator says: change only the affected lines in LINES in voiceover_${slug}.py and keep the
      rest word for word. Update any on-screen text that quotes a line you changed.
    - How the narration sounds (more enthusiastic, more expressive, more range, more energy, calmer, more
