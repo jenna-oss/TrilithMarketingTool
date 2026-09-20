@@ -18,6 +18,7 @@
 import { handleIdeas } from './ideas.js';
 import { handleUpload } from './upload.js';
 import { handleRecordings } from './recordings.js';
+import { handleLinks } from './links.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -97,6 +98,16 @@ export default {
       catch (err) {
         console.error('recordings route failed:', err?.message);
         return json({ error: 'Something went wrong with that recording. Try again.' }, 502, headers);
+      }
+    }
+
+    /* An article or a YouTube URL pasted on the Plan page: read now, kept in
+     * the corpus, and handed to the planner for this session. */
+    if (path === '/links' || path.startsWith('/links/')) {
+      try { return await handleLinks(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('links route failed:', err?.message);
+        return json({ error: 'Something went wrong with that link. Try again.' }, 502, headers);
       }
     }
 

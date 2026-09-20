@@ -10,9 +10,11 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, extname, basename, relative, sep } from 'node:path';
 
-import { decode, htmlToText, articleScope, metaFromHtml, isoOrNull } from './kb-lib.mjs';
+import { decode, htmlToText, articleScope, metaFromHtml, isoOrNull } from './kb-web.mjs';
 
-const UA = 'Mozilla/5.0 (compatible; TrilithKnowledgeBot/1.0; +https://trilithfunding.com)';
+/* Reading a page is shared with the Worker, which reads links pasted on the
+ * Plan page; re-exported so the ingest keeps importing its fetchers from here. */
+export { fetchArticle, fetchYouTube, isYouTube } from './kb-web.mjs';
 
 export const DOCUMENT_TYPES = [
   'transcript', 'research', 'article', 'report', 'recording', 'interview', 'other',
@@ -168,126 +170,6 @@ export async function readFileSources(root) {
   }
 
   return { docs, failures };
-}
-
-/* --- articles ------------------------------------------------------------ */
-
-export async function fetchArticle(entry) {
-  const res = await fetch(entry.url, { headers: { 'user-agent': UA } });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  const html = await res.text();
-  const meta = metaFromHtml(html);
-  const text = htmlToText(articleScope(html));
-
-  if (text.length < 200) throw new Error('extracted body was under 200 characters — probably a JS-rendered page');
-
-  return {
-    document_type: entry.document_type || 'article',
-    title: entry.title || meta.title || entry.url,
-    source: entry.source || meta.publisher || new URL(entry.url).hostname.replace(/^www\./, ''),
-    source_url: entry.url,
-    published_at: isoOrNull(entry.published_at || meta.published),
-    source_key: `url:${entry.url}`,
-    raw_content: text,
-    metadata: {
-      ingest_route: 'url',
-      ...(meta.summary ? { summary: meta.summary } : {}),
-      ...(entry.topics ? { topics: entry.topics } : {}),
-      ...(entry.research_type ? { research_type: entry.research_type } : {}),
-    },
-  };
-}
-
-/* --- YouTube ------------------------------------------------------------- */
-
-const videoId = (url) =>
-  url.match(/[?&]v=([\w-]{11})/)?.[1] ||
-  url.match(/youtu\.be\/([\w-]{11})/)?.[1] ||
-  url.match(/\/shorts\/([\w-]{11})/)?.[1] ||
-  null;
-
-export const isYouTube = (url) => /(?:youtube\.com|youtu\.be)/i.test(url);
-
-/* Captions are read off the watch page rather than through an API, because
- * there is no public captions API that does not require OAuth on the channel.
- * That makes this the most fragile fetcher here: YouTube changes the shape of
- * the watch page freely, and it challenges datacenter IPs the same way Meta
- * does. Failures are per-document and non-fatal for exactly that reason. */
-export async function fetchYouTube(entry) {
-  const id = videoId(entry.url);
-  if (!id) throw new Error('could not read a video id out of the URL');
-
-  const res = await fetch(`https://www.youtube.com/watch?v=${id}`, {
-    headers: { 'user-agent': UA, 'accept-language': 'en-US,en;q=0.9' },
-  });
-  if (!res.ok) throw new Error(`watch page returned ${res.status}`);
-  const html = await res.text();
-
-  const raw = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\})\s*;\s*(?:var|<\/script>)/);
-  if (!raw) throw new Error('no player response on the watch page (likely a bot challenge)');
-
-  let player;
-  try { player = JSON.parse(raw[1]); } catch { throw new Error('player response was not parseable JSON'); }
-
-  const tracks = player?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-  if (!tracks.length) throw new Error('this video has no caption tracks');
-
-  /* Prefer a human track over an automatic one, and English over anything else,
-   * but take what exists rather than failing on a Spanish-only upload. */
-  const track =
-    tracks.find((t) => /^en/i.test(t.languageCode) && t.kind !== 'asr') ||
-    tracks.find((t) => /^en/i.test(t.languageCode)) ||
-    tracks[0];
-
-  const capRes = await fetch(`${track.baseUrl}&fmt=json3`, { headers: { 'user-agent': UA } });
-  if (!capRes.ok) throw new Error(`caption fetch returned ${capRes.status}`);
-  const cap = await capRes.json();
-
-  const lines = (cap.events || [])
-    .filter((e) => e.segs)
-    .map((e) => {
-      const text = e.segs.map((s) => s.utf8).join('').replace(/\s+/g, ' ').trim();
-      if (!text) return null;
-      const start = Math.round((e.tStartMs || 0) / 1000);
-      const end = Math.round(((e.tStartMs || 0) + (e.dDurationMs || 0)) / 1000);
-      return { start, end, text };
-    })
-    .filter(Boolean);
-
-  if (!lines.length) throw new Error('caption track was empty');
-
-  /* Re-emitted as WebVTT so it goes through exactly the same transcript parser
-   * as a caption file dropped in the folder. One code path, one behaviour. */
-  const hms = (s) =>
-    `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}.000`;
-
-  const vtt = ['WEBVTT', '', ...lines.flatMap((l) => [`${hms(l.start)} --> ${hms(l.end)}`, l.text, ''])].join('\n');
-
-  const details = player.videoDetails || {};
-  const published =
-    player.microformat?.playerMicroformatRenderer?.publishDate ||
-    html.match(/"publishDate":"([^"]+)"/)?.[1] ||
-    null;
-
-  return {
-    document_type: entry.document_type || 'transcript',
-    title: entry.title || decode(details.title || `YouTube ${id}`),
-    source: entry.source || decode(details.author || 'YouTube'),
-    source_url: `https://www.youtube.com/watch?v=${id}`,
-    published_at: isoOrNull(entry.published_at || published),
-    source_key: `youtube:${id}`,
-    raw_content: vtt,
-    metadata: {
-      ingest_route: 'youtube',
-      video_id: id,
-      channel: decode(details.author || ''),
-      duration_seconds: Number(details.lengthSeconds) || null,
-      caption_kind: track.kind === 'asr' ? 'automatic' : 'human',
-      language: track.languageCode,
-      content_type: entry.content_type || 'video',
-      ...(entry.topics ? { topics: entry.topics } : {}),
-    },
-  };
 }
 
 /* --- the URL list -------------------------------------------------------- */

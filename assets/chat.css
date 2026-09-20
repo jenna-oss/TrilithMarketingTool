@@ -127,7 +127,21 @@
   padding: .125rem .625rem;
   cursor: pointer;
 }
+.chat .rec-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+}
 .chat .rec-chip:hover { border-color: var(--accent); }
+.chat .rec-chip[aria-busy="true"] {
+  border-style: dashed;
+  cursor: default;
+  opacity: .75;
+}
+.chat .rec-chip.bad {
+  color: var(--clay);
+  border-color: var(--clay);
+}
 .chat .rec-chip[aria-pressed="true"] {
   background: var(--accent);
   border-color: var(--accent);

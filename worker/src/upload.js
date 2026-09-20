@@ -104,17 +104,21 @@ async function embedChunks(env, chunks, cfg) {
  * caller has been answered. Shared with the recordings route, whose text comes
  * from a transcription rather than a file. Returns what was stored, or throws
  * with a message worth showing. */
-export async function ingestText(env, ctx, { sourceKey, title, text, documentType = 'other', source = null, topics = [] }) {
+export async function ingestText(env, ctx, {
+  sourceKey, title, text, documentType = 'other', source = null, topics = [],
+  sourceUrl = null, publishedAt = null, metadata = {},
+}) {
   const created = await rpc(env, 'kb_upload_document', {
     payload: {
       brand_slug: 'trilith',
       document_type: documentType,
       title,
       source,
-      published_at: null,
+      source_url: sourceUrl,
+      published_at: publishedAt,
       source_key: sourceKey,
       raw_content: text,
-      metadata: { original_filename: sourceKey, ...(topics.length ? { topics } : {}) },
+      metadata: { original_filename: sourceKey, ...(topics.length ? { topics } : {}), ...metadata },
     },
   });
   if (!created.changed) return { documentId: created.id, chunks: 0, unchanged: true };

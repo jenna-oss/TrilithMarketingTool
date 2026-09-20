@@ -157,6 +157,7 @@
     <div class="recordings" id="rec-row" hidden>
       <span class="rec-hint" id="rec-hint">Pick a recording for the planner to read in full:</span>
       <span class="rec-chips" id="rec-chips"></span>
+      <span class="rec-chips" id="link-chips"></span>
       <a class="rec-manage" href="./recordings.html">Record or upload</a>
     </div>
 
@@ -444,10 +445,12 @@ filePicker.addEventListener('change', () => {
 });
 
 /* Paste a screenshot straight into the box — the common case for an ad you
-   just grabbed off a competitor's feed. */
+   just grabbed off a competitor's feed — or a link, which is read for you. */
 input.addEventListener('paste', (e) => {
   const files = e.clipboardData && e.clipboardData.files;
-  if (files && files.length) { e.preventDefault(); stage(files); }
+  if (files && files.length) { e.preventDefault(); stage(files); return; }
+  const text = e.clipboardData && e.clipboardData.getData('text');
+  if (text) catchUrls(text);
 });
 
 ['dragenter', 'dragover'].forEach((type) => {
@@ -679,6 +682,7 @@ async function sendToRender(card, btn, note, count) {
 
 /* Recordings the planner should read this session, picked above the box. */
 const pickedRecordings = new Set();
+let readyRecordings = [];
 
 async function loadRecordings() {
   let rows = [];
@@ -690,12 +694,10 @@ async function loadRecordings() {
     rows = (await res.json()).recordings || [];
   } catch { return; }
 
-  const ready = rows.filter((r) => r.status === 'ready');
-  const row = document.getElementById('rec-row');
+  readyRecordings = rows.filter((r) => r.status === 'ready').slice(0, 12);
   const chips = document.getElementById('rec-chips');
-  if (!ready.length) { row.hidden = true; return; }
   chips.textContent = '';
-  for (const rec of ready.slice(0, 12)) {
+  for (const rec of readyRecordings) {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'rec-chip';
@@ -706,27 +708,155 @@ async function loadRecordings() {
       if (pickedRecordings.has(rec.id)) pickedRecordings.delete(rec.id);
       else pickedRecordings.add(rec.id);
       chip.setAttribute('aria-pressed', String(pickedRecordings.has(rec.id)));
-      sayPicked(ready);
+      sayContext();
     });
     chips.append(chip);
   }
-  row.hidden = false;
+  showContext();
+}
+
+function showContext() {
+  document.getElementById('rec-row').hidden = !(readyRecordings.length || links.size);
 }
 
 /* What picking one actually does, said in the row itself rather than left to
    be guessed at from a highlighted chip. */
-function sayPicked(ready) {
+function sayContext() {
   const hint = document.getElementById('rec-hint');
-  const names = ready.filter((r) => pickedRecordings.has(r.id)).map((r) => r.name);
-  if (!names.length) {
+  const chosen = [
+    ...readyRecordings.filter((r) => pickedRecordings.has(r.id)).map((r) => r.name),
+    ...[...links.values()].filter((l) => l.status === 'ready' && l.picked).map((l) => l.title || l.site),
+  ];
+  if (chosen.length === 1) {
+    hint.textContent = `Reading “${chosen[0]}” in full before it suggests anything.`;
+  } else if (chosen.length) {
+    hint.textContent = `Reading ${chosen.length} of these in full before it suggests anything.`;
+  } else if ([...links.values()].some((l) => l.status === 'reading')) {
+    hint.textContent = 'Reading that link…';
+  } else if (readyRecordings.length) {
     hint.textContent = 'Pick a recording for the planner to read in full:';
-  } else if (names.length === 1) {
-    hint.textContent = `Reading “${names[0]}” in full before it suggests anything.`;
   } else {
-    hint.textContent = `Reading ${names.length} recordings in full before it suggests anything.`;
+    hint.textContent = 'Paste a link and the planner reads it before it suggests anything:';
   }
 }
 loadRecordings();
+
+/* --- links pasted into the box -------------------------------------------
+
+   Paste an article or a YouTube URL and the Worker goes and reads it: the text
+   lands in the knowledge base, and the planner is told to read this one in
+   full for this session. The chip is the whole interface — it says what is
+   happening, clicking it takes the link back out, and clicking one that failed
+   tries again. */
+
+const URLS = /\bhttps?:\/\/[^\s<>"'`]+/gi;
+const links = new Map();
+
+const hostOf = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } };
+
+function paintLink(link) {
+  const title = link.title || '';
+  link.chip.textContent = link.status === 'reading' ? `Reading ${link.site}…`
+    : link.status === 'failed' ? `Couldn’t read ${link.site}`
+    : `${link.site} · ${title.length > 52 ? `${title.slice(0, 52)}…` : title || link.url}`;
+  link.chip.className = 'rec-chip' + (link.status === 'failed' ? ' bad' : '');
+  link.chip.setAttribute('aria-pressed', String(link.status === 'ready' && link.picked));
+  link.chip.setAttribute('aria-busy', String(link.status === 'reading'));
+  link.chip.title = link.status === 'failed'
+    ? `${link.error || 'it could not be read'} — click to try again`
+    : link.partial ? `${link.url} — no transcript, only the description`
+    : link.url;
+  sayContext();
+}
+
+function catchUrls(text) {
+  for (const found of String(text).match(URLS) || []) {
+    /* Trailing punctuation belongs to the sentence, not the address. */
+    addLink(found.replace(/[.,;:!?)\]]+$/, ''));
+  }
+}
+
+async function addLink(url) {
+  if (links.has(url) || links.size >= 6) return;
+  const link = { url, site: hostOf(url), status: 'reading', picked: true, chip: document.createElement('button') };
+  link.chip.type = 'button';
+  link.chip.addEventListener('click', () => clickLink(link));
+  links.set(url, link);
+  document.getElementById('link-chips').append(link.chip);
+  paintLink(link);
+  showContext();
+
+  let data;
+  try {
+    const res = await AikoAuth.fetch(WORKER_URL + '/links', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url }),
+    });
+    data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'that link could not be read');
+  } catch (err) {
+    Object.assign(link, { status: 'failed', error: err.message });
+    paintLink(link);
+    return;
+  }
+
+  link.id = data.id;
+  link.site = data.site || link.site;
+  if (data.status === 'ready') {
+    Object.assign(link, { status: 'ready', title: data.title, partial: data.partial });
+    paintLink(link);
+    return;
+  }
+  pollLink(link);
+}
+
+/* Most pages are read in a second or two; a slow one can take twenty. */
+function pollLink(link, tries = 0) {
+  setTimeout(async () => {
+    let row = null;
+    try {
+      const res = await AikoAuth.fetch(WORKER_URL + '/links/read', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: link.id }),
+      });
+      if (res.ok) row = (await res.json()).link;
+    } catch { /* try again on the next turn */ }
+
+    if (row && row.status !== 'reading') {
+      Object.assign(link, {
+        status: row.status, title: row.title, site: row.site || link.site,
+        error: row.error, partial: row.partial,
+      });
+      paintLink(link);
+      return;
+    }
+    if (tries >= 30) {
+      Object.assign(link, { status: 'failed', error: 'it is taking too long' });
+      paintLink(link);
+      return;
+    }
+    pollLink(link, tries + 1);
+  }, 2000);
+}
+
+function clickLink(link) {
+  if (link.status === 'reading') return;
+  if (link.status === 'ready') { link.picked = !link.picked; paintLink(link); return; }
+  if (!link.id) return;
+  Object.assign(link, { status: 'reading', error: null });
+  paintLink(link);
+  AikoAuth.fetch(WORKER_URL + '/links/retry', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: link.id }),
+  }).then(() => pollLink(link)).catch(() => {
+    Object.assign(link, { status: 'failed', error: 'it could not be read' });
+    paintLink(link);
+  });
+}
+
+/* Typed rather than pasted, or pasted somewhere the paste event did not reach. */
+let typedUrl;
+input.addEventListener('input', () => {
+  clearTimeout(typedUrl);
+  typedUrl = setTimeout(() => catchUrls(input.value), 900);
+});
 
 function buildPayload(brief, history) {
   const attachments = staged.filter((a) => a.ready).map((a) => (a.kind === 'text'
@@ -744,6 +874,8 @@ function buildPayload(brief, history) {
   const base = { brief, history, plan, session_id: sessionId };
   /* Only when something is picked, so an untouched page sends what it always did. */
   if (pickedRecordings.size) base.recordings = [...pickedRecordings];
+  const chosenLinks = [...links.values()].filter((l) => l.status === 'ready' && l.picked && l.id).map((l) => l.id);
+  if (chosenLinks.length) base.links = chosenLinks;
 
   return attachments.length ? { ...base, attachments } : base;
 }

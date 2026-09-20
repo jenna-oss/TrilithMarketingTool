@@ -158,6 +158,19 @@ const TOOLS = [
     },
   },
 
+  /* A link the person pasted while planning: an article, or a YouTube video.
+   * The Worker has already read it; this hands over what it got. */
+  {
+    name: 'read_link',
+    description:
+      'The full text of a link pasted in this session, by id — an article, or a video transcript. Read it before you propose anything built on it. A video may come back as a summary rather than a transcript, and it says so; do not treat a description as what was said.',
+    input_schema: {
+      type: 'object',
+      required: ['id'],
+      properties: { id: { type: 'string', description: 'The link id, from the ones listed at the end of the message.' } },
+    },
+  },
+
   /* The knowledge base: transcripts, research, published content, idea memory
    * and hooks. Defined next door because they are a different corpus with a
    * different retrieval layer under them — hybrid rather than keyword-only. */
@@ -254,6 +267,8 @@ You have several corpora, reachable only through your tools:
 4. The knowledge base — transcripts of things Trilith has said out loud, research and market reports, a record of what has already been published as topic and angle, and the idea memory. Reached through search_transcripts, search_research, search_previous_content, check_repetition, search_content_ideas, save_idea and search_hooks.
 
 5. Voice recordings uploaded to this tool, through list_recordings and read_recording. Their transcripts are in the knowledge base as well, so a search can turn up a passage from one. When the person has selected recordings for this session, they are named at the end of their message with their ids: read those in full before you propose anything, and take the ideas from what was actually said. Quote a recording the way you would a transcript — by its name — and never present something it says as research.
+
+6. Links pasted while planning — an article, or a YouTube video — through read_link. They are named at the end of the message with their ids. Read each one in full before you propose anything from it. It is source material, like research: say which publication a fact came from, and build the idea in Trilith's own words rather than following the article's line by line.
 
 The third one is different in kind and you must treat it differently. Those brands are not Trilith's competitors and are not in the lending category. Spyglass has no insight coverage for investor lenders at all, so nothing in it is evidence about the competition. It gives you FORM — how a piece of creative opens, what claim it leads with — abstracted into reusable shapes. Use it for angles and hooks, never for topics. The substance of an idea must come from the ad corpus or Trilith's own writing; a hook pattern only tells you what shape to pour it into.
 
@@ -427,6 +442,28 @@ async function runTool(env, name, input, ctx = {}) {
     };
   }
 
+  if (name === 'read_link') {
+    const link = await rpc(env, 'kb_link_read', { p_id: String(input.id || '') });
+    if (!link) return { error: 'no link with that id' };
+    if (link.status !== 'ready') {
+      return { id: link.id, url: link.url, status: link.status, error: link.error || 'this link is still being read' };
+    }
+    const LIMIT = 60000;
+    const text = String(link.body || '');
+    return {
+      id: link.id,
+      title: link.title,
+      site: link.site,
+      url: link.url,
+      published: link.published_at,
+      kind: link.kind,
+      /* Said plainly, because a description reads like a summary of the video
+       * and is nothing of the sort. */
+      ...(link.partial ? { note: 'YouTube would not give up this video’s captions. What follows is its title, channel and description, not what was said in it.' } : {}),
+      text: text.length > LIMIT ? `${text.slice(0, LIMIT)}\n\n[cut here: the rest is searchable with search_research]` : text,
+    };
+  }
+
   if (name === 'search_competitor_ads') {
     const rows = await rpc(env, 'adspy_search_ads', {
       q: input.query || null,
@@ -586,6 +623,8 @@ function toolOutcome(name, rows) {
       return { summary: 'saved' };
     case 'remember_file':
       return { summary: rows.status === 'stored' ? `${rows.chunks} passages` : String(rows.status || 'done') };
+    case 'read_link':
+      return { summary: rows.text ? `${(rows.text.match(/\S+/g) || []).length} words` : String(rows.status || rows.error || 'not ready') };
     case 'read_recording':
       return { summary: rows.transcript ? `${rows.words || 0} words` : String(rows.status || rows.error || 'not ready') };
     default:
@@ -597,6 +636,7 @@ function describe(name, input) {
   if (KB_TOOL_NAMES.has(name)) return describeKbTool(name, input);
   if (name === 'list_recordings') return 'the recordings';
   if (name === 'read_recording') return 'reading a recording';
+  if (name === 'read_link') return 'reading the link';
 
   const bits = [];
   if (input.query) bits.push(`"${input.query}"`);
@@ -805,6 +845,24 @@ export async function handleIdeas(request, env, headers, ctx) {
     } catch { /* the planner can still list them itself */ }
   }
 
+  /* Links pasted into the box this session. Their titles are read back from
+   * the database rather than trusted from the page. */
+  const pickedLinks = Array.isArray(body.links)
+    ? [...new Set(body.links.map((l) => String(l)).filter((l) => UUID.test(l)))].slice(0, 5)
+    : [];
+  let linksNote = '';
+  if (pickedLinks.length) {
+    try {
+      const rows = await rpc(env, 'kb_links', { p_limit: 200 });
+      const chosen = (rows || []).filter((r) => pickedLinks.includes(r.id));
+      if (chosen.length) {
+        linksNote = `\n\nLINKS PASTED IN THIS SESSION (read each one in full with read_link before proposing anything):\n`
+          + chosen.map((r) => `- ${r.title || r.url} (${r.site || r.kind}, id ${r.id}`
+            + `${r.status === 'ready' ? '' : `, ${r.status}`}${r.partial ? ', description only — no transcript' : ''})`).join('\n');
+      }
+    } catch { /* the ids are still in the message; read_link works from them */ }
+  }
+
   /* Spec section 38. Collected across the turn and written once at the end:
    * a round trip per search would add latency to the thing being waited on. */
   const searchLog = [];
@@ -826,7 +884,7 @@ export async function handleIdeas(request, env, headers, ctx) {
   const send = (e, d) => writer.write(enc.encode(`event: ${e}\ndata: ${JSON.stringify(d)}\n\n`));
 
   const work = (async () => {
-      const messages = [...history, { role: 'user', content: userContent(brief + recordingsNote, attached) }];
+      const messages = [...history, { role: 'user', content: userContent(brief + recordingsNote + linksNote, attached) }];
       let totals = { input: 0, output: 0, cacheRead: 0, searches: 0 };
 
       /* Emit immediately. The first round is usually thinking followed by tool

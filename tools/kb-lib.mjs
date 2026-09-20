@@ -67,71 +67,9 @@ export async function rpc(fn, body) {
 
 /* --- HTML ---------------------------------------------------------------- */
 
-const ENTITIES = {
-  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
-  rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“',
-  mdash: '—', ndash: '–', hellip: '…', middot: '·',
-};
-
-export function decode(s) {
-  return String(s)
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
-    .replace(/&([a-z]+);/gi, (m, name) => ENTITIES[name.toLowerCase()] ?? m);
-}
-
-export function htmlToText(html) {
-  return decode(
-    html
-      .replace(/<(script|style|noscript|svg|template)[\s\S]*?<\/\1>/gi, ' ')
-      .replace(/<(nav|footer|aside|form)[\s\S]*?<\/\1>/gi, ' ')
-      .replace(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, lvl, inner) =>
-        `\n\n${'#'.repeat(Number(lvl))} ${inner.replace(/<[^>]+>/g, '').trim()}\n\n`)
-      .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_, inner) =>
-        `\n- ${inner.replace(/<[^>]+>/g, '').trim()}`)
-      .replace(/<\/(p|div|tr|section|blockquote)>/gi, '\n\n')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<[^>]+>/g, ' ')
-  )
-    .replace(/[ \t ]+/g, ' ')
-    .replace(/ *\n */g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
-/* Prefer the article body; fall back to <main>, then the whole document. */
-export function articleScope(html) {
-  return (
-    html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ??
-    html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)?.[1] ??
-    html
-  );
-}
-
-export function metaFromHtml(html) {
-  const out = {};
-  const blocks = [...html.matchAll(
-    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-  )];
-  for (const [, body] of blocks) {
-    let parsed;
-    try { parsed = JSON.parse(decode(body.trim())); } catch { continue; }
-    for (const node of [parsed, ...(parsed['@graph'] || [])].flat()) {
-      if (!node || typeof node !== 'object') continue;
-      const type = [node['@type']].flat().join(' ');
-      if (!/Article|BlogPosting|Report|WebPage/i.test(type)) continue;
-      out.title ||= node.headline || node.name;
-      out.summary ||= node.description;
-      out.published ||= node.datePublished;
-      out.publisher ||= typeof node.publisher === 'string' ? node.publisher : node.publisher?.name;
-    }
-  }
-  out.title ||= decode(html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i)?.[1] || '') || null;
-  out.title ||= decode(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '').trim() || null;
-  out.published ||=
-    html.match(/<meta[^>]+property=["']article:published_time["'][^>]+content=["']([^"']+)/i)?.[1] || null;
-  return out;
-}
+/* The HTML-to-text helpers live in kb-web.mjs, which the Worker imports too;
+ * they are re-exported here so every caller keeps its old import. */
+export { decode, htmlToText, articleScope, metaFromHtml, isoOrNull } from './kb-web.mjs';
 
 /* --- embeddings ---------------------------------------------------------- */
 
@@ -221,10 +159,3 @@ async function voyageCall(input, { inputType, model, dimensions }, attempt = 0) 
     .map((d) => `[${d.embedding.join(',')}]`);
 }
 
-/* --- misc ---------------------------------------------------------------- */
-
-export function isoOrNull(v) {
-  if (!v) return null;
-  const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? null : d.toISOString();
-}
