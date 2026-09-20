@@ -26,6 +26,7 @@ mux the same audio it already generated onto the fresh render.
 import base64
 import json
 import os
+import re
 import subprocess
 import urllib.request
 import urllib.error
@@ -36,7 +37,7 @@ from numeric_tts import spoken_text
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-VOICE_ID = "oWdwRrGpAwNn1T1p5ZQK"  # cloned client narrator voice
+VOICE_ID = "56bWURjYFHyYyVf490Dp"  # the channel's narrator
 MODEL_ID = "eleven_multilingual_v2"
 SWIPE = 0.35  # must match SWIPE in the video's .tsx
 FPS = 30
@@ -44,10 +45,10 @@ TAIL_PAD = 2.0
 
 # How the voice delivers. An edit on the Output page ("more enthusiastic",
 # "calmer") changes these, inside the ranges given, and records again.
-STABILITY = 0.2   # 0.05-0.6: lower = more range and emotion, less predictable; higher = steadier
-STYLE = 0.9       # 0.3-1.0: higher = bolder, more dramatic delivery
+STABILITY = 0.15  # 0.05-0.6: lower = more range and emotion, less predictable; higher = steadier
+STYLE = 1.0       # 0.3-1.0: higher = bolder, more dramatic delivery
 SIMILARITY = 0.8  # 0.7-0.9: how closely it keeps to the narrator's cloned voice
-SPEEDUP = 1.12    # 1.0-1.2: uniform speedup after recording -- faster/more energetic without per-word slurring
+SPEEDUP = 1.15    # 1.0-1.2: uniform speedup after recording -- faster/more energetic without per-word slurring
 
 SLUG = "REPLACE_ME"  # e.g. "arnold-schwarzenegger-real-estate" -- used for folder/file naming
 
@@ -57,6 +58,32 @@ LINES = [
     "REPLACE with beat 1 line",
     "REPLACE with beat 2 line",
 ]
+
+# The words to punch, one list per line, copied from that line (the script's
+# own emphasis words -- the same ones the captions turn orange). They are sent
+# to the voice in capitals, which it leans into; the captions still read as
+# written, because they are matched to the audio without regard to case.
+EMPHASIS = [
+    [],
+    [],
+]
+
+
+def punched(spoken_line, words):
+    """The spoken line with its emphasis words capitalised."""
+    out = spoken_line
+    for word in words or []:
+        key = spoken_text(str(word)).strip(" .,;:!?\"'()-").strip()
+        if not key:
+            continue
+        out = re.sub(rf"(?<![A-Za-z]){re.escape(key)}(?![A-Za-z])", key.upper(), out, count=1, flags=re.I)
+    return out
+
+
+def spoken_lines_for(lines):
+    """What actually gets sent: numbers spelled out, emphasis words punched."""
+    return [punched(spoken_text(line), EMPHASIS[i] if i < len(EMPHASIS) else [])
+            for i, line in enumerate(lines)]
 
 
 def run(cmd):
@@ -159,7 +186,7 @@ def main():
         align = json.loads((voice_dir / "alignment.json").read_text())
         script_text = (voice_dir / "script.txt").read_text()
     else:
-        script_text = " ".join(spoken_text(line) for line in LINES)
+        script_text = " ".join(spoken_lines_for(LINES))
         print("Generating one continuous narration with timestamps (ElevenLabs, cloned client voice)...")
         result = tts_with_timestamps(script_text)
         raw_path.write_bytes(base64.b64decode(result["audio_base64"]))
@@ -183,7 +210,7 @@ def main():
     search_from = 0
     line_starts = []
     line_indexes = []
-    spoken_lines = [spoken_text(l) for l in LINES]
+    spoken_lines = spoken_lines_for(LINES)
     for line in spoken_lines:
         idx = script_text.index(line, search_from)
         line_starts.append(starts[idx])

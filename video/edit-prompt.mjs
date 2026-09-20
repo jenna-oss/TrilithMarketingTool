@@ -85,13 +85,15 @@ Steps:
      before 2026-09-19 were laid out when they didn't, so scenes that asked to be centred may now sit centred
      where the original sat top-left. That is intended; don't undo it.
    - What the narrator says: change only the affected lines in LINES in voiceover_${slug}.py and keep the
-     rest word for word. Update any on-screen text that quotes a line you changed.
+     rest word for word. Keep EMPHASIS lined up with LINES, dropping or replacing any punched word whose
+     line you changed. Update any on-screen text that quotes a line you changed.
    - How the narration sounds (more enthusiastic, more expressive, more range, more energy, calmer, more
      confident, faster, slower): leave LINES alone and change how the voice delivers them. In
      voiceover_${slug}.py that is either named settings near the top (STABILITY, STYLE, SIMILARITY, SPEEDUP)
      or, in older scripts, the numbers in voice_settings inside tts_with_timestamps plus the SPEEDUP
      constant. Stay inside these ranges:
        stability          0.05 to 0.6   lower = more range and emotion, less predictable; higher = steadier
+       (the current defaults are the lively ones: stability 0.15, style 1.0, SPEEDUP 1.15)
        style              0.3 to 1.0    higher = bolder, more dramatic delivery
        similarity_boost   0.7 to 0.9    how closely it keeps to the narrator's cloned voice; leave it alone
        SPEEDUP            1.0 to 1.2    applied after recording; faster = more energy

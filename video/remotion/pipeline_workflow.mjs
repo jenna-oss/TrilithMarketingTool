@@ -35,7 +35,7 @@ const HOOK_LIBRARY_PATH = `${PROJECT_ROOT}/hook_templates_1000.json`
 const ENV_HINT = (BAKED_ROOT || ARGS.root)
   ? 'the ELEVENLABS_API_KEY environment variable (already set on this runner)'
   : `${PROJECT_ROOT}/.env (ELEVENLABS_API_KEY)`
-const VOICE_ID = 'oWdwRrGpAwNn1T1p5ZQK'
+const VOICE_ID = '56bWURjYFHyYyVf490Dp'
 
 const BRIEF = normaliseBrief(BAKED_BRIEF || ARGS.brief || ARGS.topic)
 
@@ -982,9 +982,13 @@ or its post-generation speedup step -- both are required, not optional:
   captions in the .tsx can keep the compact numeric form, e.g. "$240,000" -- this only affects what's sent
   to the voice model). Also spell out any acronyms with periods yourself if a beat has one (e.g. "D.S.C.R."),
   and avoid "--" in lines -- use commas instead.
-- the template generates at natural pace then applies a uniform speedup (SPEEDUP, 1.12) for a faster,
+- the template generates at natural pace then applies a uniform speedup (SPEEDUP, 1.15) for a faster,
   more enthusiastic feel without per-word slurring, and already uses expressive delivery settings
-  (STABILITY 0.2, STYLE 0.9) -- keep its defaults unless the change requested below is about the voice.${BRIEF.revision ? `
+  (STABILITY 0.15, STYLE 1.0) -- keep its defaults unless the change requested below is about the voice.
+- fill EMPHASIS as well as LINES: one list per line, holding that line's emphasis words from the script
+  below, copied exactly as they appear in the line. They are sent to the voice in capitals so it punches
+  them, and they are the same words the captions turn orange, so the two land together. A line with no
+  emphasis gets an empty list.${BRIEF.revision ? `
 
 ${revisionBlock()}
 If that change is about how the narration sounds (more enthusiastic, more range, calmer, slower), make it
@@ -992,8 +996,8 @@ with the delivery settings at the top of voiceover_${research.slug}.py, inside t
 and don't rewrite the lines for it.` : ''}
 
 Voice ID: ${VOICE_ID}, model eleven_multilingual_v2, ElevenLabs API key from ${ENV_HINT}.
-Lines, one continuous script in order:
-${script.beats.map(b => `- ${b.line}`).join('\n')}
+Lines, one continuous script in order, each with the words to punch:
+${script.beats.map(b => `- ${b.line}${b.emphasis.length ? `   [punch: ${b.emphasis.join(', ')}]` : ''}`).join('\n')}
 
 Steps:
 1. Fill in and run voiceover_${research.slug}.py to get the real per-scene durations (already speedup-adjusted).
