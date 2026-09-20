@@ -87,11 +87,11 @@ export const SafeArea: React.FC<{ children?: React.ReactNode; style?: React.CSSP
 export const PHOTO_FRAME = {
   left: 90,
   width: 900,
-  height: 1150,
   /** Picture up, words across its bottom edge. */
-  high: { top: 150, bottom: 1300 },
-  /** Picture down, words across its top edge. */
-  low: { top: 430, bottom: 1580 },
+  high: { top: 150, height: 1150, bottom: 1300 },
+  /** Picture down, words across its top edge. Shorter, because both stop at
+   *  the same line: any lower and the captions would sit on the picture. */
+  low: { top: 430, height: 870, bottom: 1300 },
 };
 
 /** Text-size floors, px on the 1080x1920 frame. */

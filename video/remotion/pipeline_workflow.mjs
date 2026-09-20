@@ -816,7 +816,7 @@ words across its bottom edge) or "PHOTO_FRAME.low" (picture down, words across i
 which, and they alternate across videos:
   <Img src={staticFile("library/<the plan's photo>")}
        style={{ position: "absolute", top: F.top, left: PHOTO_FRAME.left, width: PHOTO_FRAME.width,
-                height: PHOTO_FRAME.height, objectFit: "cover" }} />
+                height: F.height, objectFit: "cover" }} />
 (import { Img, staticFile } from "remotion"). The words go in the guide's headline boxes, stacked and centred,
 crossing that edge: about a third of the stack over the picture and the rest over the black, so for the bottom
 edge the stack starts near F.bottom - 170, and for the top edge it ends near F.top + 170. Nothing else sits on
