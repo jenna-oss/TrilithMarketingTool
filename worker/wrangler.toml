@@ -18,6 +18,18 @@ GITHUB_REPO = "jenna-oss/TrilithMarketingTool"
 #   npx wrangler secret put SUPABASE_ANON_KEY
 #   npx wrangler secret put VOYAGE_API_KEY
 #   npx wrangler secret put GITHUB_TOKEN
+#   npx wrangler secret put ELEVENLABS_API_KEY
+#   npx wrangler secret put SUPADATA_API_KEY
+#
+# ELEVENLABS_API_KEY transcribes what is uploaded or recorded on the Recordings
+# page. Without it /recordings returns 503 and says so.
+#
+# SUPADATA_API_KEY gets the words out of a YouTube link pasted on the Plan page.
+# YouTube stopped serving caption tracks to anything but its own player during
+# 2026 — the signed track URL answers 200 with an empty body — so there is no
+# free route left. Without this key a video still reads, but only down to its
+# title, channel and description, and it is flagged as partial so the planner
+# never mistakes a description for what was said.
 #
 # GITHUB_TOKEN lets /videos/edit start an edit in GitHub Actions. Make it a
 # fine-grained personal access token limited to this one repository, with the

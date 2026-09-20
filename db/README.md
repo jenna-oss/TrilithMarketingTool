@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 36 migrations applied to the Supabase project
+The `kb` schema is defined by 37 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 35 | `kb_links_transcript_job` | a transcript that has to be generated rather than fetched comes back as a job that can take minutes, which is far longer than a Worker should wait: `links.job_id` parks it, `kb_link_job` stores it alongside what is already known about the video, and the page's own polling of `/links/read` is what collects the result. The body saved at that point is the description, kept as the fallback if the job fails |
 | 34 | `kb_links` | a link pasted on the Plan page: `links` (url, canonical url, kind, the extracted text, whether it is partial, the document it became) and `kb_link_create` / `_ready` / `_failed` / `_read` plus `kb_links` for the Worker. Pasting the same canonical url inside 30 days hands back the row already read rather than fetching it again |
 | 33 | `kb_recordings` + `kb_recordings_own_bucket` | voice recordings from the Recordings page: `recordings` (audio path, transcript, words, status, the document its transcript became), `kb_recording_create` / `_ready` / `_failed` / `_read` / `_rename` / `_delete` and `kb_recordings` for the Worker, and the private `kb-recordings` bucket with anon insert/read/delete on it. The second migration exists because `recordings` was already taken: another AIKO tool made a public bucket of that name in May, and the first migration's `on conflict do nothing` would have put private audio in it |
 | 32 | `kb_video_edit_remake_and_script` | the Edit page's re-make and script panel: `video_edits` gains `mode` (`exact` / `remake`; a video without a kept source is always re-made; 3 re-makes a day inside the 10 edits) and `script_changes` (`[{line, from, to}]`, checked against the lines saved in the video's `metadata.script`); `kb_video_request_edit(uuid, jsonb, text, jsonb)` replaces the two-argument version; `kb_video_edit_start` and the library's `last_edit` carry the mode; `kb_video_script` (open, for the Worker) reads a video's lines; `kb_video_scripts_missing` / `kb_video_set_script` (service role) are for the backfill-scripts workflow |

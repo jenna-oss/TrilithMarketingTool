@@ -10,9 +10,14 @@
  * recording's transcript: a slow site should not hold the box open. The row
  * says 'reading' until it lands and the page polls.
  *
- * The fetchers are the same ones the nightly ingest of kb/sources.json uses —
- * tools/kb-web.mjs — so a link read on demand and the same link read at 14:00
- * produce the same document rather than two near-copies.
+ * Articles are read here, with the same fetchers the nightly ingest of
+ * kb/sources.json uses — tools/kb-web.mjs — so a link read on demand and the
+ * same link read at 14:00 produce the same document rather than two
+ * near-copies.
+ *
+ * A video's words come from Supadata, because YouTube stopped serving caption
+ * tracks to anything but its own player. Without that key a video still reads,
+ * but only down to its title, channel and description, and it says so.
  *
  * Only a signed-in person on the app's list reaches any of this: index.js
  * gates every route but /auth/*.
@@ -28,6 +33,13 @@ const MAX_TEXT = 200000;
 const MIN_WORDS = 120;
 /* A video with no captions is only its title, channel and description. */
 const MIN_SUMMARY_WORDS = 25;
+
+const SUPADATA_URL = 'https://api.supadata.ai/v1/transcript';
+/* Captions that already exist cost one credit. Having Supadata listen to a
+ * video that has none costs two credits a minute, against a free tier of a
+ * hundred a month — worth it for a short video, not for an hour-long one,
+ * which would spend a third of the month in a single paste. */
+const GENERATE_UNDER_MINUTES = 20;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -78,63 +90,172 @@ export function normalise(raw) {
   return { url: canonical, canonical, kind: 'article', site: u.hostname };
 }
 
-/* Read it, put it in the corpus, and mark the row. Whatever goes wrong is
- * written on the row, where the chip shows it, rather than lost in a log. */
+/* --- Supadata ------------------------------------------------------------ */
+
+async function askSupadata(env, params) {
+  const res = await fetch(`${SUPADATA_URL}?${new URLSearchParams(params)}`, {
+    headers: { 'x-api-key': env.SUPADATA_API_KEY },
+    signal: AbortSignal.timeout(30000),
+  });
+  return { status: res.status, data: await res.json().catch(() => ({})) };
+}
+
+async function askSupadataJob(env, jobId) {
+  const res = await fetch(`${SUPADATA_URL}/${encodeURIComponent(jobId)}`, {
+    headers: { 'x-api-key': env.SUPADATA_API_KEY },
+    signal: AbortSignal.timeout(20000),
+  });
+  return { status: res.status, data: await res.json().catch(() => ({})) };
+}
+
+/* The words of a video, or a job id to come back for, or nothing. Never
+ * throws: a video that cannot be transcribed still reads down to its
+ * description, which is better than a chip that only says it failed. */
+async function transcriptFor(env, url, seconds) {
+  if (!env.SUPADATA_API_KEY) return {};
+  const take = (out) => {
+    if (out.status === 200 && out.data?.content) return { text: String(out.data.content), lang: out.data.lang };
+    if (out.status === 202 && out.data?.jobId) return { jobId: String(out.data.jobId) };
+    return null;
+  };
+
+  try {
+    const native = take(await askSupadata(env, { url, text: 'true', mode: 'native' }));
+    if (native) return native;
+
+    const minutes = (seconds || 0) / 60;
+    if (minutes && minutes > GENERATE_UNDER_MINUTES) {
+      return { why: `no captions, and at ${Math.round(minutes)} minutes it is too long to have one made` };
+    }
+    const made = take(await askSupadata(env, { url, text: 'true', mode: 'generate' }));
+    if (made) return made;
+    return { why: 'no transcript could be got for this one' };
+  } catch (err) {
+    console.error('supadata failed:', err?.message);
+    return { why: 'the transcript service could not be reached' };
+  }
+}
+
+/* --- storing what was read ------------------------------------------------ */
+
+/* Into the corpus, then onto the row. One path, whether the text arrived on
+ * the first read or a minute later when a job finished. */
+async function store(env, link, { text, partial, documentType, sourceKey }) {
+  let body = String(text || '').trim();
+  if (body.length > MAX_TEXT) body = `${body.slice(0, MAX_TEXT)}\n\n[cut here: it went on longer than this]`;
+
+  let documentId = null;
+  try {
+    const stored = await ingestText(env, null, {
+      sourceKey,
+      title: link.title,
+      text: body,
+      documentType,
+      source: link.site,
+      sourceUrl: link.url,
+      publishedAt: link.published_at || null,
+      metadata: { ingest_route: link.kind === 'video' ? 'youtube' : 'link', ...(partial ? { partial: true } : {}) },
+    });
+    documentId = stored.documentId;
+  } catch (err) {
+    console.error('link ingest failed:', err?.message);
+  }
+
+  await rpc(env, 'kb_link_ready', {
+    p_id: link.id,
+    p_title: link.title,
+    p_site: link.site,
+    p_author: link.author || null,
+    p_published: link.published_at || null,
+    p_words: wordCount(body),
+    p_seconds: link.seconds ?? null,
+    p_partial: partial,
+    p_body: body,
+    p_document_id: documentId,
+  });
+}
+
+/* Read it and mark the row. Whatever goes wrong is written on the row, where
+ * the chip shows it, rather than lost in a log. */
 async function read(env, ctx, { id, url, kind }) {
   try {
-    const doc = kind === 'video'
-      ? await fetchYouTube({ url, allow_description_only: true })
-      : await fetchArticle({ url });
+    if (kind === 'video') return await readVideo(env, { id, url });
 
-    let text = String(doc.raw_content || '').trim();
-    const partial = Boolean(doc.metadata?.partial);
-    const floor = kind === 'video' ? MIN_SUMMARY_WORDS : MIN_WORDS;
-    if (wordCount(text) < floor) {
-      throw new Error(kind === 'video'
-        ? 'nothing came back but the title'
-        : 'that page gave up almost no text — it is probably behind a paywall, or drawn by JavaScript');
+    const doc = await fetchArticle({ url });
+    const text = String(doc.raw_content || '').trim();
+    if (wordCount(text) < MIN_WORDS) {
+      throw new Error('that page gave up almost no text — it is probably behind a paywall, or drawn by JavaScript');
     }
-    if (text.length > MAX_TEXT) {
-      text = `${text.slice(0, MAX_TEXT)}\n\n[cut here: the page went on longer than this]`;
-    }
-
-    let documentId = null;
-    try {
-      const stored = await ingestText(env, null, {
-        sourceKey: doc.source_key,
-        title: doc.title,
-        text,
-        documentType: doc.document_type,
-        source: doc.source,
-        sourceUrl: doc.source_url || url,
-        publishedAt: doc.published_at,
-        metadata: {
-          ingest_route: doc.metadata?.ingest_route || 'link',
-          ...(partial ? { partial: true } : {}),
-        },
-      });
-      documentId = stored.documentId;
-    } catch (err) {
-      console.error('link ingest failed:', err?.message);
-    }
-
-    await rpc(env, 'kb_link_ready', {
-      p_id: id,
-      p_title: doc.title,
-      p_site: doc.source,
-      p_author: doc.metadata?.channel || null,
-      p_published: doc.published_at,
-      p_words: wordCount(text),
-      p_seconds: doc.metadata?.duration_seconds ?? null,
-      p_partial: partial,
-      p_body: text,
-      p_document_id: documentId,
-    });
+    await store(env, {
+      id, url, kind, title: doc.title, site: doc.source,
+      author: null, published_at: doc.published_at, seconds: null,
+    }, { text, partial: false, documentType: doc.document_type, sourceKey: doc.source_key });
   } catch (err) {
     console.error('link read failed:', err?.message);
     try { await rpc(env, 'kb_link_failed', { p_id: id, p_error: String(err?.message || err) }); }
     catch { /* the chip stays on 'reading', and Try again can run it later */ }
   }
+}
+
+async function readVideo(env, { id, url }) {
+  /* The watch page still gives up everything but the words. */
+  const meta = await fetchYouTube({ url, allow_description_only: true });
+  const link = {
+    id, url, kind: 'video',
+    title: meta.title,
+    site: meta.source,
+    author: meta.metadata?.channel || null,
+    published_at: meta.published_at,
+    seconds: meta.metadata?.duration_seconds ?? null,
+  };
+  const summary = String(meta.raw_content || '');
+
+  const got = await transcriptFor(env, url, link.seconds);
+
+  if (got.text && wordCount(got.text) > MIN_SUMMARY_WORDS) {
+    await store(env, link, {
+      text: got.text, partial: false, documentType: 'transcript', sourceKey: meta.source_key,
+    });
+    return;
+  }
+
+  /* Being made rather than fetched: park the job and let the page's polling
+   * collect it, with the description kept as what to fall back to. */
+  if (got.jobId) {
+    await rpc(env, 'kb_link_job', {
+      p_id: id, p_job_id: got.jobId, p_title: link.title, p_site: link.site,
+      p_seconds: link.seconds, p_published: link.published_at, p_body: summary,
+    });
+    return;
+  }
+
+  if (wordCount(summary) < MIN_SUMMARY_WORDS) {
+    throw new Error(got.why || 'nothing came back but the title');
+  }
+  await store(env, link, {
+    text: summary, partial: true, documentType: 'other', sourceKey: meta.source_key,
+  });
+}
+
+/* A transcript being generated can take a few minutes, which is far longer
+ * than a Worker should sit waiting. The page polls this route anyway, so each
+ * poll asks after the job; the row is only finished once. */
+async function collectJob(env, link) {
+  let out;
+  try { out = await askSupadataJob(env, link.job_id); }
+  catch { return null; }
+  if (out.status !== 200) return null;
+
+  const { status, content } = out.data || {};
+  if (status === 'queued' || status === 'active') return null;
+
+  const done = status === 'completed' && content;
+  await store(env, link, done
+    ? { text: String(content), partial: false, documentType: 'transcript', sourceKey: `youtube:${videoId(link.url) || link.id}` }
+    : { text: String(link.body || ''), partial: true, documentType: 'other', sourceKey: `youtube:${videoId(link.url) || link.id}` });
+
+  try { return await rpc(env, 'kb_link_read', { p_id: link.id }); }
+  catch { return null; }
 }
 
 export async function handleLinks(path, request, env, headers, ctx, user) {
@@ -180,9 +301,13 @@ export async function handleLinks(path, request, env, headers, ctx, user) {
     try { link = await rpc(env, 'kb_link_read', { p_id: id }); }
     catch { return json({ error: 'could not load that link' }, 502, headers); }
     if (!link) return json({ error: 'no link with that id' }, 404, headers);
+
+    if (link.status === 'reading' && link.job_id && env.SUPADATA_API_KEY) {
+      link = (await collectJob(env, link)) || link;
+    }
     /* The page only needs to know what it is and whether it is ready; the text
      * itself is for the planner, which reads it inside the Worker. */
-    const { body: text, ...rest } = link;
+    const { body: text, job_id: job, ...rest } = link;
     return json({ link: { ...rest, words: rest.words ?? wordCount(text || '') } }, 200, headers);
   }
 
@@ -192,6 +317,13 @@ export async function handleLinks(path, request, env, headers, ctx, user) {
     catch { return json({ error: 'could not load that link' }, 502, headers); }
     if (!link) return json({ error: 'no link with that id' }, 404, headers);
     if (link.status === 'ready') return json({ status: 'ready' }, 200, headers);
+
+    /* A transcript already being made is worth waiting for rather than paying
+     * to start again. */
+    if (link.job_id && env.SUPADATA_API_KEY) {
+      ctx.waitUntil(collectJob(env, link).catch(() => {}));
+      return json({ status: 'reading' }, 202, headers);
+    }
 
     ctx.waitUntil(read(env, ctx, { id, url: link.url, kind: link.kind }));
     return json({ status: 'reading' }, 202, headers);
