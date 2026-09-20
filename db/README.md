@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 38 migrations applied to the Supabase project
+The `kb` schema is defined by 39 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 37 | `kb_scripts` | scripts for solo talking-head videos, the ones read to camera rather than spoken over b-roll: `scripts` (the planned slot it came from, the lines, the word count, what the checks flagged, written or filmed) and `kb_script_save` / `kb_scripts` / `kb_script_read` / `kb_script_lines` / `kb_script_status` / `kb_script_delete`. One script per slot — writing it again replaces it, because a slot has one script the way it has one video |
 | 36 | `kb_link_create_skip_partial` | pasting a link again hands back the read we already have, but only a real one: a partial read is a video whose words could not be got, and caching that meant the first paste after the transcript service was wired up returned the description again without asking anyone for a transcript |
 | 35 | `kb_links_transcript_job` | a transcript that has to be generated rather than fetched comes back as a job that can take minutes, which is far longer than a Worker should wait: `links.job_id` parks it, `kb_link_job` stores it alongside what is already known about the video, and the page's own polling of `/links/read` is what collects the result. The body saved at that point is the description, kept as the fallback if the job fails |
 | 34 | `kb_links` | a link pasted on the Plan page: `links` (url, canonical url, kind, the extracted text, whether it is partial, the document it became) and `kb_link_create` / `_ready` / `_failed` / `_read` plus `kb_links` for the Worker. Pasting the same canonical url inside 30 days hands back the row already read rather than fetching it again |

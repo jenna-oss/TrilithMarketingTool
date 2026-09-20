@@ -66,6 +66,21 @@
   }
   .brief .b-meta { font-family:var(--mono); font-size:.6875rem; color:var(--ink-quiet); }
   .brief .b-ev { font-size:.8125rem; margin-top:.3125rem; }
+  /* An idea can be rendered or filmed. Rendering is the bar below; this is
+     the other road, taken one idea at a time. */
+  .brief .b-write {
+    display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-top:.5rem;
+  }
+  .brief .b-write button {
+    font:inherit; font-size:.6875rem; font-weight:600; letter-spacing:.02em;
+    color:var(--ink-body); background:var(--card); border:1px solid var(--rule-strong);
+    border-radius:999px; padding:.1875rem .625rem; cursor:pointer;
+  }
+  .brief .b-write button:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+  .brief .b-write button:disabled { opacity:.6; cursor:default; }
+  .brief .b-write .said { font-size:.6875rem; color:var(--ink-quiet); }
+  .brief .b-write .said.bad { color:var(--clay); }
+  .brief .b-write a { color:var(--accent); font-size:.6875rem; }
 
   .lockbar {
     display:flex; flex-wrap:wrap; gap:.625rem; align-items:center;
@@ -117,6 +132,7 @@
       <span class="nav-group-label">Production</span>
       <a class="nav-link" href="./recordings.html">Recordings</a>
       <a class="nav-link" href="./" aria-current="page">Plan</a>
+      <a class="nav-link" href="./scripts.html">Scripts</a>
       <a class="nav-link" href="./edit.html">Edit</a>
       <a class="nav-link" href="./output.html">Output</a>
     </span>
@@ -893,6 +909,68 @@ input.addEventListener('input', () => {
   typedUrl = setTimeout(() => catchUrls(input.value), 900);
 });
 
+/* Write the script for one idea, to be read to camera. Rendering takes the
+   whole locked plan at once; this is per idea, because filming is. */
+function writeScript(brief, slot) {
+  const bar = document.createElement('div');
+  bar.className = 'b-write';
+
+  const go = document.createElement('button');
+  go.type = 'button';
+  go.textContent = 'Write a script';
+  const said = document.createElement('span');
+  said.className = 'said';
+
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    go.textContent = 'Writing\u2026';
+    said.className = 'said';
+    said.textContent = 'about twenty seconds';
+
+    let data = {};
+    let ok = false;
+    try {
+      const res = await AikoAuth.fetch(WORKER_URL + '/scripts/write', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          slot,
+          topic: brief.topic,
+          angle: brief.angle || '',
+          hook: brief.hook_form || '',
+          opening_line: brief.opening_line,
+          product: brief.product,
+          audience: brief.audience,
+          evidence: typeof brief.evidence === 'string' ? brief.evidence : '',
+        }),
+      });
+      data = await res.json().catch(() => ({}));
+      ok = res.ok;
+    } catch { /* said below */ }
+
+    if (!ok) {
+      go.disabled = false;
+      go.textContent = 'Write a script';
+      said.className = 'said bad';
+      said.textContent = data.error || 'that didn\u2019t work \u2014 try again';
+      return;
+    }
+
+    go.textContent = 'Written';
+    const flagged = (data.flags || []).length;
+    said.textContent = `${data.words} words, about ${Math.max(1, Math.round(data.words / 2.6))}s`
+      + (flagged ? ` \u00b7 ${flagged} line${flagged === 1 ? '' : 's'} to look at` : '');
+    const link = document.createElement('a');
+    link.href = './scripts.html';
+    link.textContent = 'Read it';
+    bar.append(link);
+  });
+
+  bar.append(go, said);
+  return bar;
+}
+
 function buildPayload(brief, history) {
   const attachments = staged.filter((a) => a.ready).map((a) => (a.kind === 'text'
     ? { name: a.name, kind: 'text', text: a.text }
@@ -959,7 +1037,7 @@ function renderPlan(wrapper, data) {
     ev.className = 'b-ev';
     ev.innerHTML = render(b.evidence);
 
-    body.append(topic, line, meta, ev);
+    body.append(topic, line, meta, ev, writeScript(b, i + 1));
     row.append(box, body);
     row._brief = b;
     row._box = box;

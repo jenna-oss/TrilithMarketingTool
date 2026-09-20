@@ -19,6 +19,7 @@ import { handleIdeas } from './ideas.js';
 import { handleUpload } from './upload.js';
 import { handleRecordings } from './recordings.js';
 import { handleLinks } from './links.js';
+import { handleScripts } from './scripts.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -98,6 +99,17 @@ export default {
       catch (err) {
         console.error('recordings route failed:', err?.message);
         return json({ error: 'Something went wrong with that recording. Try again.' }, 502, headers);
+      }
+    }
+
+    /* Scripts for solo talking-head videos: written from a planned slot,
+     * checked the way the pipeline checks a narration, read on the Scripts
+     * page and filmed rather than rendered. */
+    if (path.startsWith('/scripts/')) {
+      try { return await handleScripts(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('scripts route failed:', err?.message);
+        return json({ error: 'Something went wrong with that script. Try again.' }, 502, headers);
       }
     }
 
