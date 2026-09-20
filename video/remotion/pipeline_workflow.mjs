@@ -148,13 +148,15 @@ ${PHOTO_LIBRARY.map(([file, what]) => `- ${file}: ${what}`).join('\n')}`
 const LIFESTYLE = `WHAT THE VIDEO IS FOR: someone watches because of what investing could pay for -- the house, the
 month they stop trading hours for money, the trip they didn't have to save two years for. Open there, then teach
 the one thing that gets them closer. The lesson stays; the lecture goes.
-- Beats 1 and 2 are about the life, not the mechanics: what this deal, this number or this mistake means for
+- Beats 1 to 3 are about the life, not the mechanics: what this deal, this number or this mistake means for
   someone's year. Name something concrete a person can picture, in their words, not a category ("a second rent
-  cheque every month", not "portfolio diversification").
-- From beat 3 the video earns it: the one idea that gets them there, in plain words, built to the takeaway.
-- At most three figures in the whole script, each with its plain meaning right beside it. A script that is a
-  string of numbers is the thing being fixed here.
-- The takeaway says what it means for them, not what a term means.
+  cheque every month", not "portfolio diversification"). No definitions in them, and no acronyms.
+- From beat 4 the video earns it: the one idea that gets them there, in plain words, built to the takeaway, and
+  each mechanical beat says what it does for them, not only how it works.
+- At most three beats carry a figure, and at most two acronyms appear in the whole script. Better still, drop
+  the term: say what it does in plain words, and name it only when the video is about the term itself. Scripts
+  that read as a string of ratios and acronyms are the thing being fixed here.
+- The takeaway says what this changes for them, not what a term means.
 - Still the brand voice: no hype, no promises about the future, no "get rich". The life is shown as what the
   math makes possible, and the math is why it's believable.`
 
@@ -234,6 +236,8 @@ const BEGINNER_CHECK_SCHEMA = {
       items: { type: 'object', required: ['beat', 'why'], properties: { beat: { type: 'number' }, why: { type: 'string' } } },
     },
     whatILearned: { type: 'string', description: 'in one plain sentence, what the viewer now understands; empty if nothing clear' },
+    whatItGetsMe: { type: 'string', description: 'in one plain sentence, what this video says could change in your own life; empty if it never says' },
+    feltLikeALesson: { type: 'boolean', description: 'true if it played like a lesson or a list of terms rather than something that made you want in' },
   },
 }
 
@@ -478,9 +482,13 @@ and hookTemplate "(written to the brand guide)". The filledHook is beat 1.`
 const BEGINNER_RULES = `WHO THIS IS FOR: someone brand new to real estate investing. They should follow every line
 and come away having learned something real, with no background at all. People who already invest
 should still find it worth watching: clear, not dumbed down.
-- Explain every term in plain words the first time it comes up, in that beat or the very next one. The
-  key terms above come with plain meanings; use them. Never use a term before it has been explained,
-  except in a locked opening line, which stays as written; if that line uses jargon, beat 2 unpacks it.
+- Prefer the plain words to the term: "rent divided by the payment" beats naming the ratio, and a video
+  that never says the acronym is usually the clearer one. Name a term only where the video is about it, or
+  where they will meet it on a lender's page and need it.
+- Any term you do use is explained in plain words the first time it comes up, in that beat or the very next
+  one. The key terms above come with plain meanings; use them. Never use a term before it has been
+  explained, except in a locked opening line, which stays as written; if that line uses jargon, beat 2
+  unpacks it.
 - For an acronym, say once what the letters stand for and what it means in everyday terms.
 - One idea per beat. Short sentences. Everyday words. Give every number its meaning ("$4,500 a month
   in rent", not "four-point-five gross").
@@ -551,6 +559,10 @@ Be strict, as that viewer. Report:
 - confusingBeats: any beat where you would lose the thread, and why, in a few words.
 - whatILearned: in one plain sentence, what you now understand that you didn't before. Leave it empty if
   you came away with nothing clear.
+- whatItGetsMe: in one plain sentence, what this says could change in your own life -- the money, the time, the
+  thing you could do next. Leave it empty if the video never says, and do not invent one from the subject.
+- feltLikeALesson: true if it played like a lesson or a run of terms and ratios, rather than something that made
+  you want in.
 Report only real problems. A clear script comes back with both lists empty.`,
     { schema: BEGINNER_CHECK_SCHEMA, label: `beginner-check-${round}` }
   )
@@ -562,6 +574,38 @@ function beginnerIssues(r) {
     ...(r.confusingBeats || []).map(c => `beat ${c.beat}: ${c.why}`),
   ]
   if (!String(r.whatILearned || '').trim()) out.push('no clear takeaway: the listener came away with nothing they could name')
+  if (!String(r.whatItGetsMe || '').trim()) {
+    out.push('the listener could not say what this would change in their life: open on that and keep it in sight')
+  }
+  if (r.feltLikeALesson) out.push('it played as a lesson rather than something the listener wanted in on')
+  return out.length ? out.join('\n') : null
+}
+
+// The measurable half of leading with the life: a script heavy with figures,
+// acronyms or definitions is the thing being fixed, and counting is cheaper
+// and steadier than asking. Definitions and terms are still allowed where the
+// video is about the term; the limits are what stop every line being one.
+const ACRONYM = String.raw`\b(?:[A-Z]\.){2,}[A-Z]?|\b[A-Z]{2,5}\b`
+const DEFINING = /\b(means|is called|stands for|defined as|that is|in other words)\b/i
+const acronymsIn = (line) => (String(line).match(new RegExp(ACRONYM, 'g')) || []).map(a => a.replace(/\./g, ''))
+
+function lifestyleIssues(s) {
+  const out = []
+  const beats = s.beats || []
+  const withFigures = beats.filter(b => /\d/.test(b.line))
+  if (withFigures.length > 3) {
+    out.push(`${withFigures.length} beats carry a figure (${withFigures.map(b => b.order).join(', ')}); three is the most`)
+  }
+  const acronyms = [...new Set(beats.flatMap(b => acronymsIn(b.line)))]
+  if (acronyms.length > 2) {
+    out.push(`${acronyms.length} acronyms (${acronyms.join(', ')}); two is the most, and plain words beat a term`)
+  }
+  for (const b of beats.slice(0, 3)) {
+    const found = acronymsIn(b.line)
+    if (found.length) out.push(`beat ${b.order}: "${found[0]}" in an opening beat; beats 1 to 3 are about the life, in plain words`)
+    if (DEFINING.test(b.line)) out.push(`beat ${b.order}: an opening beat defines something; that belongs from beat 4`)
+  }
+  if (DEFINING.test(s.takeaway || '')) out.push('the takeaway defines a term; it should say what this changes for them')
   return out.length ? out.join('\n') : null
 }
 
@@ -624,20 +668,20 @@ if (HOOK_LOCKED) lockOpeningLine(script, BRIEF.hook)
 // together for one revision, then both run again. If something is still
 // flagged, the run goes ahead and says so in its result rather than looping.
 let review = await beginnerCheck(script, 1)
-let stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked))
+let stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked), lifestyleIssues(script))
 if (stillFlagged) {
   log(`Script check flagged:\n${stillFlagged}`)
   script = await writeScript(stillFlagged, script, 1)
   if (HOOK_LOCKED) lockOpeningLine(script, BRIEF.hook)
   review = await beginnerCheck(script, 2)
-  stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked))
+  stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked), lifestyleIssues(script))
   log(stillFlagged ? `Still flagged after one revision, going ahead:\n${stillFlagged}` : 'Script check passed after one revision')
 } else {
   log('Script check passed first time')
 }
 cleanEmphasis(script)
 const emphasisWords = [...new Set(script.beats.flatMap(b => b.emphasis))]
-log(`Takeaway: "${script.takeaway}" | the listener learned: "${review.whatILearned}"`)
+log(`Takeaway: "${script.takeaway}" | the listener learned: "${review.whatILearned}" | it gets them: "${review.whatItGetsMe || '(nothing they could name)'}"`)
 log(`Hook: [${script.hookCategory}] "${script.filledHook}" | caption emphasis: ${emphasisWords.join(', ') || '(none)'}`)
 
 function lockOpeningLine(s, hook) {
@@ -1023,6 +1067,7 @@ return {
   scriptCheck: {
     passed: !stillFlagged,
     whatILearned: review.whatILearned,
+    whatItGetsMe: review.whatItGetsMe || null,
     stillFlagged: stillFlagged || null,
     lockedLineFlags: lockedLineFlags.length ? lockedLineFlags : null,
   },
