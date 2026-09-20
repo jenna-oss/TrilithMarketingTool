@@ -153,7 +153,8 @@ the one thing that gets them closer. The lesson stays; the lecture goes.
   cheque every month", not "portfolio diversification"). No definitions in them, and no acronyms.
 - From beat 4 the video earns it: the one idea that gets them there, in plain words, built to the takeaway, and
   each mechanical beat says what it does for them, not only how it works.
-- At most three beats carry a figure, and at most two acronyms appear in the whole script. Better still, drop
+- At most three beats carry a figure, spelled out or not ("ten percent" counts), and at most two acronyms
+  appear in the whole script. Better still, drop
   the term: say what it does in plain words, and name it only when the video is about the term itself. Scripts
   that read as a string of ratios and acronyms are the thing being fixed here.
 - The takeaway says what this changes for them, not what a term means.
@@ -243,6 +244,7 @@ const BEGINNER_CHECK_SCHEMA = {
     whatItGetsMe: { type: 'string', description: 'in one plain sentence, what this video says could change in your own life; empty if it never says' },
     feltLikeALesson: { type: 'boolean', description: 'true if it played like a lesson or a list of terms rather than something that made you want in' },
     leftMeWantingIn: { type: 'boolean', description: 'true if it left you thinking that owning property is a way to build wealth; false if it left you cold or put you off' },
+    openedOnTheLife: { type: 'boolean', description: 'true if the first three lines were about what this means for someone\'s life or money; false if they were already explaining how something works' },
   },
 }
 
@@ -570,6 +572,9 @@ Be strict, as that viewer. Report:
   you want in.
 - leftMeWantingIn: true if, on what it showed you, owning property came across as a way to build wealth. False
   if it left you cold, or put you off the idea.
+- openedOnTheLife: true if the first three lines were about what this means for someone -- their money, their
+  year, what they could do next. False if they were already explaining how something works, defining a thing,
+  or walking through a process.
 Report only real problems. A clear script comes back with both lists empty.`,
     { schema: BEGINNER_CHECK_SCHEMA, label: `beginner-check-${round}` }
   )
@@ -588,6 +593,9 @@ function beginnerIssues(r) {
   if (r.leftMeWantingIn === false) {
     out.push('it did not leave the listener thinking property builds wealth: show what the deal earns or keeps, with the figures')
   }
+  if (r.openedOnTheLife === false) {
+    out.push('the first three beats explained rather than landed what it means for them: open on the life and leave the mechanics to beat 4')
+  }
   return out.length ? out.join('\n') : null
 }
 
@@ -596,13 +604,20 @@ function beginnerIssues(r) {
 // and steadier than asking. Definitions and terms are still allowed where the
 // video is about the term; the limits are what stop every line being one.
 const ACRONYM = String.raw`\b(?:[A-Z]\.){2,}[A-Z]?|\b[A-Z]{2,5}\b`
-const DEFINING = /\b(means|is called|stands for|defined as|that is|in other words)\b/i
+// Only the unmistakable markers: "X is the Y" catches lifestyle lines as
+// often as definitions ("that gap is the deposit you were saving for"), so
+// whether the opening explains rather than sells is left to the listener.
+const DEFINING = /\b(means|is called|stands for|defined as|in other words|that's called|known as|refers to)\b/i
+// A figure counts whether it is written 10% or "ten percent": the first
+// lifestyle-framed script spelled every number out and slipped the count.
+const SPELLED = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)\b[\s\w-]{0,24}\b(percent|dollars?|points?|days?|weeks?|months?|years?|times|grand)\b/i
+const hasFigure = (line) => /\d/.test(line) || SPELLED.test(line)
 const acronymsIn = (line) => (String(line).match(new RegExp(ACRONYM, 'g')) || []).map(a => a.replace(/\./g, ''))
 
 function lifestyleIssues(s) {
   const out = []
   const beats = s.beats || []
-  const withFigures = beats.filter(b => /\d/.test(b.line))
+  const withFigures = beats.filter(b => hasFigure(b.line))
   if (withFigures.length > 3) {
     out.push(`${withFigures.length} beats carry a figure (${withFigures.map(b => b.order).join(', ')}); three is the most`)
   }
