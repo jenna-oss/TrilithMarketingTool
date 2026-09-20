@@ -35,6 +35,8 @@ const MIN_WORDS = 120;
 const MIN_SUMMARY_WORDS = 25;
 
 const SUPADATA_URL = 'https://api.supadata.ai/v1/transcript';
+const SUPADATA_VIDEO_URL = 'https://api.supadata.ai/v1/youtube/video';
+const OEMBED_URL = 'https://www.youtube.com/oembed';
 /* Captions that already exist cost one credit. Having Supadata listen to a
  * video that has none costs two credits a minute, against a free tier of a
  * hundred a month — worth it for a short video, not for an hour-long one,
@@ -108,6 +110,23 @@ async function askSupadataJob(env, jobId) {
   return { status: res.status, data: await res.json().catch(() => ({})) };
 }
 
+/* How long the video is, when the watch page would not say. One credit, and
+ * only ever spent to answer the question "is this short enough to be worth
+ * transcribing" — which is the question that protects the other 99. */
+async function durationFrom(env, url) {
+  try {
+    const res = await fetch(`${SUPADATA_VIDEO_URL}?${new URLSearchParams({ url })}`, {
+      headers: { 'x-api-key': env.SUPADATA_API_KEY },
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json().catch(() => ({}));
+    return Number(data?.media?.duration) || null;
+  } catch {
+    return null;
+  }
+}
+
 /* The words of a video, or a job id to come back for, or nothing. Never
  * throws: a video that cannot be transcribed still reads down to its
  * description, which is better than a chip that only says it failed. */
@@ -123,8 +142,14 @@ async function transcriptFor(env, url, seconds) {
     const native = take(await askSupadata(env, { url, text: 'true', mode: 'native' }));
     if (native) return native;
 
-    const minutes = (seconds || 0) / 60;
-    if (minutes && minutes > GENERATE_UNDER_MINUTES) {
+    /* Never guess at the length. Not knowing it once cost nothing here, but it
+     * is the only thing standing between a three-hour upload and 360 credits. */
+    const length = seconds || await durationFrom(env, url);
+    if (!length) {
+      return { why: 'it has no captions, and there was no way to tell how long it is before paying to have one made' };
+    }
+    const minutes = length / 60;
+    if (minutes > GENERATE_UNDER_MINUTES) {
       return { why: `no captions, and at ${Math.round(minutes)} minutes it is too long to have one made` };
     }
     const made = take(await askSupadata(env, { url, text: 'true', mode: 'generate' }));
@@ -197,24 +222,58 @@ async function read(env, ctx, { id, url, kind }) {
   }
 }
 
+/* What the video is, as opposed to what was said in it. YouTube serves the
+ * watch page to a Worker only some of the time — the first video read this way
+ * came back titled "YouTube zVDW0RScEHc" — so oEmbed, which is public and has
+ * never refused us, is the backstop for the name. */
+async function videoMeta(url, fallbackId) {
+  let page = null;
+  try { page = await fetchYouTube({ url, allow_description_only: true }); }
+  catch { page = null; }
+
+  const named = page?.title && page.title !== `YouTube ${fallbackId}`;
+  const meta = {
+    title: named ? page.title : null,
+    author: page?.metadata?.channel || null,
+    seconds: page?.metadata?.duration_seconds ?? null,
+    published: page?.published_at || null,
+    summary: String(page?.raw_content || ''),
+    sourceKey: page?.source_key || `youtube:${fallbackId}`,
+  };
+  if (meta.title) return meta;
+
+  try {
+    const res = await fetch(`${OEMBED_URL}?format=json&url=${encodeURIComponent(url)}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const o = await res.json().catch(() => ({}));
+      meta.title = o.title || null;
+      meta.author = meta.author || o.author_name || null;
+    }
+  } catch { /* the id will have to do */ }
+
+  meta.title = meta.title || `YouTube ${fallbackId}`;
+  return meta;
+}
+
 async function readVideo(env, { id, url }) {
-  /* The watch page still gives up everything but the words. */
-  const meta = await fetchYouTube({ url, allow_description_only: true });
+  const meta = await videoMeta(url, videoId(url) || id);
   const link = {
     id, url, kind: 'video',
     title: meta.title,
-    site: meta.source,
-    author: meta.metadata?.channel || null,
-    published_at: meta.published_at,
-    seconds: meta.metadata?.duration_seconds ?? null,
+    site: meta.author || 'YouTube',
+    author: meta.author,
+    published_at: meta.published,
+    seconds: meta.seconds,
   };
-  const summary = String(meta.raw_content || '');
+  const summary = meta.summary;
 
   const got = await transcriptFor(env, url, link.seconds);
 
   if (got.text && wordCount(got.text) > MIN_SUMMARY_WORDS) {
     await store(env, link, {
-      text: got.text, partial: false, documentType: 'transcript', sourceKey: meta.source_key,
+      text: got.text, partial: false, documentType: 'transcript', sourceKey: meta.sourceKey,
     });
     return;
   }
@@ -233,7 +292,7 @@ async function readVideo(env, { id, url }) {
     throw new Error(got.why || 'nothing came back but the title');
   }
   await store(env, link, {
-    text: summary, partial: true, documentType: 'other', sourceKey: meta.source_key,
+    text: summary, partial: true, documentType: 'other', sourceKey: meta.sourceKey,
   });
 }
 
