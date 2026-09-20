@@ -148,16 +148,23 @@ ${PHOTO_LIBRARY.map(([file, what]) => `- ${file}: ${what}`).join('\n')}`
 const LIFESTYLE = `WHAT THE VIDEO IS FOR: someone watches because of what investing could pay for -- the house, the
 month they stop trading hours for money, the trip they didn't have to save two years for. Open there, then teach
 the one thing that gets them closer. The lesson stays; the lecture goes.
-- Beats 1 to 3 are about the life, not the mechanics: what this deal, this number or this mistake means for
-  someone's year. Name something concrete a person can picture, in their words, not a category ("a second rent
-  cheque every month", not "portfolio diversification"). No definitions in them, and no acronyms.
+- Beats 1 to 3 are about the life, not the mechanics, and they say where it comes from: doing this is how the
+  money gets made. Name something concrete a person can picture, in their words, not a category ("two flips a
+  year is the deposit on the house you actually want", not "portfolio diversification"), and tie it to the
+  method in the same breath. No definitions in them, and no acronyms.
+- The spine of every video is the route: this is how people build real money in property, here is the one
+  thing that decides whether you get it, and that is what pays for the life. State the route plainly once, in
+  the viewer's words. A video that only teaches a mechanism, or only warns about one, has missed the point.
 - From beat 4 the video earns it: the one idea that gets them there, in plain words, built to the takeaway, and
   each mechanical beat says what it does for them, not only how it works.
 - At most three beats carry a figure, spelled out or not ("ten percent" counts), and at most two acronyms
   appear in the whole script. Better still, drop
   the term: say what it does in plain words, and name it only when the video is about the term itself. Scripts
   that read as a string of ratios and acronyms are the thing being fixed here.
-- The takeaway says what this changes for them, not what a term means.
+- The takeaway says what this builds for them -- the money, the next deal, the life it pays for -- not what a
+  term means and not only what to avoid.
+- The loss case earns one beat at most, and the beat after it says what the gain is when you get it right.
+  Never leave the last word with the downside.
 - Every video makes the same case: investing in property builds wealth. Say it plainly, and back it with the
   figures the research gave you -- what the deal earns, keeps or is worth in five years. A video about a fee, a
   mistake or a risk makes the case by showing how to keep the gain, never by leaving the impression the thing
@@ -245,6 +252,7 @@ const BEGINNER_CHECK_SCHEMA = {
     feltLikeALesson: { type: 'boolean', description: 'true if it played like a lesson or a list of terms rather than something that made you want in' },
     leftMeWantingIn: { type: 'boolean', description: 'true if it left you thinking that owning property is a way to build wealth; false if it left you cold or put you off' },
     openedOnTheLife: { type: 'boolean', description: 'true if the first three lines were about what this means for someone\'s life or money; false if they were already explaining how something works' },
+    theRouteItShowed: { type: 'string', description: 'in one plain sentence, what this video said the way to more money is; empty if it never said, or if it only warned you about something' },
   },
 }
 
@@ -575,6 +583,8 @@ Be strict, as that viewer. Report:
 - openedOnTheLife: true if the first three lines were about what this means for someone -- their money, their
   year, what they could do next. False if they were already explaining how something works, defining a thing,
   or walking through a process.
+- theRouteItShowed: in one plain sentence, what this said the way to more money is -- what someone does, and
+  what it gets them. Leave it empty if it never said, or if all it did was warn you off something.
 Report only real problems. A clear script comes back with both lists empty.`,
     { schema: BEGINNER_CHECK_SCHEMA, label: `beginner-check-${round}` }
   )
@@ -596,6 +606,9 @@ function beginnerIssues(r) {
   if (r.openedOnTheLife === false) {
     out.push('the first three beats explained rather than landed what it means for them: open on the life and leave the mechanics to beat 4')
   }
+  if (r.theRouteItShowed !== undefined && !String(r.theRouteItShowed || '').trim()) {
+    out.push('the listener could not say what route to more money this showed: say plainly that doing this is how the money gets made, and what it pays for')
+  }
   return out.length ? out.join('\n') : null
 }
 
@@ -612,12 +625,19 @@ const DEFINING = /\b(means|is called|stands for|defined as|in other words|that's
 // lifestyle-framed script spelled every number out and slipped the count.
 const SPELLED = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)\b[\s\w-]{0,24}\b(percent|dollars?|points?|days?|weeks?|months?|years?|times|grand|figures)\b/i
 const hasFigure = (line) => /\d/.test(line) || SPELLED.test(line)
+// A takeaway may be a caution, but not only a caution: "miss this and the
+// schedule slips" leaves nothing in the viewer's hands, while "rent below the
+// payment is not an automatic no" is a verdict and stands on its own.
+const GAIN = /\b(pays?|paid|payday|earns?|keeps?|buys?|builds?|funds?|worth|profit|income|equity|wealth|cash|returns?|own|owns?|yours)\b/i
+const WARNING = /\b(miss|missing|avoid|don'?t|never|beware|careful|watch out|risk|lose|loses|losing|lost|mistake|before you|or you)\b/i
 const acronymsIn = (line) => (String(line).match(new RegExp(ACRONYM, 'g')) || []).map(a => a.replace(/\./g, ''))
 
 function lifestyleIssues(s, from) {
   const out = []
   const beats = s.beats || []
-  const withFigures = beats.filter(b => hasFigure(b.line))
+  // The locked line is not the writer's to thin out, and a figure in it is
+  // usually the payoff the hook is built on ("two flips a year").
+  const withFigures = beats.slice(from).filter(b => hasFigure(b.line))
   if (withFigures.length > 3) {
     out.push(`${withFigures.length} beats carry a figure (${withFigures.map(b => b.order).join(', ')}); three is the most`)
   }
@@ -631,6 +651,9 @@ function lifestyleIssues(s, from) {
     if (DEFINING.test(b.line)) out.push(`beat ${b.order}: an opening beat defines something; that belongs from beat 4`)
   }
   if (DEFINING.test(s.takeaway || '')) out.push('the takeaway defines a term; it should say what this changes for them')
+  if (WARNING.test(s.takeaway || '') && !GAIN.test(s.takeaway || '')) {
+    out.push('the takeaway only warns; end on what this builds -- what it pays, earns, keeps, buys or funds')
+  }
   return out.length ? out.join('\n') : null
 }
 
