@@ -49,6 +49,7 @@ STABILITY = 0.15  # 0.05-0.6: lower = more range and emotion, less predictable; 
 STYLE = 1.0       # 0.3-1.0: higher = bolder, more dramatic delivery
 SIMILARITY = 0.8  # 0.7-0.9: how closely it keeps to the narrator's cloned voice
 SPEEDUP = 1.15    # 1.0-1.2: uniform speedup after recording -- faster/more energetic without per-word slurring
+MAX_PAUSE = 0.35  # the longest silence kept between phrases; longer ones are cut back to it
 
 SLUG = "REPLACE_ME"  # e.g. "arnold-schwarzenegger-real-estate" -- used for folder/file naming
 
@@ -67,6 +68,57 @@ EMPHASIS = [
     [],
     [],
 ]
+
+
+def silences(path):
+    """[(start, end)] of every silence in the take longer than MAX_PAUSE."""
+    out = subprocess.run(
+        f'ffmpeg -nostdin -hide_banner -i "{path}" -af silencedetect=n=-40dB:d={MAX_PAUSE:.2f} -f null -',
+        shell=True, capture_output=True, text=True,
+    ).stderr
+    starts = [float(x) for x in re.findall(r"silence_start: ([0-9.]+)", out)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([0-9.]+)", out)]
+    return list(zip(starts, ends))
+
+
+def cuts_for(spans):
+    """The slice to drop from each over-long pause: its middle, leaving MAX_PAUSE."""
+    cuts = []
+    for start, end in spans:
+        extra = (end - start) - MAX_PAUSE
+        if extra > 0.15:  # shaving a twentieth of a second off is not worth a cut
+            middle = (start + end) / 2
+            cuts.append((round(middle - extra / 2, 3), round(middle + extra / 2, 3)))
+    return cuts
+
+
+def remap(t, cuts):
+    """A timestamp in the original take, as it falls in the trimmed one."""
+    shift = 0.0
+    for start, end in cuts:
+        if t >= end:
+            shift += end - start
+        elif t > start:
+            return round(start - shift, 3)  # inside a cut: it lands where the cut begins
+        else:
+            break
+    return round(t - shift, 3)
+
+
+def drop_pauses(src, dst, cuts):
+    """Write src to dst with those slices removed."""
+    kept, prev = [], 0.0
+    for start, end in cuts:
+        kept.append((prev, start))
+        prev = end
+    kept.append((prev, None))
+    parts = []
+    for i, (start, end) in enumerate(kept):
+        rng = f"start={start}" + (f":end={end}" if end is not None else "")
+        parts.append(f"[0:a]atrim={rng},asetpts=PTS-STARTPTS[a{i}]")
+    joined = "".join(f"[a{i}]" for i in range(len(kept)))
+    graph = ";".join(parts) + f";{joined}concat=n={len(kept)}:v=0:a=1[out]"
+    run(f'ffmpeg -y -i "{src}" -filter_complex "{graph}" -map "[out]" "{dst}"')
 
 
 def punched(spoken_line, words):
@@ -194,14 +246,29 @@ def main():
         (voice_dir / "alignment.json").write_text(json.dumps(align))
         (voice_dir / "script.txt").write_text(script_text)
 
-        # rescale every character timestamp by the same speedup factor, then
+        # Dead air first: the model leaves 0.4-0.8s between phrases, which reads
+        # as a limp rhythm however fast the rest is played. Every pause longer
+        # than MAX_PAUSE is cut back to it and the timestamps move with the
+        # audio, so the captions stay on the word.
+        cuts = cuts_for(silences(raw_path))
+        speech_path = raw_path
+        if cuts:
+            speech_path = voice_dir / "narration_tight.mp3"
+            drop_pauses(raw_path, speech_path, cuts)
+            for k in ("character_start_times_seconds", "character_end_times_seconds"):
+                if k in align:
+                    align[k] = [remap(t, cuts) for t in align[k]]
+            dropped = sum(end - start for start, end in cuts)
+            print(f"  trimmed {dropped:.2f}s of silence out of {len(cuts)} pause(s)")
+
+        # then rescale every character timestamp by the speedup factor and
         # actually stretch the audio -- sync stays correct against the faster track
         align["character_start_times_seconds"] = [t / SPEEDUP for t in align["character_start_times_seconds"]]
         if "character_end_times_seconds" in align:
             align["character_end_times_seconds"] = [t / SPEEDUP for t in align["character_end_times_seconds"]]
         (voice_dir / "alignment.json").write_text(json.dumps(align))
 
-        run(f'ffmpeg -y -i "{raw_path}" -filter:a "atempo={SPEEDUP}" -ar 44100 "{audio_path}"')
+        run(f'ffmpeg -y -i "{speech_path}" -filter:a "atempo={SPEEDUP}" -ar 44100 "{audio_path}"')
         total_dur = duration_of(audio_path)
 
     print(f"  {total_dur:.2f}s of audio (post-speedup, {SPEEDUP}x)\n")

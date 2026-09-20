@@ -157,6 +157,8 @@ the one thing that gets them closer. The lesson stays; the lecture goes.
   the viewer's words. A video that only teaches a mechanism, or only warns about one, has missed the point.
 - From beat 4 the video earns it: the one idea that gets them there, in plain words, built to the takeaway, and
   each mechanical beat says what it does for them, not only how it works.
+- Every line is one breath: 8 to 14 words, and never more than 18. A 23-word line is read at nearly twice
+  the pace of a short one, which is what makes a script sound uneven.
 - At most three beats carry a figure, spelled out or not ("ten percent" counts), and at most two acronyms
   appear in the whole script. Better still, drop
   the term: say what it does in plain words, and name it only when the video is about the term itself. Scripts
@@ -643,6 +645,11 @@ function lifestyleIssues(s, from) {
   // (lock_video refuses one without a figure); an unlocked one is the writer's.
   if (!from && beats.length && !hasFigure(beats[0].line)) {
     out.push('beat 1 names no money: open on a figure they can picture -- a monthly income, a deposit, a sale price')
+  }
+  // A locked opening line is not the writer's to shorten either.
+  const wordy = beats.slice(from).filter(b => String(b.line).trim().split(/\s+/).length > 18)
+  if (wordy.length) {
+    out.push(`beat${wordy.length > 1 ? 's' : ''} ${wordy.map(b => `${b.order} (${String(b.line).trim().split(/\s+/).length} words)`).join(', ')}: over 18 words, so they are read at a different pace from the rest; 8 to 14 is the line`)
   }
   const withFigures = beats.slice(from).filter(b => hasFigure(b.line))
   if (withFigures.length > 3) {

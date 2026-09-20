@@ -15,6 +15,9 @@ type Page = { words: Word[]; start: number; until: number };
 const MAX_WORDS = 4;
 /** Seconds a page may linger into a pause before it clears. */
 const HOLD = 0.35;
+/** The longest a single word may hold the page. One word came back with a
+ *  3.1s slot, which reads as the captions drifting off the read. */
+const MAX_WORD = 0.9;
 
 const key = (s: string) => s.toLowerCase().replace(/^[^a-z0-9$]+|[^a-z0-9%]+$/g, "");
 const endsPhrase = (s: string) => /[.?!:;,—]$/.test(s);
@@ -30,7 +33,7 @@ function paginate(words: Word[]): Page[] {
     if (!/[a-z0-9]/i.test(w.text)) continue; // a lone dash or quote mark
     const last = cur[cur.length - 1];
     if (last && (w.beat !== last.beat || cur.length >= MAX_WORDS || endsPhrase(last.text))) flush();
-    cur.push(w);
+    cur.push({ ...w, end: Math.min(w.end, w.start + MAX_WORD) });
   }
   flush();
   pages.forEach((p, i) => {
