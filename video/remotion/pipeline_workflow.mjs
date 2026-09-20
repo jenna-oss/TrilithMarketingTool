@@ -610,11 +610,11 @@ const ACRONYM = String.raw`\b(?:[A-Z]\.){2,}[A-Z]?|\b[A-Z]{2,5}\b`
 const DEFINING = /\b(means|is called|stands for|defined as|in other words|that's called|known as|refers to)\b/i
 // A figure counts whether it is written 10% or "ten percent": the first
 // lifestyle-framed script spelled every number out and slipped the count.
-const SPELLED = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)\b[\s\w-]{0,24}\b(percent|dollars?|points?|days?|weeks?|months?|years?|times|grand)\b/i
+const SPELLED = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)\b[\s\w-]{0,24}\b(percent|dollars?|points?|days?|weeks?|months?|years?|times|grand|figures)\b/i
 const hasFigure = (line) => /\d/.test(line) || SPELLED.test(line)
 const acronymsIn = (line) => (String(line).match(new RegExp(ACRONYM, 'g')) || []).map(a => a.replace(/\./g, ''))
 
-function lifestyleIssues(s) {
+function lifestyleIssues(s, from) {
   const out = []
   const beats = s.beats || []
   const withFigures = beats.filter(b => hasFigure(b.line))
@@ -625,7 +625,7 @@ function lifestyleIssues(s) {
   if (acronyms.length > 2) {
     out.push(`${acronyms.length} acronyms (${acronyms.join(', ')}); two is the most, and plain words beat a term`)
   }
-  for (const b of beats.slice(0, 3)) {
+  for (const b of beats.slice(from, 3)) {
     const found = acronymsIn(b.line)
     if (found.length) out.push(`beat ${b.order}: "${found[0]}" in an opening beat; beats 1 to 3 are about the life, in plain words`)
     if (DEFINING.test(b.line)) out.push(`beat ${b.order}: an opening beat defines something; that belongs from beat 4`)
@@ -693,13 +693,13 @@ if (HOOK_LOCKED) lockOpeningLine(script, BRIEF.hook)
 // together for one revision, then both run again. If something is still
 // flagged, the run goes ahead and says so in its result rather than looping.
 let review = await beginnerCheck(script, 1)
-let stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked), lifestyleIssues(script))
+let stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked), lifestyleIssues(script, skipLocked))
 if (stillFlagged) {
   log(`Script check flagged:\n${stillFlagged}`)
   script = await writeScript(stillFlagged, script, 1)
   if (HOOK_LOCKED) lockOpeningLine(script, BRIEF.hook)
   review = await beginnerCheck(script, 2)
-  stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked), lifestyleIssues(script))
+  stillFlagged = combine(beginnerIssues(review), voiceIssues(script, skipLocked), lifestyleIssues(script, skipLocked))
   log(stillFlagged ? `Still flagged after one revision, going ahead:\n${stillFlagged}` : 'Script check passed after one revision')
 } else {
   log('Script check passed first time')
