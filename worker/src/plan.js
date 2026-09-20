@@ -42,7 +42,16 @@ const HOOK_RULES = [
   [/!/, 'it has an exclamation mark'],
 ];
 
-export const hookProblems = (line) => HOOK_RULES.filter(([re]) => re.test(line)).map(([, why]) => why);
+/* The first line has to name the money: a figure the viewer can picture, in
+ * digits or in words. A hook that opens on a mechanism makes the video's
+ * first job a rescue, which is not what this channel is for. */
+const MONEY = /[$£€]|\d|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million)\b[\s\w-]{0,24}\b(?:percent|dollars?|points?|grand|figures|rent|income|deposit|equity|profit|cash|months?|weeks?|years?|deals?|flips?|doors?|units?)\b/i;
+
+export const hookProblems = (line) => {
+  const problems = HOOK_RULES.filter(([re]) => re.test(line)).map(([, why]) => why);
+  if (!MONEY.test(String(line || ''))) problems.push('it does not name the money');
+  return problems;
+};
 
 /* A source id was capped at 64 because chunk ids are UUIDs and 36 characters.
  * The agent cites URLs, which are longer, so every Trilith link in the first

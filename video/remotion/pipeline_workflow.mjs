@@ -491,7 +491,9 @@ brand's hook tone: sharp, declarative, a little confrontational. Skip anything t
 clickbait. Fill its (insert X) placeholders with real details from the facts above -- do not invent facts.
 Report both the raw template (hookTemplate, placeholders intact) and the filled version (filledHook). If
 no template can meet the hook tone, write the hook yourself in that tone and report hookCategory "BRAND"
-and hookTemplate "(written to the brand guide)". The filledHook is beat 1.`
+and hookTemplate "(written to the brand guide)". The filledHook is beat 1.
+Whichever way it comes, beat 1 names the money: a figure the viewer can picture -- a monthly income, a
+deposit, a sale price, a number of deals a year, "five figures" -- taken from the facts above.`
 
 // Every video has to work for someone who has never invested in real estate.
 const BEGINNER_RULES = `WHO THIS IS FOR: someone brand new to real estate investing. They should follow every line
@@ -637,6 +639,11 @@ function lifestyleIssues(s, from) {
   const beats = s.beats || []
   // The locked line is not the writer's to thin out, and a figure in it is
   // usually the payoff the hook is built on ("two flips a year").
+  // Beat 1 names the money. A locked line is the planner's to get right
+  // (lock_video refuses one without a figure); an unlocked one is the writer's.
+  if (!from && beats.length && !hasFigure(beats[0].line)) {
+    out.push('beat 1 names no money: open on a figure they can picture -- a monthly income, a deposit, a sale price')
+  }
   const withFigures = beats.slice(from).filter(b => hasFigure(b.line))
   if (withFigures.length > 3) {
     out.push(`${withFigures.length} beats carry a figure (${withFigures.map(b => b.order).join(', ')}); three is the most`)
