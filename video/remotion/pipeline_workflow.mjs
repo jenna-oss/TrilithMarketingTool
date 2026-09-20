@@ -157,6 +157,10 @@ the one thing that gets them closer. The lesson stays; the lecture goes.
   the term: say what it does in plain words, and name it only when the video is about the term itself. Scripts
   that read as a string of ratios and acronyms are the thing being fixed here.
 - The takeaway says what this changes for them, not what a term means.
+- Every video makes the same case: investing in property builds wealth. Say it plainly, and back it with the
+  figures the research gave you -- what the deal earns, keeps or is worth in five years. A video about a fee, a
+  mistake or a risk makes the case by showing how to keep the gain, never by leaving the impression the thing
+  is not worth doing.
 - Still the brand voice: no hype, no promises about the future, no "get rich". The life is shown as what the
   math makes possible, and the math is why it's believable.`
 
@@ -238,6 +242,7 @@ const BEGINNER_CHECK_SCHEMA = {
     whatILearned: { type: 'string', description: 'in one plain sentence, what the viewer now understands; empty if nothing clear' },
     whatItGetsMe: { type: 'string', description: 'in one plain sentence, what this video says could change in your own life; empty if it never says' },
     feltLikeALesson: { type: 'boolean', description: 'true if it played like a lesson or a list of terms rather than something that made you want in' },
+    leftMeWantingIn: { type: 'boolean', description: 'true if it left you thinking that owning property is a way to build wealth; false if it left you cold or put you off' },
   },
 }
 
@@ -563,6 +568,8 @@ Be strict, as that viewer. Report:
   thing you could do next. Leave it empty if the video never says, and do not invent one from the subject.
 - feltLikeALesson: true if it played like a lesson or a run of terms and ratios, rather than something that made
   you want in.
+- leftMeWantingIn: true if, on what it showed you, owning property came across as a way to build wealth. False
+  if it left you cold, or put you off the idea.
 Report only real problems. A clear script comes back with both lists empty.`,
     { schema: BEGINNER_CHECK_SCHEMA, label: `beginner-check-${round}` }
   )
@@ -578,6 +585,9 @@ function beginnerIssues(r) {
     out.push('the listener could not say what this would change in their life: open on that and keep it in sight')
   }
   if (r.feltLikeALesson) out.push('it played as a lesson rather than something the listener wanted in on')
+  if (r.leftMeWantingIn === false) {
+    out.push('it did not leave the listener thinking property builds wealth: show what the deal earns or keeps, with the figures')
+  }
   return out.length ? out.join('\n') : null
 }
 
@@ -1068,6 +1078,7 @@ return {
     passed: !stillFlagged,
     whatILearned: review.whatILearned,
     whatItGetsMe: review.whatItGetsMe || null,
+    leftThemWantingIn: review.leftMeWantingIn !== false,
     stillFlagged: stillFlagged || null,
     lockedLineFlags: lockedLineFlags.length ? lockedLineFlags : null,
   },
