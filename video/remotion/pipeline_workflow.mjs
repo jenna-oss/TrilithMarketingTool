@@ -114,7 +114,49 @@ screen there. Read the image to see what the reviewer meant, then make the match
 what the note asks.`
 }
 
-const BACKGROUNDS = ['black', 'white', 'concrete', 'footage']
+const BACKGROUNDS = ['black', 'white', 'concrete', 'footage', 'photo']
+
+// The channel's own photo library: video/remotion/public/library, shown
+// full-bleed behind the opening. Kept here because prompts are built here and
+// planViolations checks the names; to add one, drop the file in that folder
+// and add a line (see video/README.md).
+const PHOTO_LIBRARY = [
+  ['big-house.jpg', 'a couple walking up to a large villa, long reflecting pool, gardens and hills'],
+  ['mansion-cars.jpg', 'a man in a tan suit outside a mansion, classic cars and a helicopter on the drive'],
+  ['pool-city-night.jpg', 'a couple in evening dress by a pool at night, city lights below'],
+  ['helicopter-estate.jpg', 'a raised champagne glass as a helicopter lands on a country estate lawn'],
+  ['mountain-lounge.jpg', 'a lounge behind floor-to-ceiling glass, snowy mountains outside'],
+  ['champagne-lunch.jpg', 'two men in suits and sunglasses over champagne, fountain and palms behind'],
+  ['grand-dining.jpg', 'a candlelit dining room under a chandelier, a mountain mural filling the wall'],
+  ['rooftop-city.jpg', 'men in suits crossing a rooftop helipad above a hazy skyline'],
+  ['jet-briefcase.jpg', 'a man in a private jet cabin, an open briefcase of cash beside him'],
+  ['chair-cash.jpg', 'a man in a cream suit in a leather chair by a marina window, stacks of cash on the table'],
+  ['fur-coat-car.jpg', 'a man in a full-length fur coat beside a white Rolls-Royce on a mountain road'],
+  ['polo-horse.jpg', 'a man in black tie on horseback with a drink and a silver tray'],
+  ['tokyo-bar.jpg', 'two men in suits with cigars at a dark bar'],
+  ['event-crowd.jpg', 'a crowd in evening dress and furs at a busy event'],
+  ['phone-call.jpg', 'a close-up of a man in an open shirt grinning into a phone'],
+]
+const PHOTO_FILES = PHOTO_LIBRARY.map(([file]) => file)
+const photoBlock = () => `THE CHANNEL'S PHOTO LIBRARY (${REMOTION_ROOT}/public/library, used with staticFile("library/<file>")).
+These are the look of the life the deal pays for: warm, filmic, old money. Pick one that fits this video's own
+promise, not whichever is grandest.
+${PHOTO_LIBRARY.map(([file, what]) => `- ${file}: ${what}`).join('\n')}`
+
+// The videos were reading as lectures, so the opening sells what the money
+// makes possible and the lesson follows (2026-09-19).
+const LIFESTYLE = `WHAT THE VIDEO IS FOR: someone watches because of what investing could pay for -- the house, the
+month they stop trading hours for money, the trip they didn't have to save two years for. Open there, then teach
+the one thing that gets them closer. The lesson stays; the lecture goes.
+- Beats 1 and 2 are about the life, not the mechanics: what this deal, this number or this mistake means for
+  someone's year. Name something concrete a person can picture, in their words, not a category ("a second rent
+  cheque every month", not "portfolio diversification").
+- From beat 3 the video earns it: the one idea that gets them there, in plain words, built to the takeaway.
+- At most three figures in the whole script, each with its plain meaning right beside it. A script that is a
+  string of numbers is the thing being fixed here.
+- The takeaway says what it means for them, not what a term means.
+- Still the brand voice: no hype, no promises about the future, no "get rich". The life is shown as what the
+  math makes possible, and the math is why it's believable.`
 
 const RESEARCH_SCHEMA = {
   type: 'object',
@@ -208,6 +250,7 @@ const VISUAL_PLAN_SCHEMA = {
           order: { type: 'number' },
           idea: { type: 'string', description: 'this scene\'s own visual idea: what is on screen and how it moves, specific to this line -- specific enough for the assembly step to build it' },
           background: { type: 'string', enum: BACKGROUNDS },
+          photo: { type: 'string', description: 'if background is "photo", the library file name, e.g. "big-house.jpg"' },
           accent: { type: 'string', enum: ['orange', 'green', 'none'] },
           accentOn: { type: 'string', description: 'the word or number the accent colour goes on' },
           needsAsset: { type: 'boolean' },
@@ -462,6 +505,8 @@ ${(research.keyTerms || []).map(k => `- ${k.term}: ${k.plainMeaning}`).join('\n'
 
 ${BRAND_VOICE}
 
+${LIFESTYLE}
+
 ${BEGINNER_RULES}
 
 ${hookStep}
@@ -627,7 +672,8 @@ ${VARIETY}
 For each beat give:
 - idea: this scene's own visual idea -- what is on screen and how it moves, specific to its line (e.g. "0.83
   fills the frame in Archivo, an orange bar wipes in under it, 'rent divided by the payment' types in below").
-- background: black, white, concrete, or footage (a real video clip behind the text).
+- background: black, white, concrete, footage (a real video clip behind the text), or photo (one of the
+  channel's own photographs, full-bleed behind the text); with photo, also give its file name in the "photo" field.
 - accent: orange for the one thing to look at, green only when the beat is the answer or the fix, or none;
   accentOn: the word or number it goes on.
 - needsAsset, and if true assetSearchHint: 2-3 keyword phrases for a Pexels VIDEO search specific to THIS
@@ -636,11 +682,16 @@ For each beat give:
 HARD RULES (a plan that breaks these is rejected and you'll be asked again):
 1. No two beats in a row share a background.
 2. background is "footage" exactly when needsAsset is true. Aim for two or three footage beats: not zero, not
-   most of them.
+   most of them. A photo beat never needs an asset: needsAsset is false.
+2a. Beat 1's background is "photo", with a photo named from the library below: the opening shows the life this is
+   about. Up to two more beats in the first half may use a photo, each a different file, and never two photo
+   beats in a row.
 3. The last beat is the closing frame (the logo, the takeaway, "Follow @thebuyboxre"); its background is black
    or white.
 4. At least one beat uses orange.
 5. One entry per beat, in order.
+
+${photoBlock()}
 
 The viewer may be brand new to real estate investing. Where a beat explains a term, its idea puts the term and
 its plain meaning on screen together, and every number shown gets a plain label.
@@ -668,6 +719,22 @@ function planViolations(plan) {
     if ((b.background === 'footage') !== Boolean(b.needsAsset)) {
       problems.push(`beat ${b.order}: background "footage" and needsAsset have to go together`)
     }
+  }
+  const photoBeats = beats.filter(b => b.background === 'photo')
+  if (beats.length && beats[0].background !== 'photo') {
+    problems.push('beat 1 opens the video, so its background must be a photo from the library')
+  }
+  for (const b of photoBeats) {
+    if (!PHOTO_FILES.includes(b.photo)) {
+      problems.push(`beat ${b.order}: "${b.photo || '(none)'}" is not a file in the photo library`)
+    }
+  }
+  if (photoBeats.length > 3) problems.push(`${photoBeats.length} photo beats; three is the most`)
+  if (new Set(photoBeats.map(b => b.photo)).size !== photoBeats.length) {
+    problems.push('the same photo is used twice; each photo beat uses a different file')
+  }
+  if (photoBeats.some(b => b.order > Math.ceil(beats.length / 2))) {
+    problems.push('photos belong in the first half of the video')
   }
   const last = beats[beats.length - 1]
   if (last && !['black', 'white'].includes(last.background)) {
@@ -740,6 +807,13 @@ ${JSON.stringify(assetResults.filter(Boolean).filter(r => r.approved), null, 2)}
 
 Footage plays full-bleed with <OffthreadVideo> for cropMode "cover", or contained (object-fit: contain) on BLACK
 or WHITE for "contain-white", with the scene's text over it in the guide's headline boxes.
+
+A "photo" beat is one of the channel's own photographs, full-bleed behind the text:
+  <Img src={staticFile("library/<the plan's photo>")} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+(import { Img, staticFile } from "remotion"). Leave the photograph as it is -- no tint, blur or gradient over it --
+and put every word of that scene in the guide's headline boxes, which is what keeps text readable on a picture.
+Let it move slowly: a gentle scale from 1 to about 1.06 across the scene, nothing faster.
+${photoBlock()}
 
 ${BRAND_LOOK}
 

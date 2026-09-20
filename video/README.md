@@ -91,6 +91,16 @@ fixes what it finds once and looks again; anything still wrong is written to
 anything -- the output is meant for human review before it goes anywhere
 public.
 
+## The photo library
+
+`remotion/public/library` holds the channel's own photographs, the look of the
+life the deal pays for. Every video opens on one of them, full-bleed behind the
+text, and up to two more may appear in its first half; the rest of the footage
+still comes from Pexels. To add one: put a web-sized `.jpg` in that folder and
+add a line to `PHOTO_LIBRARY` in `remotion/pipeline_workflow.mjs` saying what it
+shows, which is what the planning stage picks from and what the rules check
+against. To retire one, remove both.
+
 ## Editing a finished video
 
 On the Edit tab (`edit.html`), pick a video from Ready to review, step to the
