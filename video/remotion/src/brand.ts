@@ -77,6 +77,23 @@ export const SafeArea: React.FC<{ children?: React.ReactNode; style?: React.CSSP
     children,
   );
 
+/** The opening photograph's black frame: a tall rectangle of picture with
+ *  black around it, and the scene's headline boxes straddling one of its
+ *  edges, half on the picture and half on the black. Two placements, so the
+ *  videos don't all open the same way: `high` puts the picture up and the
+ *  words across its bottom edge, `low` puts it down and the words across its
+ *  top edge. Same size either way; the numbers live here, not in each
+ *  video's own file. */
+export const PHOTO_FRAME = {
+  left: 90,
+  width: 900,
+  height: 1150,
+  /** Picture up, words across its bottom edge. */
+  high: { top: 150, bottom: 1300 },
+  /** Picture down, words across its top edge. */
+  low: { top: 430, bottom: 1580 },
+};
+
 /** Text-size floors, px on the 1080x1920 frame. */
 export const MIN_HEADLINE = 110;
 export const MIN_TEXT = 40;

@@ -673,7 +673,9 @@ For each beat give:
 - idea: this scene's own visual idea -- what is on screen and how it moves, specific to its line (e.g. "0.83
   fills the frame in Archivo, an orange bar wipes in under it, 'rent divided by the payment' types in below").
 - background: black, white, concrete, footage (a real video clip behind the text), or photo (one of the
-  channel's own photographs, full-bleed behind the text); with photo, also give its file name in the "photo" field.
+  channel's own photographs in a black frame, with the scene's words straddling one of its edges -- see THE
+  LOOK); with photo, also give its file name in the "photo" field and say in the idea whether the picture sits
+  high with the words across its bottom edge or low with the words across its top edge.
 - accent: orange for the one thing to look at, green only when the beat is the answer or the fix, or none;
   accentOn: the word or number it goes on.
 - needsAsset, and if true assetSearchHint: 2-3 keyword phrases for a Pexels VIDEO search specific to THIS
@@ -808,11 +810,19 @@ ${JSON.stringify(assetResults.filter(Boolean).filter(r => r.approved), null, 2)}
 Footage plays full-bleed with <OffthreadVideo> for cropMode "cover", or contained (object-fit: contain) on BLACK
 or WHITE for "contain-white", with the scene's text over it in the guide's headline boxes.
 
-A "photo" beat is one of the channel's own photographs, full-bleed behind the text:
-  <Img src={staticFile("library/<the plan's photo>")} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-(import { Img, staticFile } from "remotion"). Leave the photograph as it is -- no tint, blur or gradient over it --
-and put every word of that scene in the guide's headline boxes, which is what keeps text readable on a picture.
-Let it move slowly: a gentle scale from 1 to about 1.06 across the scene, nothing faster.
+A "photo" beat is one of the channel's own photographs in a black frame, with the scene's words straddling one
+of its edges. On a BLACK background, with PHOTO_FRAME from ./brand and "const F = PHOTO_FRAME.high" (picture up,
+words across its bottom edge) or "PHOTO_FRAME.low" (picture down, words across its top edge) -- the plan says
+which, and they alternate across videos:
+  <Img src={staticFile("library/<the plan's photo>")}
+       style={{ position: "absolute", top: F.top, left: PHOTO_FRAME.left, width: PHOTO_FRAME.width,
+                height: PHOTO_FRAME.height, objectFit: "cover" }} />
+(import { Img, staticFile } from "remotion"). The words go in the guide's headline boxes, stacked and centred,
+crossing that edge: about a third of the stack over the picture and the rest over the black, so for the bottom
+edge the stack starts near F.bottom - 170, and for the top edge it ends near F.top + 170. Nothing else sits on
+the picture, and the black around it stays empty.
+Leave the photograph as it is -- no tint, blur, gradient or border -- and let it move slowly: a gentle scale from
+1 to about 1.06 across the scene.
 ${photoBlock()}
 
 ${BRAND_LOOK}
@@ -950,7 +960,8 @@ taste, only whether everything can be read.
    - text cut off by the edge of the frame or hidden behind something
    - scene text colliding with the word-by-word captions near the bottom of the frame
    Not a problem: a headline box behind its own text, the captions themselves, text in a full-bleed footage
-   scene over its own backing box, empty space, a design you would have done differently.
+   scene over its own backing box, the opening photo's headline boxes crossing the edge of the picture (that is
+   the design), empty space, a design you would have done differently.
 4. Write your findings to ${FRAME_REPORT}, replacing anything already there: one line per problem, "scene N:
    what", or an empty file if there are none.
 Report framesChecked and the problems.`,
