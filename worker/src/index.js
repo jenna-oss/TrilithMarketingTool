@@ -17,6 +17,7 @@
 
 import { handleIdeas } from './ideas.js';
 import { handleUpload } from './upload.js';
+import { handleRecordings } from './recordings.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -88,6 +89,16 @@ export default {
     /* Puts a file into the knowledge base permanently. Behind sign-in like
      * every route; it used to need a shared upload token of its own. */
     if (path === '/kb/upload') return handleUpload(request, env, headers, ctx);
+
+    /* Voice recordings: uploaded on the Recordings page, transcribed by
+     * ElevenLabs, kept in the corpus and readable by the planner. */
+    if (path === '/recordings' || path.startsWith('/recordings/')) {
+      try { return await handleRecordings(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('recordings route failed:', err?.message);
+        return json({ error: 'Something went wrong with that recording. Try again.' }, 502, headers);
+      }
+    }
 
     /* Fetch a stored plan by id, so a session can be resumed in another browser
      * or on another machine. Read-only, and it returns nothing for an id that

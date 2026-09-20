@@ -54,6 +54,8 @@ const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp
  * answer than the extra round costs. */
 const MAX_ROUNDS = 8;
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const PRODUCTS = ['dscr', 'fix-and-flip', 'bridge', 'ground-up', 'portfolio', 'brrrr', 'multifamily'];
 const KINDS = ['blog', 'case-study', 'product', 'faq', 'page'];
 
@@ -133,6 +135,26 @@ const TOOLS = [
     input_schema: {
       type: 'object',
       properties: { kind: { type: 'string', enum: KINDS } },
+    },
+  },
+
+  /* Voice recordings uploaded on the Recordings page. Their transcripts are
+   * in the knowledge base too, so search_transcripts finds passages across all
+   * of them; these two are for working with one recording as a whole. */
+  {
+    name: 'list_recordings',
+    description:
+      'The voice recordings uploaded to this tool: name, length and when. Use it when someone refers to a recording by name, or to see what is there.',
+    input_schema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'read_recording',
+    description:
+      'The full transcript of one recording, by id. Use it when the person has selected a recording for this session, or names one: reading it whole is how you find the ideas in it, and search only returns passages.',
+    input_schema: {
+      type: 'object',
+      required: ['id'],
+      properties: { id: { type: 'string', description: 'The recording id, from list_recordings or from the ones selected for this session.' } },
     },
   },
 
@@ -230,6 +252,8 @@ You have several corpora, reachable only through your tools:
 2. Trilith's own published content — blog posts, funded-deal writeups, product pages, FAQ.
 3. Hook patterns — creative structure from advertisers outside lending, from the Spyglass corpus: consumer finance (NerdWallet, LendingTree, Chime, Rocket Money), real estate (Zillow), and business/finance education (Alex Hormozi, Robert Kiyosaki).
 4. The knowledge base — transcripts of things Trilith has said out loud, research and market reports, a record of what has already been published as topic and angle, and the idea memory. Reached through search_transcripts, search_research, search_previous_content, check_repetition, search_content_ideas, save_idea and search_hooks.
+
+5. Voice recordings uploaded to this tool, through list_recordings and read_recording. Their transcripts are in the knowledge base as well, so a search can turn up a passage from one. When the person has selected recordings for this session, they are named at the end of their message with their ids: read those in full before you propose anything, and take the ideas from what was actually said. Quote a recording the way you would a transcript — by its name — and never present something it says as research.
 
 The third one is different in kind and you must treat it differently. Those brands are not Trilith's competitors and are not in the lending category. Spyglass has no insight coverage for investor lenders at all, so nothing in it is evidence about the competition. It gives you FORM — how a piece of creative opens, what claim it leads with — abstracted into reusable shapes. Use it for angles and hooks, never for topics. The substance of an idea must come from the ad corpus or Trilith's own writing; a hook pattern only tells you what shape to pour it into.
 
@@ -371,6 +395,37 @@ async function runTool(env, name, input, ctx = {}) {
   }
 
   if (KB_TOOL_NAMES.has(name)) return runKbTool(env, name, input, ctx);
+
+  if (name === 'list_recordings') {
+    const rows = await rpc(env, 'kb_recordings', { p_limit: 100 });
+    return (rows || []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      minutes: r.seconds ? Math.round(r.seconds / 60) : null,
+      words: r.words,
+      status: r.status,
+      uploaded: r.created_at,
+    }));
+  }
+
+  if (name === 'read_recording') {
+    const rec = await rpc(env, 'kb_recording_read', { p_id: String(input.id || '') });
+    if (!rec) return { error: 'no recording with that id' };
+    if (rec.status !== 'ready') {
+      return { id: rec.id, name: rec.name, status: rec.status, error: rec.error || 'this recording is still being transcribed' };
+    }
+    /* Long enough for an hour of talking; a transcript past this is cut with
+     * a note rather than silently ending mid-sentence. */
+    const LIMIT = 60000;
+    const text = String(rec.transcript || '');
+    return {
+      id: rec.id,
+      name: rec.name,
+      minutes: rec.seconds ? Math.round(rec.seconds / 60) : null,
+      words: rec.words,
+      transcript: text.length > LIMIT ? `${text.slice(0, LIMIT)}\n\n[cut here: the rest is searchable with search_transcripts]` : text,
+    };
+  }
 
   if (name === 'search_competitor_ads') {
     const rows = await rpc(env, 'adspy_search_ads', {
@@ -531,6 +586,8 @@ function toolOutcome(name, rows) {
       return { summary: 'saved' };
     case 'remember_file':
       return { summary: rows.status === 'stored' ? `${rows.chunks} passages` : String(rows.status || 'done') };
+    case 'read_recording':
+      return { summary: rows.transcript ? `${rows.words || 0} words` : String(rows.status || rows.error || 'not ready') };
     default:
       return { count: Array.isArray(rows) ? rows.length : 0 };
   }
@@ -538,6 +595,8 @@ function toolOutcome(name, rows) {
 
 function describe(name, input) {
   if (KB_TOOL_NAMES.has(name)) return describeKbTool(name, input);
+  if (name === 'list_recordings') return 'the recordings';
+  if (name === 'read_recording') return 'reading a recording';
 
   const bits = [];
   if (input.query) bits.push(`"${input.query}"`);
@@ -728,6 +787,24 @@ export async function handleIdeas(request, env, headers, ctx) {
   const plan = normalisePlan(body.plan);
   const sessionId = String(body.session_id ?? '').slice(0, 64) || null;
 
+  /* Recordings the person picked on the Plan page. Their names are looked up
+   * here rather than trusted from the page, so the model is told what the
+   * database actually has. */
+  const picked = Array.isArray(body.recordings)
+    ? [...new Set(body.recordings.map((r) => String(r)).filter((r) => UUID.test(r)))].slice(0, 5)
+    : [];
+  let recordingsNote = '';
+  if (picked.length) {
+    try {
+      const rows = await rpc(env, 'kb_recordings', { p_limit: 200 });
+      const chosen = (rows || []).filter((r) => picked.includes(r.id));
+      if (chosen.length) {
+        recordingsNote = `\n\nRECORDINGS SELECTED FOR THIS SESSION (read each one in full with read_recording before proposing anything):\n`
+          + chosen.map((r) => `- ${r.name} (id ${r.id}${r.status === 'ready' ? '' : `, ${r.status}`})`).join('\n');
+      }
+    } catch { /* the planner can still list them itself */ }
+  }
+
   /* Spec section 38. Collected across the turn and written once at the end:
    * a round trip per search would add latency to the thing being waited on. */
   const searchLog = [];
@@ -749,7 +826,7 @@ export async function handleIdeas(request, env, headers, ctx) {
   const send = (e, d) => writer.write(enc.encode(`event: ${e}\ndata: ${JSON.stringify(d)}\n\n`));
 
   const work = (async () => {
-      const messages = [...history, { role: 'user', content: userContent(brief, attached) }];
+      const messages = [...history, { role: 'user', content: userContent(brief + recordingsNote, attached) }];
       let totals = { input: 0, output: 0, cacheRead: 0, searches: 0 };
 
       /* Emit immediately. The first round is usually thinking followed by tool

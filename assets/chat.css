@@ -105,6 +105,49 @@
 .chat .chip .drop:hover { color: var(--chat-clay); }
 .chat .chip.pending .label { opacity: .6; }
 
+/* Recordings handed to a planning session. An attachment is read once by the
+   model; a recording is already transcribed and in the corpus, so picking one
+   only tells the planner to read that one in full. */
+.chat .recordings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+  align-items: center;
+  margin: 0 0 .5rem;
+  font-size: .75rem;
+  color: var(--ink-quiet);
+}
+.chat .rec-label {
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-size: .625rem;
+  color: var(--accent);
+}
+.chat .rec-chip {
+  font: inherit;
+  font-size: .75rem;
+  color: var(--ink-body);
+  background: var(--card);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: .125rem .625rem;
+  cursor: pointer;
+}
+.chat .rec-chip:hover { border-color: var(--accent); }
+.chat .rec-chip[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #F4F2E7;
+  font-weight: 600;
+}
+.chat .rec-manage {
+  color: var(--ink-quiet);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin-left: auto;
+}
+
 .chat .attach-error {
   margin: .5rem 0 0; font-size: .75rem; color: var(--chat-clay);
 }

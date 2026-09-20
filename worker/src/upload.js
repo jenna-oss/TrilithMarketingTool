@@ -100,6 +100,51 @@ async function embedChunks(env, chunks, cfg) {
   chunks.forEach((c, i) => { c.embedding = vectors[i]; });
 }
 
+/* Text into the corpus: store the document, chunk it, and embed after the
+ * caller has been answered. Shared with the recordings route, whose text comes
+ * from a transcription rather than a file. Returns what was stored, or throws
+ * with a message worth showing. */
+export async function ingestText(env, ctx, { sourceKey, title, text, documentType = 'other', source = null, topics = [] }) {
+  const created = await rpc(env, 'kb_upload_document', {
+    payload: {
+      brand_slug: 'trilith',
+      document_type: documentType,
+      title,
+      source,
+      published_at: null,
+      source_key: sourceKey,
+      raw_content: text,
+      metadata: { original_filename: sourceKey, ...(topics.length ? { topics } : {}) },
+    },
+  });
+  if (!created.changed) return { documentId: created.id, chunks: 0, unchanged: true };
+
+  const chunks = chunksFor({ name: sourceKey, text, documentType, topics, source });
+  if (!chunks.length) throw new Error('no usable chunks');
+  if (chunks.length > MAX_CHUNKS) throw new Error(`${chunks.length} chunks, over the ${MAX_CHUNKS} limit`);
+
+  const store = (async () => {
+    let cfg = null;
+    if (env.VOYAGE_API_KEY) {
+      try { cfg = await rpc(env, 'kb_embedding_config', {}); } catch { cfg = null; }
+    }
+    if (cfg?.model) {
+      try { await embedChunks(env, chunks, cfg); } catch { /* store unembedded */ }
+    }
+    try {
+      await rpc(env, 'kb_upload_chunks', { p_document_id: created.id, payload: chunks });
+    } catch { /* the document stays 'pending'; the next pipeline run picks it up */ }
+  })();
+  if (ctx?.waitUntil) ctx.waitUntil(store); else await store;
+
+  return {
+    documentId: created.id,
+    chunks: chunks.length,
+    tokens: chunks.reduce((n, c) => n + c.token_count, 0),
+    unchanged: false,
+  };
+}
+
 export async function handleUpload(request, env, headers, ctx) {
   /* Who may upload was settled before this runs: index.js lets only a
    * signed-in person on the app's list through. */

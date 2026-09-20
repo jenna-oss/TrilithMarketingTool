@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Recordings — Private Real Estate Lending</title>
+<script src="./assets/theme.js"></script>
+<script src="./assets/auth.js"></script>
+<link rel="stylesheet" href="./assets/nav.css">
+<style>
+  :root {
+    --cream-text:#EAE9D5; --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
+    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
+    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
+    --s1:.5rem; --s2:.75rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#ECE9D8; --card:#F4F2E7; --card-sunk:#E3DFCB;
+    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
+    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
+  }
+  :root[data-theme="dark"] {
+    --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
+    --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
+    --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
+  }
+
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink-body);
+    font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:860px; margin:0 auto; padding:var(--s5) var(--s4) var(--s6); }
+  h2 { color:var(--ink); font-weight:700; line-height:1.12; margin:0 0 var(--s1); font-size:1.5rem; }
+  .eyebrow {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); margin:0 0 var(--s1);
+  }
+  .lede { margin:0 0 var(--s4); font-size:.875rem; color:var(--ink-quiet); max-width:62ch; }
+
+  .btn {
+    display:inline-block; font-family:var(--sans); font-size:.875rem; font-weight:600;
+    color:#F4F2E7; background:var(--emerald); border:1px solid transparent; border-radius:4px;
+    padding:.5rem 1rem; cursor:pointer;
+  }
+  .btn:hover { background:var(--emerald-bar); }
+  .btn.secondary { background:transparent; color:var(--ink-body); border-color:var(--rule-strong); }
+  .btn.secondary:hover { background:var(--card-sunk); }
+  .btn:disabled { opacity:.55; cursor:default; }
+  .btn.small { font-size:.75rem; padding:.3125rem .625rem; }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  .upload {
+    background:var(--card); border:1px solid var(--rule); border-radius:6px;
+    padding:var(--s3); margin:0 0 var(--s4);
+  }
+  .upload label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; }
+  .upload input[type="text"], .upload input[type="file"] {
+    width:100%; font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
+    border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
+  }
+  .upload .row { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:flex-end; margin-top:var(--s2); }
+  .upload .row > div { flex:1 1 14rem; }
+  .hint { font-size:.75rem; color:var(--ink-quiet); margin:.375rem 0 0; }
+  .hint.bad { color:var(--clay); }
+
+  .list { list-style:none; margin:0; padding:0; display:grid; gap:var(--s2); }
+  .rec {
+    background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:var(--s2) var(--s3);
+  }
+  .rec .top { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:baseline; }
+  .rec .name { font-size:1rem; font-weight:700; color:var(--ink); margin:0; flex:1 1 12rem; }
+  .rec .meta { font-size:.75rem; color:var(--ink-quiet); font-family:var(--mono); }
+  .tag {
+    display:inline-block; font-size:.6875rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    border-radius:999px; padding:.0625rem .5rem; border:1px solid var(--rule-strong); color:var(--ink-quiet);
+  }
+  .tag.ready { color:var(--accent); border-color:var(--accent); }
+  .tag.transcribing { color:var(--ink-body); border-style:dashed; }
+  .tag.failed { color:var(--clay); border-color:var(--clay); }
+  .rec .actions { display:flex; flex-wrap:wrap; gap:.375rem; margin-top:var(--s2); }
+  .rec audio { width:100%; margin-top:var(--s2); }
+  .rec .error { font-size:.8125rem; color:var(--clay); margin:.5rem 0 0; }
+  .transcript {
+    margin:var(--s2) 0 0; padding:var(--s2); max-height:22rem; overflow:auto; white-space:pre-wrap;
+    background:var(--card-sunk); border-radius:4px; font-size:.8125rem; color:var(--ink-body);
+  }
+
+  .empty {
+    border:1px solid var(--rule); border-radius:6px; background:var(--card);
+    padding:var(--s5) var(--s4); text-align:center; font-size:.875rem;
+  }
+  .toast {
+    position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
+    background:var(--panel); color:var(--cream-text); font-size:.875rem;
+    padding:.5rem 1.125rem; border-radius:999px; box-shadow:0 4px 18px #0000003d;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <a class="site-brand" href="./">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
+      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
+            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
+    </svg>
+    <span>
+      <span class="name">Trilith marketing tool</span><br>
+      <span class="who">aikogroup.io — internal</span>
+    </span>
+  </a>
+
+  <nav class="site-nav" aria-label="Sections">
+    <span class="nav-group">
+      <span class="nav-group-label">Intelligence</span>
+      <a class="nav-link" href="./briefing.html">Competitors</a>
+      <a class="nav-link" href="./creators.html">Creators</a>
+      <a class="nav-link" href="./recordings.html" aria-current="page">Recordings</a>
+    </span>
+    <span class="nav-group">
+      <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./">Plan</a>
+      <a class="nav-link" href="./edit.html">Edit</a>
+      <a class="nav-link" href="./output.html">Output</a>
+    </span>
+    <button class="theme-toggle" id="theme-toggle" type="button"
+            aria-label="Toggle light and dark theme" aria-pressed="false">
+      <span data-theme-label>Dark</span>
+    </button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Intelligence</p>
+  <h2>Recordings</h2>
+  <p class="lede">Upload a voice recording and it is transcribed and kept. The planner can search across all of them, and on the Plan page you can hand it one to read in full before it suggests anything.</p>
+
+  <form class="upload" id="upload">
+    <label for="file">Audio file</label>
+    <input id="file" type="file" accept="audio/*,video/mp4,video/quicktime,video/webm" required>
+    <div class="row">
+      <div>
+        <label for="name">Name it</label>
+        <input id="name" type="text" maxlength="120" placeholder="e.g. Call with Mike about the Baltimore deal" required>
+      </div>
+      <button class="btn" id="send" type="submit">Upload</button>
+    </div>
+    <p class="hint" id="hint">mp3, m4a, wav, webm, ogg or flac, up to 40MB. A ten minute recording takes about half a minute to transcribe.</p>
+  </form>
+
+  <p class="lede" id="state" role="status">Loading recordings…</p>
+  <div class="empty" id="empty" hidden>Nothing here yet. Upload a recording and it will show up, transcribed.</div>
+  <ol class="list" id="list"></ol>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* The same Worker as the other pages. Uploads go to /recordings as a form,
+   because the audio is bytes, not JSON; everything else is JSON. */
+const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
+const POLL_MS = 5000;
+
+const $ = (id) => document.getElementById(id);
+const listEl = $('list');
+const stateEl = $('state');
+const emptyEl = $('empty');
+const hintEl = $('hint');
+const toastEl = $('toast');
+
+let recordings = [];
+const openTranscripts = new Set();
+let pollTimer = null;
+
+const minutes = (s) => (s ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}` : '');
+const when = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+function say(text, bad) {
+  hintEl.className = 'hint' + (bad ? ' bad' : '');
+  hintEl.textContent = text;
+}
+
+let toastTimer;
+function toast(message) {
+  toastEl.textContent = message;
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2600);
+}
+
+async function call(path, body) {
+  const res = await AikoAuth.fetch(WORKER_URL + path, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `that didn't work (${res.status})`);
+  return data;
+}
+
+async function load() {
+  try {
+    const data = await call('/recordings/list');
+    recordings = Array.isArray(data.recordings) ? data.recordings : [];
+  } catch (err) {
+    stateEl.textContent = 'Couldn’t load the recordings. Try refreshing.';
+    return;
+  }
+  stateEl.hidden = true;
+  emptyEl.hidden = recordings.length > 0;
+  render();
+  schedulePoll();
+}
+
+/* While anything is still being transcribed, check back. */
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  if (!recordings.some((r) => r.status === 'transcribing')) return;
+  pollTimer = setTimeout(async () => {
+    const before = recordings.map((r) => r.status).join(',');
+    try {
+      const data = await call('/recordings/list');
+      recordings = Array.isArray(data.recordings) ? data.recordings : recordings;
+    } catch { /* try again next time */ }
+    if (recordings.map((r) => r.status).join(',') !== before) {
+      render();
+      const done = recordings.find((r) => r.status === 'ready');
+      if (done) toast('A recording finished transcribing');
+    }
+    schedulePoll();
+  }, POLL_MS);
+}
+
+function render() {
+  listEl.textContent = '';
+  emptyEl.hidden = recordings.length > 0;
+  for (const rec of recordings) listEl.append(card(rec));
+}
+
+function card(rec) {
+  const li = document.createElement('li');
+  li.className = 'rec';
+
+  const top = document.createElement('div');
+  top.className = 'top';
+  const name = document.createElement('p');
+  name.className = 'name';
+  name.textContent = rec.name;
+  const tag = document.createElement('span');
+  tag.className = 'tag ' + rec.status;
+  tag.textContent = rec.status === 'ready' ? 'Transcribed' : rec.status === 'failed' ? 'Failed' : 'Transcribing…';
+  const meta = document.createElement('span');
+  meta.className = 'meta';
+  meta.textContent = [minutes(rec.seconds), rec.words ? `${rec.words} words` : '', when(rec.created_at)]
+    .filter(Boolean).join(' · ');
+  top.append(name, tag, meta);
+  li.append(top);
+
+  if (rec.error) {
+    const err = document.createElement('p');
+    err.className = 'error';
+    err.textContent = rec.error;
+    li.append(err);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+
+  if (rec.status === 'ready') {
+    actions.append(button('Transcript', 'secondary', () => toggleTranscript(rec, li)));
+  }
+  if (rec.has_audio) {
+    actions.append(button('Play', 'secondary', (btn) => play(rec, li, btn)));
+  }
+  if (rec.status !== 'ready') {
+    actions.append(button('Try again', 'secondary', async (btn) => {
+      btn.disabled = true;
+      try { await call('/recordings/retry', { id: rec.id }); toast('Transcribing again'); rec.status = 'transcribing'; render(); schedulePoll(); }
+      catch (err) { toast(err.message); btn.disabled = false; }
+    }));
+  }
+  actions.append(button('Rename', 'secondary', async () => {
+    const next = prompt('Name this recording', rec.name);
+    if (!next || next.trim() === rec.name) return;
+    try { await call('/recordings/rename', { id: rec.id, name: next.trim() }); rec.name = next.trim(); render(); }
+    catch (err) { toast(err.message); }
+  }));
+  actions.append(button('Delete', 'secondary', async () => {
+    if (!confirm(`Delete "${rec.name}"? Its transcript leaves the knowledge base too.`)) return;
+    try {
+      await call('/recordings/delete', { id: rec.id });
+      recordings = recordings.filter((r) => r.id !== rec.id);
+      render();
+      toast('Deleted');
+    } catch (err) { toast(err.message); }
+  }));
+  li.append(actions);
+  if (openTranscripts.has(rec.id)) showTranscript(rec, li);
+  return li;
+}
+
+function button(label, kind, onClick) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn small ' + kind;
+  b.textContent = label;
+  b.addEventListener('click', () => onClick(b));
+  return b;
+}
+
+async function toggleTranscript(rec, li) {
+  if (openTranscripts.has(rec.id)) {
+    openTranscripts.delete(rec.id);
+    li.querySelector('.transcript')?.remove();
+    return;
+  }
+  openTranscripts.add(rec.id);
+  await showTranscript(rec, li);
+}
+
+async function showTranscript(rec, li) {
+  if (li.querySelector('.transcript')) return;
+  const box = document.createElement('div');
+  box.className = 'transcript';
+  box.textContent = 'Loading…';
+  li.append(box);
+  try {
+    const data = await call('/recordings/read', { id: rec.id });
+    box.textContent = data.recording?.transcript || '(nothing was transcribed)';
+  } catch (err) {
+    box.textContent = err.message;
+  }
+}
+
+/* The bucket is private, so the audio comes back through the Worker and is
+   played from a blob rather than a link. */
+async function play(rec, li, btn) {
+  if (li.querySelector('audio')) { li.querySelector('audio').remove(); btn.textContent = 'Play'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+  try {
+    const res = await AikoAuth.fetch(WORKER_URL + '/recordings/audio', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: rec.id }),
+    });
+    if (!res.ok) throw new Error('couldn’t load that audio');
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.src = URL.createObjectURL(await res.blob());
+    li.append(audio);
+    audio.play().catch(() => {});
+    btn.textContent = 'Hide';
+  } catch (err) {
+    toast(err.message);
+    btn.textContent = 'Play';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$('upload').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const file = $('file').files[0];
+  const name = $('name').value.trim();
+  if (!file || !name) { say('Pick a file and give it a name.', true); return; }
+
+  const form = new FormData();
+  form.append('file', file);
+  form.append('name', name);
+
+  $('send').disabled = true;
+  say(`Uploading ${(file.size / 1024 / 1024).toFixed(1)}MB…`);
+  try {
+    const res = await AikoAuth.fetch(WORKER_URL + '/recordings', { method: 'POST', body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `that didn't work (${res.status})`);
+    say('Uploaded. Transcribing now — it will say Transcribed when it is done.');
+    $('upload').reset();
+    recordings.unshift({
+      id: data.id, name: data.name, status: 'transcribing',
+      seconds: null, words: null, has_audio: true, created_at: new Date().toISOString(),
+    });
+    emptyEl.hidden = true;
+    render();
+    schedulePoll();
+  } catch (err) {
+    say(err.message, true);
+  } finally {
+    $('send').disabled = false;
+  }
+});
+
+load();
+
+if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
+</script>
+</body>
+</html>

@@ -30,6 +30,8 @@ video/remotion/public/*/
 # The channel's own photographs, which every video opens on.
 !video/remotion/public/library/
 video/.env
+# Python leaves these behind whenever the voiceover template is imported.
+__pycache__/
 # The per-run copy of the pipeline script with the locked brief written in.
 video/remotion/.run/
 

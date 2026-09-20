@@ -112,6 +112,7 @@
       <span class="nav-group-label">Intelligence</span>
       <a class="nav-link" href="./briefing.html">Competitors</a>
       <a class="nav-link" href="./creators.html">Creators</a>
+      <a class="nav-link" href="./recordings.html">Recordings</a>
     </span>
     <span class="nav-group">
       <span class="nav-group-label">Production</span>
@@ -150,6 +151,14 @@
 <footer class="chat-dropzone" id="dropzone">
   <div class="wrap">
     <div class="attachments" id="tray" hidden></div>
+
+    <!-- Recordings to hand this session. Ready ones only: one still being
+         transcribed has nothing for the planner to read. -->
+    <div class="recordings" id="rec-row" hidden>
+      <span class="rec-label">Recordings</span>
+      <span class="rec-chips" id="rec-chips"></span>
+      <a class="rec-manage" href="./recordings.html">Manage</a>
+    </div>
 
     <!-- Staged text files can go two places: to the model for this one message,
          or into the knowledge base permanently. This offers the second. Text
@@ -668,6 +677,42 @@ async function sendToRender(card, btn, note, count) {
   note.textContent = body.error || 'Couldn’t reach the server. Try again.';
 }
 
+/* Recordings the planner should read this session, picked above the box. */
+const pickedRecordings = new Set();
+
+async function loadRecordings() {
+  let rows = [];
+  try {
+    const res = await AikoAuth.fetch(WORKER_URL + '/recordings/list', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    });
+    if (!res.ok) return;
+    rows = (await res.json()).recordings || [];
+  } catch { return; }
+
+  const ready = rows.filter((r) => r.status === 'ready');
+  const row = document.getElementById('rec-row');
+  const chips = document.getElementById('rec-chips');
+  if (!ready.length) { row.hidden = true; return; }
+  chips.textContent = '';
+  for (const rec of ready.slice(0, 12)) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'rec-chip';
+    chip.setAttribute('aria-pressed', 'false');
+    chip.textContent = rec.name;
+    chip.title = `${rec.words || 0} words${rec.seconds ? `, ${Math.round(rec.seconds / 60)} min` : ''}`;
+    chip.addEventListener('click', () => {
+      if (pickedRecordings.has(rec.id)) pickedRecordings.delete(rec.id);
+      else pickedRecordings.add(rec.id);
+      chip.setAttribute('aria-pressed', String(pickedRecordings.has(rec.id)));
+    });
+    chips.append(chip);
+  }
+  row.hidden = false;
+}
+loadRecordings();
+
 function buildPayload(brief, history) {
   const attachments = staged.filter((a) => a.ready).map((a) => (a.kind === 'text'
     ? { name: a.name, kind: 'text', text: a.text }
@@ -682,6 +727,8 @@ function buildPayload(brief, history) {
      tools, so the count and the topics are negotiated rather than guessed at
      from the phrasing. */
   const base = { brief, history, plan, session_id: sessionId };
+  /* Only when something is picked, so an untouched page sends what it always did. */
+  if (pickedRecordings.size) base.recordings = [...pickedRecordings];
 
   return attachments.length ? { ...base, attachments } : base;
 }
