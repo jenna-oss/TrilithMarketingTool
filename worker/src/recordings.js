@@ -129,7 +129,9 @@ export async function handleRecordings(path, request, env, headers, ctx, user) {
     if (!file || typeof file === 'string') return json({ error: 'no file was attached' }, 400, headers);
     if (!name) return json({ error: 'give the recording a name' }, 400, headers);
 
-    const kind = KINDS.get(String(file.type || '').toLowerCase());
+    /* A browser recording arrives as audio/webm;codecs=opus. The codec is
+     * not our business; the container is. */
+    const kind = KINDS.get(String(file.type || '').toLowerCase().split(';')[0].trim());
     if (!kind) {
       return json({
         error: `${file.type || 'that file'} isn’t audio this can read.`,

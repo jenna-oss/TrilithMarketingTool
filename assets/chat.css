@@ -117,13 +117,6 @@
   font-size: .75rem;
   color: var(--ink-quiet);
 }
-.chat .rec-label {
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  font-size: .625rem;
-  color: var(--accent);
-}
 .chat .rec-chip {
   font: inherit;
   font-size: .75rem;
@@ -145,7 +138,7 @@
   color: var(--ink-quiet);
   text-decoration: underline;
   text-underline-offset: 2px;
-  margin-left: auto;
+  white-space: nowrap;
 }
 
 .chat .attach-error {

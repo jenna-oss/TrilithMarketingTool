@@ -112,10 +112,10 @@
       <span class="nav-group-label">Intelligence</span>
       <a class="nav-link" href="./briefing.html">Competitors</a>
       <a class="nav-link" href="./creators.html">Creators</a>
-      <a class="nav-link" href="./recordings.html">Recordings</a>
     </span>
     <span class="nav-group">
       <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./recordings.html">Recordings</a>
       <a class="nav-link" href="./" aria-current="page">Plan</a>
       <a class="nav-link" href="./edit.html">Edit</a>
       <a class="nav-link" href="./output.html">Output</a>
@@ -155,9 +155,9 @@
     <!-- Recordings to hand this session. Ready ones only: one still being
          transcribed has nothing for the planner to read. -->
     <div class="recordings" id="rec-row" hidden>
-      <span class="rec-label">Recordings</span>
+      <span class="rec-hint" id="rec-hint">Pick a recording for the planner to read in full:</span>
       <span class="rec-chips" id="rec-chips"></span>
-      <a class="rec-manage" href="./recordings.html">Manage</a>
+      <a class="rec-manage" href="./recordings.html">Record or upload</a>
     </div>
 
     <!-- Staged text files can go two places: to the model for this one message,
@@ -706,10 +706,25 @@ async function loadRecordings() {
       if (pickedRecordings.has(rec.id)) pickedRecordings.delete(rec.id);
       else pickedRecordings.add(rec.id);
       chip.setAttribute('aria-pressed', String(pickedRecordings.has(rec.id)));
+      sayPicked(ready);
     });
     chips.append(chip);
   }
   row.hidden = false;
+}
+
+/* What picking one actually does, said in the row itself rather than left to
+   be guessed at from a highlighted chip. */
+function sayPicked(ready) {
+  const hint = document.getElementById('rec-hint');
+  const names = ready.filter((r) => pickedRecordings.has(r.id)).map((r) => r.name);
+  if (!names.length) {
+    hint.textContent = 'Pick a recording for the planner to read in full:';
+  } else if (names.length === 1) {
+    hint.textContent = `Reading “${names[0]}” in full before it suggests anything.`;
+  } else {
+    hint.textContent = `Reading ${names.length} recordings in full before it suggests anything.`;
+  }
 }
 loadRecordings();
 

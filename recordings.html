@@ -66,13 +66,32 @@
     background:var(--card); border:1px solid var(--rule); border-radius:6px;
     padding:var(--s3); margin:0 0 var(--s4);
   }
-  .upload label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; }
+  .upload label, .upload .field-label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; }
   .upload input[type="text"], .upload input[type="file"] {
     width:100%; font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
     border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
   }
   .upload .row { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:flex-end; margin-top:var(--s2); }
   .upload .row > div { flex:1 1 14rem; }
+
+  /* Recording in the page. The mic is only asked for when Start is pressed,
+     never on load. */
+  .record { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center; }
+  .record .timer { font-family:var(--mono); font-size:.875rem; color:var(--ink); }
+  .btn.mic { display:inline-flex; align-items:center; gap:.5rem; }
+  .btn.mic .dot { width:.625rem; height:.625rem; border-radius:50%; background:#E4573D; display:inline-block; }
+  .btn.mic .square { width:.5625rem; height:.5625rem; background:currentColor; display:inline-block; }
+  .btn.mic.live { background:var(--clay); }
+  .btn.mic.live:hover { background:#8F4A30; }
+  .btn.mic.live .dot { animation:pulse 1.4s ease-in-out infinite; background:#F4F2E7; }
+  @keyframes pulse { 50% { opacity:.25; } }
+  @media (prefers-reduced-motion: reduce) { .btn.mic.live .dot { animation:none; } }
+  .record audio { flex:1 1 16rem; min-width:12rem; height:2.25rem; }
+  .or {
+    display:flex; align-items:center; gap:var(--s2); margin:var(--s3) 0;
+    font-size:.6875rem; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-quiet);
+  }
+  .or::before, .or::after { content:""; flex:1; height:1px; background:var(--rule); }
   .hint { font-size:.75rem; color:var(--ink-quiet); margin:.375rem 0 0; }
   .hint.bad { color:var(--clay); }
 
@@ -129,10 +148,10 @@
       <span class="nav-group-label">Intelligence</span>
       <a class="nav-link" href="./briefing.html">Competitors</a>
       <a class="nav-link" href="./creators.html">Creators</a>
-      <a class="nav-link" href="./recordings.html" aria-current="page">Recordings</a>
     </span>
     <span class="nav-group">
       <span class="nav-group-label">Production</span>
+      <a class="nav-link" href="./recordings.html" aria-current="page">Recordings</a>
       <a class="nav-link" href="./">Plan</a>
       <a class="nav-link" href="./edit.html">Edit</a>
       <a class="nav-link" href="./output.html">Output</a>
@@ -145,12 +164,28 @@
 </header>
 
 <main class="wrap">
-  <p class="eyebrow">Intelligence</p>
+  <p class="eyebrow">Production</p>
   <h2>Recordings</h2>
-  <p class="lede">Upload a voice recording and it is transcribed and kept. The planner can search across all of them, and on the Plan page you can hand it one to read in full before it suggests anything.</p>
+  <p class="lede">Talk something through here, or upload a recording you already have: either way it is transcribed and kept. The planner can search across all of them, and on the Plan page you can hand it one to read in full before it suggests anything.</p>
 
   <form class="upload" id="upload">
-    <label for="file">Audio file</label>
+    <!-- Two ways in, one destination: talk into the page, or hand it a file
+         you already have. -->
+    <div id="record-panel" hidden>
+      <!-- Not a <label for>: pointing one at a button renames the button,
+           and the button already says what it does. -->
+      <span class="field-label">Record now</span>
+      <div class="record">
+        <button class="btn mic" id="rec-start" type="button"><span class="dot"></span>Start recording</button>
+        <button class="btn mic live" id="rec-stop" type="button" hidden><span class="square"></span>Stop</button>
+        <span class="timer" id="rec-timer" role="timer" aria-live="off" hidden>0:00</span>
+        <audio id="rec-preview" controls hidden></audio>
+        <button class="btn secondary small" id="rec-discard" type="button" hidden>Discard</button>
+      </div>
+      <p class="or">or</p>
+    </div>
+
+    <label for="file">Upload an audio file</label>
     <input id="file" type="file" accept="audio/*,video/mp4,video/quicktime,video/webm" required>
     <div class="row">
       <div>
@@ -159,11 +194,11 @@
       </div>
       <button class="btn" id="send" type="submit">Upload</button>
     </div>
-    <p class="hint" id="hint">mp3, m4a, wav, webm, ogg or flac, up to 40MB. A ten minute recording takes about half a minute to transcribe.</p>
+    <p class="hint" id="hint">Record straight into the page, or upload mp3, m4a, wav, webm, ogg or flac up to 40MB. A ten minute recording takes about half a minute to transcribe.</p>
   </form>
 
   <p class="lede" id="state" role="status">Loading recordings…</p>
-  <div class="empty" id="empty" hidden>Nothing here yet. Upload a recording and it will show up, transcribed.</div>
+  <div class="empty" id="empty" hidden>Nothing here yet. Record something or upload a file, and it will show up here, transcribed.</div>
   <ol class="list" id="list"></ol>
 </main>
 
@@ -374,11 +409,159 @@ async function play(rec, li, btn) {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Recording in the page. The microphone is asked for when Start is pressed and
+   released the moment recording ends, so nothing sits on the mic in the
+   background. What comes out is a file like any other: the upload path below
+   does not care whether it was recorded here or picked off the disk.
+   ------------------------------------------------------------------------ */
+
+/* Whatever the browser will actually encode. Opus in WebM everywhere but
+   Safari, which gives mp4; both are audio ElevenLabs reads. */
+const TAKES = [
+  ['audio/webm;codecs=opus', 'audio/webm', 'webm'],
+  ['audio/webm', 'audio/webm', 'webm'],
+  ['audio/mp4', 'audio/mp4', 'm4a'],
+  ['audio/ogg;codecs=opus', 'audio/ogg', 'ogg'],
+];
+/* Stop before the Worker would refuse the upload, rather than after. */
+const SIZE_CAP = 38 * 1024 * 1024;
+const MINUTES_CAP = 90;
+
+let recorder = null;
+let micStream = null;
+let chunks = [];
+let chunkBytes = 0;
+let startedAt = 0;
+let tick = null;
+let recorded = null;   /* { file, seconds } once a take is finished */
+
+const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+function supported() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return null;
+  return TAKES.find(([mime]) => MediaRecorder.isTypeSupported(mime)) || null;
+}
+
+function stopMic() {
+  micStream?.getTracks().forEach((t) => t.stop());
+  micStream = null;
+}
+
+function showTake(seconds) {
+  const preview = $('rec-preview');
+  preview.src = URL.createObjectURL(recorded.file);
+  preview.hidden = false;
+  $('rec-discard').hidden = false;
+  $('rec-start').hidden = false;
+  $('rec-start').textContent = 'Record again';
+  $('rec-start').prepend(Object.assign(document.createElement('span'), { className: 'dot' }));
+  $('rec-timer').textContent = clock(seconds);
+  $('file').disabled = true;
+  if (!$('name').value.trim()) {
+    $('name').value = 'Voice note — ' + new Date().toLocaleString(undefined,
+      { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  say(`Recorded ${clock(seconds)}. Name it and upload, or record again.`);
+}
+
+function discardTake() {
+  recorded = null;
+  const preview = $('rec-preview');
+  if (preview.src) URL.revokeObjectURL(preview.src);
+  preview.removeAttribute('src');
+  preview.hidden = true;
+  $('rec-discard').hidden = true;
+  $('rec-timer').hidden = true;
+  $('file').disabled = false;
+  $('rec-start').textContent = 'Start recording';
+  $('rec-start').prepend(Object.assign(document.createElement('span'), { className: 'dot' }));
+}
+
+async function startRecording() {
+  const take = supported();
+  if (!take) return;
+  discardTake();
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    const why = err?.name === 'NotAllowedError'
+      ? 'The browser blocked the microphone. Allow it for this page, then try again.'
+      : err?.name === 'NotFoundError'
+        ? 'No microphone was found. Plug one in, or upload a file instead.'
+        : 'Couldn’t open the microphone. Upload a file instead.';
+    say(why, true);
+    return;
+  }
+
+  const [mime, stored, ext] = take;
+  chunks = [];
+  chunkBytes = 0;
+  /* 64kbps opus is more than speech needs and three times smaller than the
+     browser's default, which is what decides how long a take can run. */
+  recorder = new MediaRecorder(micStream, { mimeType: mime, audioBitsPerSecond: 64000 });
+
+  recorder.addEventListener('dataavailable', (e) => {
+    if (!e.data?.size) return;
+    chunks.push(e.data);
+    chunkBytes += e.data.size;
+    /* A run this long is a mistake, not a recording. Keep what was said. */
+    if (chunkBytes > SIZE_CAP || (Date.now() - startedAt) / 60000 > MINUTES_CAP) {
+      say('That is as long as one recording can be — stopping here.', true);
+      stopRecording();
+    }
+  });
+
+  recorder.addEventListener('stop', () => {
+    clearInterval(tick);
+    stopMic();
+    const seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+    const blob = new Blob(chunks, { type: stored });
+    $('rec-stop').hidden = true;
+    if (blob.size < 2000) {
+      say('That was too short to transcribe. Hold Start a little longer.', true);
+      discardTake();
+      $('rec-start').hidden = false;
+      return;
+    }
+    /* A plain type, without the codecs parameter: it is what names the file. */
+    recorded = { file: new File([blob], `recording.${ext}`, { type: stored }), seconds };
+    showTake(seconds);
+  });
+
+  startedAt = Date.now();
+  recorder.start(1000);
+  $('rec-start').hidden = true;
+  $('rec-stop').hidden = false;
+  $('rec-timer').hidden = false;
+  $('rec-timer').textContent = '0:00';
+  say('Recording. Press Stop when you are done.');
+  tick = setInterval(() => {
+    $('rec-timer').textContent = clock((Date.now() - startedAt) / 1000);
+  }, 250);
+}
+
+function stopRecording() {
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  recorder = null;
+}
+
+if (supported()) {
+  $('record-panel').hidden = false;
+  $('rec-start').addEventListener('click', startRecording);
+  $('rec-stop').addEventListener('click', stopRecording);
+  $('rec-discard').addEventListener('click', () => { discardTake(); say('Take discarded.'); });
+  /* Leaving mid-recording should not leave the mic open. */
+  window.addEventListener('pagehide', () => { stopRecording(); stopMic(); });
+}
+
 $('upload').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const file = $('file').files[0];
+  if (recorder) { say('Stop the recording first.', true); return; }
+  const file = recorded ? recorded.file : $('file').files[0];
   const name = $('name').value.trim();
-  if (!file || !name) { say('Pick a file and give it a name.', true); return; }
+  if (!file) { say('Record something, or pick a file.', true); return; }
+  if (!name) { say('Give it a name.', true); return; }
 
   const form = new FormData();
   form.append('file', file);
@@ -392,6 +575,7 @@ $('upload').addEventListener('submit', async (e) => {
     if (!res.ok) throw new Error(data.error || `that didn't work (${res.status})`);
     say('Uploaded. Transcribing now — it will say Transcribed when it is done.');
     $('upload').reset();
+    discardTake();
     recordings.unshift({
       id: data.id, name: data.name, status: 'transcribing',
       seconds: null, words: null, has_audio: true, created_at: new Date().toISOString(),
