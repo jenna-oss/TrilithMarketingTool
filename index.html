@@ -477,14 +477,49 @@ document.addEventListener('drop', (e) => e.preventDefault());
 
 /* Registered before AikoChat.create so it runs first: the shared handler reads
    input.value after this, and refuses to send an empty message. Attaching a
-   file and hitting Send with no question is a reasonable thing to do. */
-form.addEventListener('submit', () => {
+   file and hitting Send with no question is a reasonable thing to do.
+
+   It also runs first so it can stop the send outright. Pasting a link and
+   hitting Send a second later would send the URL as bare text, and the planner
+   would say it has nothing to open — so the message waits for the link. */
+form.addEventListener('submit', (e) => {
+  if (stillReadingLinks() && !sendAnyway) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (!holding) { holding = true; holdForLinks(0); }
+    return;
+  }
+  sendAnyway = false;
+
   if (input.value.trim() || !staged.some((a) => a.ready)) return;
   const n = staged.filter((a) => a.ready).length;
   input.value = n > 1
     ? 'What do you make of these? Anything worth building a video on?'
     : 'What do you make of this? Anything worth building a video on?';
 });
+
+/* Half a minute is longer than any page takes to read and long enough for a
+   transcript that was already cached. Past that, send without it rather than
+   leaving someone staring at a button that does nothing. */
+const LINK_WAIT_MS = 45000;
+let holding = false;
+let sendAnyway = false;
+
+const stillReadingLinks = () => [...links.values()].some((l) => l.status === 'reading');
+
+function holdForLinks(waited) {
+  const reading = stillReadingLinks();
+  if (!reading || waited >= LINK_WAIT_MS) {
+    holding = false;
+    sendAnyway = reading;
+    sayContext();
+    form.requestSubmit();
+    return;
+  }
+  document.getElementById('rec-hint').textContent =
+    'Reading that link \u2014 your message goes as soon as it lands\u2026';
+  setTimeout(() => holdForLinks(waited + 500), 500);
+}
 
 chat = AikoChat.create({
   workerUrl: WORKER_URL,
