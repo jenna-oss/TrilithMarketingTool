@@ -21,6 +21,7 @@ import { dirname, join } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const worker = (await import(pathToFileURL(join(here, '..', 'worker', 'src', 'index.js')).href)).default;
 const { accessToken } = await import(pathToFileURL(join(here, '..', 'worker', 'src', 'instagram.js')).href);
+const { publishDue } = await import(pathToFileURL(join(here, '..', 'worker', 'src', 'posts.js')).href);
 
 /* --- the fakes ----------------------------------------------------------- */
 
@@ -28,6 +29,9 @@ let calls = [];
 let rpcAnswer = {};
 let claudeReply = { type: 'text', text: 'Here are some ideas.' };
 let supaJob = { status: 'active' };
+/* What the container reports, run by run, and how many have been made. */
+let container = [];
+let made = 0;
 
 const jsonRes = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
 
@@ -59,6 +63,7 @@ globalThis.fetch = async (url, init = {}) => {
   const u = String(url instanceof Request ? url.url : url);
   let body = null;
   if (init.body && typeof init.body === 'string') { try { body = JSON.parse(init.body); } catch { body = init.body; } }
+  else if (init.body instanceof URLSearchParams) body = Object.fromEntries(init.body);
   calls.push({ url: u, body });
 
   if (u.includes('api.anthropic.com')) {
@@ -84,6 +89,11 @@ globalThis.fetch = async (url, init = {}) => {
   if (u.startsWith('https://graph.instagram.com/access_token')) return jsonRes({ access_token: 'LONG-LIVED-SECRET', token_type: 'bearer', expires_in: 5184000 });
   if (u.startsWith('https://graph.instagram.com/refresh_access_token')) return jsonRes({ access_token: 'RENEWED-SECRET', expires_in: 5184000 });
   if (u.startsWith('https://graph.instagram.com/v23.0/me')) return jsonRes({ user_id: '178414', username: 'thebuyboxre' });
+  if (u.includes('/media_publish')) return jsonRes({ id: 'MEDIA-1' });
+  if (u.includes('/v23.0/') && u.includes('fields=permalink')) return jsonRes({ permalink: 'https://www.instagram.com/reel/xyz/' });
+  if (u.includes('/v23.0/') && u.includes('status_code')) return jsonRes({ status_code: container.shift() || 'FINISHED' });
+  if (u.includes('/v23.0/') && u.endsWith('/media') === false && /\/v23\.0\/\d+\/media$/.test(u.split('?')[0])) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
+  if (/\/v23\.0\/\d+\/media$/.test(u)) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
   if (u.endsWith('/auth/v1/user')) return jsonRes({ email: 'me@x.io' });
   const fn = (u.match(/\/rpc\/([a-z_]+)/) || [])[1];
   if (fn === 'kb_app_user_allowed') return jsonRes(true);
@@ -125,6 +135,8 @@ const reset = () => {
   calls = []; rpcAnswer = {}; pending = [];
   claudeReply = { type: 'text', text: 'Here are some ideas.' };
   supaJob = { status: 'active' };
+  container = [];
+  made = 0;
 };
 /* Exactly this function: '/rpc/kb_links' is a prefix of '/rpc/kb_links_by_ids',
  * and matching loosely made the new call look like the old one. */
@@ -333,6 +345,153 @@ j = await res.json();
 check('the page is told who is connected, and never the token',
   j.connected === true && j.username === 'thebuyboxre' && !JSON.stringify(j).includes('cipher'),
   JSON.stringify(j));
+
+/* --- scheduling ------------------------------------------------------------ */
+
+const soon = () => new Date(Date.now() + 3600000).toISOString();
+
+reset();
+for (const [what, payload] of [
+  ['an unknown kind', { kind: 'story', media: [{ url: 'https://x/a.mp4' }], scheduled_for: soon() }],
+  ['nothing to post', { kind: 'reel', media: [], scheduled_for: soon() }],
+  ['media that is not https', { kind: 'reel', media: [{ url: 'http://x/a.mp4' }], scheduled_for: soon() }],
+  ['a carousel of one', { kind: 'carousel', media: [{ url: 'https://x/a.jpg' }], scheduled_for: soon() }],
+  ['a time that has gone', { kind: 'reel', media: [{ url: 'https://x/a.mp4' }], scheduled_for: new Date(Date.now() - 7200000).toISOString() }],
+]) {
+  reset();
+  res = await post('/posts/create', payload);
+  check(`scheduling ${what} -> 400, nothing saved`,
+    res.status === 400 && rpcs('kb_post_create').length === 0, res.status);
+}
+
+reset();
+rpcAnswer.kb_post_create = '55555555-5555-4555-8555-555555555555';
+res = await post('/posts/create', {
+  kind: 'reel', media: [{ url: 'https://videos.example/a.mp4' }],
+  caption: 'Four rowhomes, one loan.', scheduled_for: soon(),
+  render_id: 'cccc3333-3333-4333-8333-cccccccccccc',
+});
+j = await res.json();
+const scheduled = rpcs('kb_post_create')[0]?.body;
+check('a reel is scheduled, with its caption, time and the video it came from',
+  res.status === 200 && j.status === 'scheduled' && scheduled.p_kind === 'reel'
+  && scheduled.p_media[0].kind === 'video' && scheduled.p_caption === 'Four rowhomes, one loan.'
+  && scheduled.p_render_id === 'cccc3333-3333-4333-8333-cccccccccccc',
+  JSON.stringify(scheduled).slice(0, 200));
+
+reset();
+rpcAnswer.kb_post_cancel = false;
+res = await post('/posts/cancel', { id: '55555555-5555-4555-8555-555555555555' });
+check('cancelling one that has already gone out -> 409', res.status === 409, res.status);
+
+/* --- sending it ------------------------------------------------------------ */
+
+/* The publisher needs a token it can open, so reuse the one sealed above. */
+const igPublish = {
+  ...igEnv, POST_WAIT_TRIES: 2, POST_WAIT_MS: 1,
+};
+const sealed = () => ({
+  ig_user_id: '178414', cipher: connected.p_cipher, iv: connected.p_iv,
+  expires_at: new Date(Date.now() + 50 * 86400000).toISOString(),
+});
+const DUE = (over) => ({
+  id: '55555555-5555-4555-8555-555555555555', kind: 'reel', attempts: 1,
+  media: [{ url: 'https://videos.example/a.mp4', kind: 'video' }],
+  caption: 'Four rowhomes, one loan.', container_id: null, ...over,
+});
+
+reset();
+rpcAnswer.kb_ig_secret = null;
+rpcAnswer.kb_post_claim = DUE();
+let out = await publishDue(igPublish);
+check('with no account connected nothing is claimed or sent',
+  out.error === 'no Instagram account is connected' && rpcs('kb_post_claim').length === 0, JSON.stringify(out));
+
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE();
+container = ['IN_PROGRESS', 'FINISHED'];
+out = await publishDue(igPublish, 1);
+let built = calls.find((c) => /\/v23\.0\/178414\/media$/.test(c.url))?.body;
+check('a reel is built as a REELS container from the video url',
+  built?.media_type === 'REELS' && built.video_url === 'https://videos.example/a.mp4'
+  && built.caption === 'Four rowhomes, one loan.', JSON.stringify(built));
+check('...and published only once the container says it is finished',
+  calls.some((c) => c.url.includes('/media_publish')) && out.done[0]?.outcome === 'posted',
+  JSON.stringify(out.done));
+const posted = rpcs('kb_post_state').map((c) => c.body).find((b) => b.p_status === 'posted');
+check('...with the permalink kept',
+  posted?.p_permalink === 'https://www.instagram.com/reel/xyz/' && posted.p_media_id === 'MEDIA-1',
+  JSON.stringify(posted));
+
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ kind: 'image', media: [{ url: 'https://videos.example/a.jpg', kind: 'image' }] });
+container = ['FINISHED'];
+await publishDue(igPublish, 1);
+built = calls.find((c) => /\/v23\.0\/178414\/media$/.test(c.url))?.body;
+check('an image is built from image_url, with no media_type',
+  built?.image_url === 'https://videos.example/a.jpg' && !built.media_type, JSON.stringify(built));
+
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({
+  kind: 'carousel',
+  media: [{ url: 'https://videos.example/1.jpg', kind: 'image' }, { url: 'https://videos.example/2.mp4', kind: 'video' }],
+});
+container = ['FINISHED'];
+await publishDue(igPublish, 1);
+const containers = calls.filter((c) => /\/v23\.0\/178414\/media$/.test(c.url)).map((c) => c.body);
+check('a carousel builds each child first, then one container holding them',
+  containers.length === 3 && containers[0].is_carousel_item === 'true'
+  && containers[1].media_type === 'VIDEO' && containers[1].is_carousel_item === 'true'
+  && containers[2].media_type === 'CAROUSEL' && containers[2].children.split(',').length === 2,
+  JSON.stringify(containers.map((c) => c.media_type || 'image')));
+check('...and only the holding container carries the caption',
+  !containers[0].caption && !containers[1].caption && containers[2].caption === 'Four rowhomes, one loan.');
+
+/* Still processing when the run gives up: the container is kept so the next
+ * run carries on, and nothing is published. */
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE();
+container = ['IN_PROGRESS', 'IN_PROGRESS', 'IN_PROGRESS'];
+out = await publishDue(igPublish, 1);
+const left = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('a container still processing is left working, with its id kept',
+  out.done[0]?.outcome === 'waiting' && left.p_status === 'working' && left.p_container === 'CONTAINER-1'
+  && !calls.some((c) => c.url.includes('/media_publish')),
+  JSON.stringify({ outcome: out.done[0]?.outcome, status: left.p_status, container: left.p_container }));
+
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ container_id: 'CONTAINER-EARLIER' });
+container = ['FINISHED'];
+await publishDue(igPublish, 1);
+check('a post picked up mid-flight does not build a second container',
+  !calls.some((c) => /\/v23\.0\/178414\/media$/.test(c.url))
+  && calls.some((c) => c.url.includes('/media_publish')));
+
+/* Instagram refusing the media. */
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ attempts: 1 });
+container = ['ERROR'];
+out = await publishDue(igPublish, 1);
+let said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('a container that errors goes back to scheduled, with the reason on it',
+  said.p_status === 'scheduled' && (said.p_error || '').length > 0,
+  JSON.stringify({ status: said.p_status, error: said.p_error }));
+
+reset();
+rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ attempts: 5 });
+container = ['ERROR'];
+out = await publishDue(igPublish, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('after five tries it is marked failed rather than retried forever',
+  said.p_status === 'failed' && out.done[0]?.outcome === 'failed',
+  JSON.stringify({ status: said.p_status, outcome: out.done[0]?.outcome }));
 
 console.log(failures ? `\n${failures} FAILED` : '\nall passed');
 process.exit(failures ? 1 : 0);

@@ -11,6 +11,12 @@ SUPABASE_URL = "https://kugnlobgsguxggnqiseh.supabase.co"
 # Where /videos/edit starts render-videos.yml.
 GITHUB_REPO = "jenna-oss/TrilithMarketingTool"
 
+# Every five minutes, for anything scheduled to go to Instagram. Instagram has
+# no scheduling of its own, so this is the waiting. A run that finds nothing due
+# does nothing and costs nothing.
+[triggers]
+crons = ["*/5 * * * *"]
+
 # Keys are NOT set here. Secrets in a committed file would be public.
 # Set them once, from your terminal, and they stay encrypted on Cloudflare:
 #

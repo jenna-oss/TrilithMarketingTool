@@ -21,6 +21,7 @@ import { handleRecordings } from './recordings.js';
 import { handleLinks } from './links.js';
 import { handleScripts } from './scripts.js';
 import { handleInstagram, handleInstagramCallback } from './instagram.js';
+import { handlePosts, publishDue } from './posts.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -113,6 +114,16 @@ export default {
       catch (err) {
         console.error('recordings route failed:', err?.message);
         return json({ error: 'Something went wrong with that recording. Try again.' }, 502, headers);
+      }
+    }
+
+    /* What is scheduled to go out, and changing it. The sending itself is
+     * the cron below, not a route. */
+    if (path.startsWith('/posts/')) {
+      try { return await handlePosts(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('posts route failed:', err?.message);
+        return json({ error: 'Something went wrong with that. Try again.' }, 502, headers);
       }
     }
 
@@ -367,6 +378,22 @@ export default {
     return json({
       error: 'This endpoint was retired. POST to /ideas with {brief, history?}.',
     }, 404, headers);
+  },
+
+  /* Instagram will not hold a post for you, so this is what waiting looks
+   * like: every five minutes, take whatever is due and move it along. A post
+   * mid-flight is picked up by whichever run comes next, and kb_post_claim
+   * makes sure two runs never take the same one. */
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil((async () => {
+      try {
+        const { done, error } = await publishDue(env);
+        if (error) { console.log('scheduler:', error); return; }
+        if (done.length) console.log('scheduler:', done.map((d) => `${d.id} ${d.outcome}`).join(', '));
+      } catch (err) {
+        console.error('scheduler failed:', err?.message);
+      }
+    })());
   },
 };
 
