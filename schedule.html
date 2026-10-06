@@ -96,6 +96,64 @@
   }
   .soon strong { color:var(--ink); font-weight:600; }
 
+  h3 {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+    color:var(--accent); margin:var(--s5) 0 var(--s2);
+  }
+
+  /* Composing: what goes out on the left, what it says on the right. */
+  .compose { display:grid; grid-template-columns:minmax(0,15rem) minmax(0,1fr); gap:var(--s3); }
+  @media (max-width:720px) { .compose { grid-template-columns:1fr; } }
+
+  .picks { display:grid; gap:.375rem; max-height:22rem; overflow:auto; padding-right:.25rem; }
+  .pick {
+    text-align:left; font:inherit; font-size:.8125rem; color:var(--ink-body);
+    background:var(--card); border:1px solid var(--rule); border-radius:4px;
+    padding:.4375rem .625rem; cursor:pointer;
+  }
+  .pick:hover { border-color:var(--accent); }
+  .pick[aria-pressed="true"] { border-color:var(--accent); background:var(--card-sunk); }
+  .pick .t { display:block; font-weight:600; color:var(--ink); }
+  .pick .d { display:block; font-size:.6875rem; color:var(--ink-quiet); font-family:var(--mono); }
+
+  .says label {
+    display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem;
+  }
+  .says textarea, .says input[type="datetime-local"] {
+    width:100%; font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
+    border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
+  }
+  .says textarea { min-height:7rem; resize:vertical; line-height:1.5; }
+  .says .count { float:right; font-weight:500; font-size:.6875rem; color:var(--ink-quiet); font-family:var(--mono); }
+  .says .row { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:flex-end; margin-top:var(--s2); }
+  .says .row > div { flex:1 1 12rem; }
+
+  .script-aside {
+    margin-top:var(--s2); padding:var(--s2); background:var(--card-sunk); border-radius:4px;
+    font-size:.8125rem; max-height:11rem; overflow:auto;
+  }
+  .script-aside ol { margin:.25rem 0 0; padding-left:1.125rem; display:grid; gap:.25rem; }
+  .script-aside .h { font-size:.625rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); }
+
+  .queue { list-style:none; margin:0; padding:0; display:grid; gap:var(--s2); }
+  .post {
+    background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:var(--s2) var(--s3);
+  }
+  .post .top { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:baseline; }
+  .post .when { font-size:.875rem; font-weight:700; color:var(--ink); margin:0; flex:1 1 12rem; }
+  .post .cap { font-size:.8125rem; color:var(--ink-body); margin:.25rem 0 0; }
+  .post .why { font-size:.75rem; color:var(--clay); margin:.25rem 0 0; }
+  .post .acts { display:flex; flex-wrap:wrap; gap:.375rem; margin-top:var(--s2); }
+  .tag {
+    display:inline-block; font-size:.6875rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    border-radius:999px; padding:.0625rem .5rem; border:1px solid var(--rule-strong); color:var(--ink-quiet);
+  }
+  .tag.scheduled { color:var(--accent); border-color:var(--accent); }
+  .tag.working { border-style:dashed; color:var(--ink-body); }
+  .tag.posted { color:var(--ink-quiet); background:var(--card-sunk); }
+  .tag.failed { color:var(--clay); border-color:var(--clay); }
+  .tag.cancelled { color:var(--ink-quiet); }
+
   .toast {
     position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
     background:var(--panel); color:var(--cream-text); font-size:.875rem;
@@ -163,8 +221,37 @@
     </ol>
   </div>
 
-  <div class="soon">
-    <p><strong>Next:</strong> picking a finished video, writing the caption with its script beside you, and choosing when it goes out. Images and carousels after that. Nothing posts until you connect the account above.</p>
+  <section id="composer" hidden>
+    <h3>Schedule a reel</h3>
+    <div class="compose">
+      <div>
+        <label class="says-label" for="picks" style="display:block;font-size:.8125rem;font-weight:600;color:var(--ink);margin:0 0 .3125rem">Which video</label>
+        <div class="picks" id="picks"></div>
+      </div>
+      <div class="says">
+        <label for="caption">Caption <span class="count" id="count">0 / 2200</span></label>
+        <textarea id="caption" maxlength="2200" placeholder="What it says underneath. The script is below if you want to lift from it."></textarea>
+        <div class="script-aside" id="script-aside" hidden></div>
+        <div class="row">
+          <div>
+            <label for="when">When</label>
+            <input id="when" type="datetime-local">
+          </div>
+          <button class="btn" id="add" type="button">Schedule it</button>
+        </div>
+        <p class="hint" id="compose-note" style="font-size:.75rem;color:var(--ink-quiet);margin:.5rem 0 0"></p>
+      </div>
+    </div>
+  </section>
+
+  <h3 id="queue-head" hidden>Going out</h3>
+  <ol class="queue" id="queue"></ol>
+  <div class="soon" id="nothing" hidden>
+    <p>Nothing scheduled yet. Pick a video above, write the caption, choose a time.</p>
+  </div>
+
+  <div class="soon" id="images-note" hidden>
+    <p><strong>Images and carousels</strong> post through the same machinery — the publisher builds all three — but they need somewhere public to upload a still first, which is the next piece.</p>
   </div>
 </main>
 
@@ -279,9 +366,219 @@ function watch(tries = 0) {
   }, 3000);
 }
 
+/* --- composing ----------------------------------------------------------- */
+
+let videos = [];
+let picked = null;
+const scripts = {};
+
+const when = (iso) => new Date(iso).toLocaleString(undefined,
+  { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+/* An hour from now, in the box's own local format. */
+function defaultWhen() {
+  const t = new Date(Date.now() + 3600000 - new Date().getTimezoneOffset() * 60000);
+  return t.toISOString().slice(0, 16);
+}
+
+async function loadVideos() {
+  try {
+    const res = await AikoAuth.fetch(WORKER_URL + '/videos', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    });
+    if (!res.ok) return;
+    videos = ((await res.json()).videos || []).filter((v) => v.url);
+  } catch { return; }
+
+  const picks = $('picks');
+  picks.textContent = '';
+  for (const v of videos.slice(0, 40)) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pick';
+    b.setAttribute('aria-pressed', 'false');
+    const t = document.createElement('span');
+    t.className = 't';
+    t.textContent = v.topic || 'Untitled';
+    const d = document.createElement('span');
+    d.className = 'd';
+    d.textContent = [v.duration ? Math.round(v.duration) + 's' : '', v.review_status === 'to_post' ? 'to be posted' : '']
+      .filter(Boolean).join(' · ');
+    b.append(t, d);
+    b.addEventListener('click', () => choose(v, b));
+    picks.append(b);
+  }
+  if (!videos.length) {
+    const none = document.createElement('p');
+    none.className = 'hint';
+    none.style.cssText = 'font-size:.75rem;color:var(--ink-quiet)';
+    none.textContent = 'No finished videos yet. They show up here once they are rendered.';
+    picks.append(none);
+  }
+}
+
+async function choose(v, btn) {
+  picked = v;
+  document.querySelectorAll('.pick').forEach((p) => p.setAttribute('aria-pressed', String(p === btn)));
+  const aside = $('script-aside');
+  aside.hidden = false;
+  aside.textContent = 'Loading the script…';
+
+  if (scripts[v.id] === undefined) {
+    try {
+      const res = await AikoAuth.fetch(WORKER_URL + '/videos/script', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: v.id }),
+      });
+      scripts[v.id] = res.ok ? ((await res.json()).lines || null) : null;
+    } catch { scripts[v.id] = null; }
+  }
+  if (picked !== v) return;
+
+  aside.textContent = '';
+  const head = document.createElement('p');
+  head.className = 'h';
+  head.textContent = scripts[v.id]?.length ? 'What it says' : 'No script was kept for this one';
+  aside.append(head);
+  if (scripts[v.id]?.length) {
+    const ol = document.createElement('ol');
+    for (const line of scripts[v.id]) {
+      const li = document.createElement('li');
+      li.textContent = line;
+      ol.append(li);
+    }
+    aside.append(ol);
+  }
+}
+
+$('caption').addEventListener('input', () => {
+  $('count').textContent = `${$('caption').value.length} / 2200`;
+});
+
+$('add').addEventListener('click', async (e) => {
+  const note = $('compose-note');
+  note.style.color = 'var(--ink-quiet)';
+  if (!picked) { note.textContent = 'Pick a video first.'; return; }
+  const at = $('when').value;
+  if (!at) { note.textContent = 'Choose when it goes out.'; return; }
+
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  note.textContent = 'Scheduling…';
+  try {
+    await call('/posts/create', {
+      kind: 'reel',
+      media: [{ url: picked.url, kind: 'video' }],
+      caption: $('caption').value,
+      scheduled_for: new Date(at).toISOString(),
+      render_id: picked.id,
+    });
+    note.textContent = '';
+    $('caption').value = '';
+    $('count').textContent = '0 / 2200';
+    toast('Scheduled');
+    await loadPosts();
+  } catch (err) {
+    note.style.color = 'var(--clay)';
+    note.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* --- the queue ------------------------------------------------------------ */
+
+let posts = [];
+let pollTimer = null;
+
+async function loadPosts() {
+  try { posts = (await call('/posts/list')).posts || []; }
+  catch { return; }
+  drawQueue();
+  schedulePoll();
+}
+
+/* Only while something is mid-flight, and not forever. */
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  if (!posts.some((p) => p.status === 'working')) return;
+  pollTimer = setTimeout(loadPosts, 20000);
+}
+
+function drawQueue() {
+  const queue = $('queue');
+  queue.textContent = '';
+  $('nothing').hidden = posts.length > 0;
+  $('queue-head').hidden = posts.length === 0;
+
+  for (const p of posts) {
+    const li = document.createElement('li');
+    li.className = 'post';
+
+    const top = document.createElement('div');
+    top.className = 'top';
+    const w = document.createElement('p');
+    w.className = 'when';
+    w.textContent = when(p.scheduled_for);
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + p.status;
+    tag.textContent = p.status === 'working' ? 'Sending…' : p.status;
+    top.append(w, tag);
+    li.append(top);
+
+    if (p.caption) {
+      const cap = document.createElement('p');
+      cap.className = 'cap';
+      cap.textContent = p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption;
+      li.append(cap);
+    }
+    if (p.error && p.status !== 'posted') {
+      const why = document.createElement('p');
+      why.className = 'why';
+      why.textContent = p.error;
+      li.append(why);
+    }
+
+    const acts = document.createElement('div');
+    acts.className = 'acts';
+    if (p.status === 'scheduled' || p.status === 'failed') {
+      acts.append(button('Send now', 'secondary small', async (b) => {
+        b.disabled = true;
+        try { await call('/posts/now', { id: p.id }); toast('Sending now'); await loadPosts(); }
+        catch (err) { toast(err.message); b.disabled = false; }
+      }));
+      acts.append(button('Cancel', 'secondary small', async (b) => {
+        if (!confirm('Cancel this post?')) return;
+        b.disabled = true;
+        try { await call('/posts/cancel', { id: p.id }); toast('Cancelled'); await loadPosts(); }
+        catch (err) { toast(err.message); b.disabled = false; }
+      }));
+    }
+    if (p.permalink) {
+      const a = document.createElement('a');
+      a.className = 'btn secondary small';
+      a.href = p.permalink;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'See it on Instagram';
+      acts.append(a);
+    }
+    if (acts.children.length) li.append(acts);
+    queue.append(li);
+  }
+}
+
 async function load() {
   try {
-    draw(await call('/instagram/account'));
+    const account = await call('/instagram/account');
+    draw(account);
+    /* The composer is only any use once there is somewhere to post to. */
+    $('composer').hidden = !account.connected;
+    $('images-note').hidden = !account.connected;
+    if (account.connected) {
+      $('when').value = defaultWhen();
+      await Promise.all([loadVideos(), loadPosts()]);
+    }
+    return;
   } catch {
     nameEl.textContent = 'Couldn’t check the connection';
     subEl.className = 'sub bad';
