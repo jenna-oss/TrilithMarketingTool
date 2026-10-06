@@ -1,0 +1,129 @@
+name: Cut footage
+
+# A long take in, short vertical videos out.
+#
+# The Worker starts this when an upload finishes. It cannot do the work itself:
+# ffmpeg and Remotion do not run in a Worker, and a take is gigabytes.
+#
+#   fetch  →  pull out the audio  →  transcribe it with word timings
+#          →  pick the passages worth cutting  →  cut, caption, store
+#
+# The picking is allowed to come back with nothing, and often should. A take
+# with two real openings in it makes two clips, not five.
+#
+# The raw take is left where it is. Clips are what you keep, but the original
+# is what you would re-cut from, and storage is cheaper than re-filming.
+
+run-name: Cut a take into shorts
+
+on:
+  workflow_dispatch:
+    inputs:
+      footage_id:
+        description: The take to cut
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# One run per take. A second run while the first is still cutting would fight
+# it over the same rows.
+concurrency:
+  group: cut-footage-${{ inputs.footage_id }}
+  cancel-in-progress: false
+
+jobs:
+  cut:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      # The repo secret is named ANTHROPIC_API; everything here reads
+      # ANTHROPIC_API_KEY.
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API }}
+      FOOTAGE_ID: ${{ inputs.footage_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Find the take
+        run: |
+          node --input-type=module -e '
+            const base = process.env.SUPABASE_URL.replace(/\/+$/, "");
+            const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const res = await fetch(base + "/rest/v1/rpc/kb_footage_read", {
+              method: "POST",
+              headers: { apikey: key, authorization: "Bearer " + key, "content-type": "application/json" },
+              body: JSON.stringify({ p_id: process.env.FOOTAGE_ID }),
+            });
+            if (!res.ok) throw new Error("could not read the take: " + res.status);
+            const take = await res.json();
+            if (!take || !take.storage_path) throw new Error("no take with that id");
+            const fs = await import("node:fs");
+            fs.appendFileSync(process.env.GITHUB_ENV, `TAKE_PATH=${take.storage_path}\n`);
+            fs.appendFileSync(process.env.GITHUB_ENV, `TAKE_NAME=${(take.name || "take").replace(/\n/g, " ")}\n`);
+            console.log("take:", take.name, "—", take.storage_path);
+          '
+
+      - name: Fetch it
+        run: |
+          curl -fsSL --retry 3 --retry-delay 5 \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            "$SUPABASE_URL/storage/v1/object/kb-footage/$TAKE_PATH" \
+            -o "/tmp/take.${TAKE_PATH##*.}"
+          echo "TAKE_FILE=/tmp/take.${TAKE_PATH##*.}" >> "$GITHUB_ENV"
+          ls -lh "/tmp/take.${TAKE_PATH##*.}"
+
+      # A few gigabytes of video is about ten megabytes of mono speech, and
+      # only the speech is any use to a transcriber.
+      - name: Pull out the audio
+        run: |
+          ffmpeg -nostdin -hide_banner -loglevel error -y \
+            -i "$TAKE_FILE" -vn -ac 1 -ar 16000 -b:a 64k /tmp/audio.mp3
+          ls -lh /tmp/audio.mp3
+
+      - name: Transcribe it
+        run: node video/footage-transcribe.mjs "$FOOTAGE_ID" /tmp/audio.mp3
+
+      - name: Pick what is worth cutting
+        id: pick
+        run: |
+          node video/footage-pick.mjs "$FOOTAGE_ID" | tee /tmp/pick.log
+          grep -o 'CLIPS=[0-9]*' /tmp/pick.log | tail -1 >> "$GITHUB_OUTPUT"
+
+      - name: Install the renderer
+        if: steps.pick.outputs.CLIPS != '0'
+        working-directory: video/remotion
+        run: npm ci
+
+      - name: Cut, caption and store
+        if: steps.pick.outputs.CLIPS != '0'
+        run: node video/footage-cut.mjs "$FOOTAGE_ID" "$TAKE_FILE"
+
+      - name: Say so when nothing could be cut
+        if: steps.pick.outputs.CLIPS == '0'
+        run: echo "Nothing in this take opened cleanly enough to make a short. The transcript is kept."
+
+      # Whatever went wrong, the take should say so rather than sit on
+      # 'transcribing' for ever.
+      - name: Record a run that fell over
+        if: failure()
+        run: |
+          curl -fsS -X POST "$SUPABASE_URL/rest/v1/rpc/kb_footage_state" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "content-type: application/json" \
+            -d "{\"p_id\":\"$FOOTAGE_ID\",\"p_status\":\"failed\",\"p_error\":\"The cutting run did not finish. See the Actions log.\"}" \
+            >/dev/null || true

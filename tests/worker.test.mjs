@@ -29,6 +29,7 @@ let calls = [];
 let rpcAnswer = {};
 let claudeReply = { type: 'text', text: 'Here are some ideas.' };
 let supaJob = { status: 'active' };
+let githubOk = true;
 /* What the container reports, run by run, and how many have been made. */
 let container = [];
 let made = 0;
@@ -94,6 +95,10 @@ globalThis.fetch = async (url, init = {}) => {
   if (u.includes('/v23.0/') && u.includes('status_code')) return jsonRes({ status_code: container.shift() || 'FINISHED' });
   if (u.includes('/v23.0/') && u.endsWith('/media') === false && /\/v23\.0\/\d+\/media$/.test(u.split('?')[0])) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
   if (/\/v23\.0\/\d+\/media$/.test(u)) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
+  if (u.includes('/actions/workflows/')) {
+    /* 204 must carry no body at all, or the Response constructor throws. */
+    return githubOk ? new Response(null, { status: 204 }) : new Response('no', { status: 403 });
+  }
   if (u.includes('/storage/v1/object/upload/sign/')) {
     return jsonRes({ url: '/object/upload/sign/kb-footage/abc.mp4?token=SIGNED-TOKEN-123' });
   }
@@ -138,6 +143,7 @@ const reset = () => {
   calls = []; rpcAnswer = {}; pending = [];
   claudeReply = { type: 'text', text: 'Here are some ideas.' };
   supaJob = { status: 'active' };
+  githubOk = true;
   container = [];
   made = 0;
 };
@@ -538,6 +544,25 @@ check('reading a take gives the page the transcript but not the word timings',
   j.footage.transcript.startsWith('Four rowhomes') && j.footage.has_words === true
   && !('words' in j.footage) && !('storage_path' in j.footage),
   JSON.stringify(j.footage).slice(0, 200));
+
+/* Finishing an upload is what starts the cutting; nothing else does. */
+reset();
+rpcAnswer.kb_footage_state = true;
+res = await post('/footage/uploaded', { id: '66666666-6666-4666-8666-666666666666' });
+const dispatched = calls.find((c) => c.url.includes('/actions/workflows/'));
+check('an upload that finished starts the cutting run for that take',
+  res.status === 202 && /cut-footage\.yml\/dispatches$/.test(dispatched?.url || '')
+  && dispatched.body.inputs.footage_id === '66666666-6666-4666-8666-666666666666',
+  dispatched?.url);
+
+reset();
+rpcAnswer.kb_footage_state = true;
+githubOk = false;
+res = await post('/footage/uploaded', { id: '66666666-6666-4666-8666-666666666666' });
+githubOk = true;
+check('a take whose run could not be started is marked failed, not left waiting',
+  res.status === 502 && rpcs('kb_footage_state').some((c) => c.body.p_status === 'failed'),
+  res.status);
 
 reset();
 rpcAnswer.kb_footage_delete = { ok: true, storage_path: 'abc.mov' };

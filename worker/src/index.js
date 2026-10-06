@@ -23,6 +23,7 @@ import { handleScripts } from './scripts.js';
 import { handleInstagram, handleInstagramCallback } from './instagram.js';
 import { handlePosts, publishDue } from './posts.js';
 import { handleFootage } from './footage.js';
+import { dispatchWorkflow } from './github.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -412,27 +413,7 @@ export default {
  * run this repo's workflows (Actions: read and write); the workflow does the
  * rest, reading what to render from Supabase. `what` names the job in errors. */
 async function dispatchRender(env, inputs, what) {
-  const repo = env.GITHUB_REPO || 'jenna-oss/TrilithMarketingTool';
-  try {
-    const res = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/render-videos.yml/dispatches`, {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${env.GITHUB_TOKEN}`,
-        accept: 'application/vnd.github+json',
-        'x-github-api-version': '2022-11-28',
-        /* GitHub rejects API calls without one. */
-        'user-agent': 'trilith-ask-worker',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ ref: 'main', inputs }),
-    });
-    if (res.ok) return { ok: true };
-    console.error('workflow dispatch failed:', res.status, (await res.text()).slice(0, 300));
-    return { ok: false, error: `Couldn’t start ${what} (GitHub answered ${res.status}).` };
-  } catch (err) {
-    console.error('workflow dispatch failed:', err?.message);
-    return { ok: false, error: `Couldn’t reach GitHub to start ${what}. Try again.` };
-  }
+  return dispatchWorkflow(env, 'render-videos.yml', inputs, what);
 }
 
 /* One edit: the workflow reads the request from Supabase by its id. */

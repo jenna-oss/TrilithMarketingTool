@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 43 migrations applied to the Supabase project
+The `kb` schema is defined by 44 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 42 | `kb_clips` | shorts cut out of a take: `clips` is a window on the footage (a start and an end in seconds) plus the words said inside it, with their timings rebased to the clip's own clock — which is what lets the captions land on the word without transcribing anything twice. `hook` is the sentence it opens on, the whole reason the clip exists, and `why` is the agent's reasoning, kept so a bad run can be read rather than guessed at. `kb_clip_create` / `_state` / `_read` / `_reject` and `kb_clips`; both the Worker and the cutting workflow write through them |
 | 41 | `kb_footage` | raw footage, before it is cut into shorts: the private `kb-footage` bucket (5GB a file) and `footage` (the take, its status, and the transcript kept twice — plain text to read, word timings to cut on). The only bucket whose policies are for `authenticated` rather than the Worker's anon key, because a 4GB file cannot pass through a Worker at all (Cloudflare caps a request body at 100MB), so the browser uploads straight to storage with the session it already holds. Scoped to this bucket and to emails on `kb.app_users`, since this project is shared and `authenticated` means more people here than it does in this app |
 | 40 | `kb_posts` | posts waiting to go to Instagram, which has no scheduling of its own: `posts` (kind, the media as `[{url, kind}]` so a reel, an image and a carousel are one table rather than three, caption, when, and where it got to with Instagram), plus `kb_post_create` / `kb_posts` / `kb_post_read` / `kb_post_edit` / `kb_post_cancel` / `kb_post_state`. `kb_post_claim` is the one that matters: publishing is two calls with processing in between, so a post is a state machine any cron run can resume, and the claim is an update only one run can win — two overlapping runs can never publish the same post twice |
 | 39 | `kb_instagram_account` | connecting the Instagram account posts go to: `ig_account` holds the access token **encrypted** — this project is shared with other AIKO tools, so anything with its anon key can call `kb_ig_secret`, and what that returns is ciphertext the Worker's `INSTAGRAM_TOKEN_KEY` opens — and `ig_ticket` is the one-use, ten-minute ticket that stands in for a session on the OAuth callback, which arrives as a browser navigation with no header on it. `kb_ig_account` is the half the page may see: who, and until when |

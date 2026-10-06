@@ -14,6 +14,7 @@
  * ------------------------------------------------------------------------ */
 
 import { rpc } from './db.js';
+import { dispatchWorkflow } from './github.js';
 
 /* The direct storage hostname, which is markedly faster for large files than
  * going through the API gateway. */
@@ -133,10 +134,19 @@ export async function handleFootage(path, request, env, headers, ctx, user) {
     try {
       const ok = await rpc(env, 'kb_footage_state', { p_id: id, p_status: 'uploaded', p_error: null });
       if (!ok) return json({ error: 'no take with that id' }, 404, headers);
-      return json({ status: 'uploaded' }, 200, headers);
     } catch {
       return json({ error: 'could not mark that take' }, 502, headers);
     }
+
+    /* Transcribing and cutting happen in GitHub Actions; this is the only
+     * thing that starts them. A take whose run could not be started says so
+     * rather than sitting on 'uploaded' with nothing coming. */
+    const started = await dispatchWorkflow(env, 'cut-footage.yml', { footage_id: id }, 'the cutting');
+    if (!started.ok) {
+      await rpc(env, 'kb_footage_state', { p_id: id, p_status: 'failed', p_error: started.error }).catch(() => {});
+      return json({ error: started.error }, 502, headers);
+    }
+    return json({ status: 'uploaded' }, 202, headers);
   }
 
   if (path === '/footage/read') {

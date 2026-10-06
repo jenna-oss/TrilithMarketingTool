@@ -1,0 +1,105 @@
+// A short cut out of a long take: the footage itself, the brand's captions
+// burned onto it, and the hook treatment from page 5 of the brand guide over
+// the opening seconds.
+//
+// The captions are the same component the made-from-scratch videos use, fed
+// the same way — public/<slug>/captions.json — so a clip and a rendered video
+// caption identically. The words come from the take's transcript with their
+// timings rebased to this clip's own clock, which is why nothing has to be
+// transcribed twice.
+//
+// The hook is the sentence the clip opens on. The guide shows it as two
+// stacked blocks, the first white on black and the second black on Site
+// Orange, which is the one caption treatment the existing component does not
+// do.
+import React from "react";
+import { AbsoluteFill, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { BLACK, HEAD, ORANGE, SAFE, SAFE_W, WHITE } from "./brand";
+import { Captions } from "./Captions";
+
+/** How long the hook holds before the ordinary captions carry it. */
+const HOOK_S = 2.6;
+/** Big, because it is the thing someone reads before deciding to stay. */
+const HOOK_SIZE = 76;
+
+/** Split a sentence into two balanced lines, on a word. One line if it is
+ *  short enough to need only one. */
+function twoLines(text: string): string[] {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= 4) return [words.join(" ")];
+  let best = 1;
+  let closest = Infinity;
+  for (let i = 1; i < words.length; i += 1) {
+    const left = words.slice(0, i).join(" ").length;
+    const right = words.slice(i).join(" ").length;
+    const gap = Math.abs(left - right);
+    if (gap < closest) { closest = gap; best = i; }
+  }
+  return [words.slice(0, best).join(" "), words.slice(best).join(" ")];
+}
+
+const Line: React.FC<{ text: string; orange?: boolean }> = ({ text, orange }) => (
+  <span
+    style={{
+      display: "inline-block",
+      backgroundColor: orange ? ORANGE : BLACK,
+      color: orange ? BLACK : WHITE,
+      fontFamily: HEAD,
+      fontWeight: 800,
+      fontSize: HOOK_SIZE,
+      lineHeight: 1.12,
+      letterSpacing: "-0.01em",
+      padding: "0.08em 0.22em",
+      boxDecorationBreak: "clone",
+      WebkitBoxDecorationBreak: "clone",
+    }}
+  >
+    {text}
+  </span>
+);
+
+const Hook: React.FC<{ text: string }> = ({ text }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const t = frame / fps;
+  if (t > HOOK_S) return null;
+
+  const lines = twoLines(text);
+  return (
+    <AbsoluteFill
+      style={{
+        padding: `${SAFE.top}px ${SAFE.right}px ${SAFE.bottom}px ${SAFE.left}px`,
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
+      }}
+    >
+      <div style={{ width: SAFE_W, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+        {lines.map((line, i) => (
+          <Line key={line + i} text={line} orange={i === 1} />
+        ))}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export type ClipProps = {
+  /** The folder under public/ holding clip.mp4 and captions.json. */
+  slug: string;
+  /** What the clip opens on. Empty renders no hook card. */
+  hook?: string;
+  /** Seconds — the composition's length is worked out from this. */
+  seconds: number;
+  /** Words the captions should put in Site Orange. */
+  emphasis?: string[];
+};
+
+export const Clip: React.FC<ClipProps> = ({ slug, hook, emphasis = [] }) => (
+  <AbsoluteFill style={{ backgroundColor: BLACK }}>
+    <OffthreadVideo
+      src={staticFile(`${slug}/clip.mp4`)}
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+    {hook ? <Hook text={hook} /> : null}
+    <Captions slug={slug} emphasis={emphasis} />
+  </AbsoluteFill>
+);

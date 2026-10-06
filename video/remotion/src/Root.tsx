@@ -6,6 +6,7 @@ import { ConstructionVideo } from "./ConstructionVideo";
 import { ArnoldSchwarzeneggerRealEstateVideo } from "./ArnoldSchwarzeneggerRealEstateVideo";
 import { LendersCountRealEstateExperienceVideo } from "./LendersCountRealEstateExperienceVideo";
 import { FrameExample } from "./FrameExample";
+import { Clip, type ClipProps } from "./Clip";
 
 const FPS = 30;
 // Sum of all sequence durations minus the overlap eaten by each of the
@@ -48,6 +49,21 @@ const LENDERS_COUNT_REAL_ESTATE_EXPERIENCE_TOTAL_S =
 export const RemotionRoot: React.FC = () => {
   return (
     <>
+      {/* A short cut out of a long take. Unlike the others its length is not
+          known until the clip exists, so it comes off the props the cutting
+          workflow passes in. */}
+      <Composition
+        id="Clip"
+        component={Clip}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        durationInFrames={Math.round(30 * FPS)}
+        defaultProps={{ slug: "clip", hook: "", seconds: 30, emphasis: [] } as ClipProps}
+        calculateMetadata={({ props }) => ({
+          durationInFrames: Math.max(1, Math.round((props.seconds || 30) * FPS)),
+        })}
+      />
       <Composition
         id="Mayweather"
         component={MayweatherVideo}
