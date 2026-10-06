@@ -211,6 +211,9 @@ export default {
           reviewed_at: r.reviewed_at ?? null,
           has_source: Boolean(r.has_source),
           last_edit: r.last_edit ?? null,
+          /* 'render' or 'clip'. A clip came out of a take rather than a plan,
+           * which the Edit page cannot work with yet. */
+          kind: r.kind || 'render',
           url: `${base}/storage/v1/object/public/videos/`
             + String(r.storage_path).split('/').map(encodeURIComponent).join('/'),
         }));

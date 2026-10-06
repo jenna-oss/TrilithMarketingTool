@@ -410,6 +410,13 @@ function render() {
       badge.className = 'badge';
       badge.textContent = v.last_edit.mode === 'remake' ? 'Re-making…' : 'Editing…';
       frame.append(badge);
+    } else if (v.kind === 'clip') {
+      /* Cut out of a take rather than built from a plan. Worth saying on the
+         card, because the two are reviewed the same way but made differently. */
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = 'Clip';
+      frame.append(badge);
     }
     const dur = fmtDuration(v.duration);
     if (dur) {
@@ -511,7 +518,10 @@ function open(v) {
   const left = document.createElement('div');
   left.append(player);
   const right = document.createElement('div');
-  right.append(dl, actions, buildEditBox(v), buildScript(v));
+  /* A clip has no script of its own and nothing the Edit page can act on
+     yet; its hook and the reason it was cut are already in the list above. */
+  right.append(dl, actions);
+  if (v.kind !== 'clip') right.append(buildEditBox(v), buildScript(v));
   detailBody.append(left, right);
   detail.showModal();
 }

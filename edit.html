@@ -544,7 +544,8 @@ async function fetchVideos() {
   });
   if (!res.ok) throw new Error('status ' + res.status);
   const data = await res.json();
-  return (Array.isArray(data.videos) ? data.videos : []).filter((v) => !v.review_status);
+  return (Array.isArray(data.videos) ? data.videos : [])
+    .filter((v) => !v.review_status && v.kind !== 'clip');
 }
 
 async function load() {
