@@ -16,7 +16,8 @@
     "kb:process": "node tools/kb-process.mjs",
     "kb:mirror": "node tools/kb-mirror-published.mjs",
     "kb:summarise": "node tools/kb-summarise.mjs",
-    "kb:seed-hooks": "node tools/kb-seed-hooks.mjs"
+    "kb:seed-hooks": "node tools/kb-seed-hooks.mjs",
+    "test": "node tests/worker.test.mjs"
   },
   "devDependencies": {
     "playwright": "^1.49.0"

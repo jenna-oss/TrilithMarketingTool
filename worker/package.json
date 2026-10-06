@@ -2,6 +2,7 @@
   "name": "trilith-ask-worker",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Cloudflare Worker backing the ask-the-corpus chat on the Trilith competitive intelligence page.",
   "scripts": {
     "dev": "wrangler dev",

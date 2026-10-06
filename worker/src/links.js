@@ -356,23 +356,28 @@ export async function handleLinks(path, request, env, headers, ctx, user) {
   if (!UUID.test(id)) return json({ error: 'id must be a link id' }, 400, headers);
 
   if (path === '/links/read') {
+    /* Without the body: the page polls this every couple of seconds while a
+     * page is being read, and an article can be 200,000 characters. All it
+     * needs is the title and whether it has landed. */
     let link;
-    try { link = await rpc(env, 'kb_link_read', { p_id: id }); }
+    try { link = await rpc(env, 'kb_link_status', { p_id: id }); }
     catch { return json({ error: 'could not load that link' }, 502, headers); }
     if (!link) return json({ error: 'no link with that id' }, 404, headers);
 
     if (link.status === 'reading' && link.job_id && env.SUPADATA_API_KEY) {
-      link = (await collectJob(env, link)) || link;
+      /* Only here is the stored description needed, as what to fall back to
+       * if the job failed. */
+      let full = null;
+      try { full = await rpc(env, 'kb_link_read', { p_id: id }); } catch { /* keep what we have */ }
+      if (full) link = (await collectJob(env, full)) || link;
     }
-    /* The page only needs to know what it is and whether it is ready; the text
-     * itself is for the planner, which reads it inside the Worker. */
     const { body: text, job_id: job, ...rest } = link;
-    return json({ link: { ...rest, words: rest.words ?? wordCount(text || '') } }, 200, headers);
+    return json({ link: rest }, 200, headers);
   }
 
   if (path === '/links/retry') {
     let link;
-    try { link = await rpc(env, 'kb_link_read', { p_id: id }); }
+    try { link = await rpc(env, 'kb_link_read', { p_id: id }); }   /* collectJob may need the fallback text */
     catch { return json({ error: 'could not load that link' }, 502, headers); }
     if (!link) return json({ error: 'no link with that id' }, 404, headers);
     if (link.status === 'ready') return json({ status: 'ready' }, 200, headers);

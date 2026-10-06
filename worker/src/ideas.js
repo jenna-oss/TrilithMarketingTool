@@ -836,8 +836,7 @@ export async function handleIdeas(request, env, headers, ctx) {
   let recordingsNote = '';
   if (picked.length) {
     try {
-      const rows = await rpc(env, 'kb_recordings', { p_limit: 200 });
-      const chosen = (rows || []).filter((r) => picked.includes(r.id));
+      const chosen = (await rpc(env, 'kb_recordings_by_ids', { p_ids: picked })) || [];
       if (chosen.length) {
         recordingsNote = `\n\nRECORDINGS SELECTED FOR THIS SESSION (read each one in full with read_recording before proposing anything):\n`
           + chosen.map((r) => `- ${r.name} (id ${r.id}${r.status === 'ready' ? '' : `, ${r.status}`})`).join('\n');
@@ -853,8 +852,7 @@ export async function handleIdeas(request, env, headers, ctx) {
   let linksNote = '';
   if (pickedLinks.length) {
     try {
-      const rows = await rpc(env, 'kb_links', { p_limit: 200 });
-      const chosen = (rows || []).filter((r) => pickedLinks.includes(r.id));
+      const chosen = (await rpc(env, 'kb_links_by_ids', { p_ids: pickedLinks })) || [];
       if (chosen.length) {
         linksNote = `\n\nLINKS PASTED IN THIS SESSION (read each one in full with read_link before proposing anything):\n`
           + chosen.map((r) => `- ${r.title || r.url} (${r.site || r.kind}, id ${r.id}`
