@@ -202,6 +202,47 @@
      attribute, and the Send row showed under "Editing now". */
   [hidden] { display:none !important; }
 
+  /* Raw footage: the long take, before it is cut into shorts. */
+  .takes-head {
+    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+    color:var(--accent); margin:0 0 var(--s2);
+  }
+  .takes-why { font-size:.875rem; color:var(--ink-quiet); margin:0 0 var(--s3); max-width:62ch; }
+  .drop {
+    background:var(--card); border:1px solid var(--rule); border-radius:6px;
+    padding:var(--s3); margin:0 0 var(--s3);
+  }
+  .drop label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; }
+  .drop input[type="file"], .drop input[type="text"] {
+    width:100%; font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
+    border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
+  }
+  .drop .row { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:flex-end; margin-top:var(--s2); }
+  .drop .row > div { flex:1 1 14rem; }
+  .drop .hint { font-size:.75rem; color:var(--ink-quiet); margin:.5rem 0 0; }
+  .drop .hint.bad { color:var(--clay); }
+  .bar {
+    height:.375rem; background:var(--card-sunk); border-radius:999px; overflow:hidden; margin-top:var(--s2);
+  }
+  .bar span { display:block; height:100%; background:var(--accent); width:0; transition:width .2s linear; }
+
+  .takes { list-style:none; margin:0 0 var(--s5); padding:0; display:grid; gap:var(--s2); }
+  .take {
+    background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:var(--s2) var(--s3);
+  }
+  .take .top { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:baseline; }
+  .take .name { font-size:.9375rem; font-weight:700; color:var(--ink); margin:0; flex:1 1 12rem; }
+  .take .meta { font-size:.75rem; color:var(--ink-quiet); font-family:var(--mono); }
+  .take .why { font-size:.75rem; color:var(--clay); margin:.25rem 0 0; }
+  .take .acts { display:flex; flex-wrap:wrap; gap:.375rem; margin-top:var(--s2); }
+  .tag {
+    display:inline-block; font-size:.6875rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    border-radius:999px; padding:.0625rem .5rem; border:1px solid var(--rule-strong); color:var(--ink-quiet);
+  }
+  .tag.ready { color:var(--accent); border-color:var(--accent); }
+  .tag.uploading, .tag.transcribing { border-style:dashed; color:var(--ink-body); }
+  .tag.failed { color:var(--clay); border-color:var(--clay); }
+
   /* The script panel: what the narrator says, one box per line. */
   .script { margin-top:var(--s4); padding-top:var(--s3); border-top:1px solid var(--rule); }
   .script summary { cursor:pointer; font-size:.875rem; font-weight:600; color:var(--ink); }
@@ -279,6 +320,27 @@
   <p class="eyebrow">Production</p>
   <h2>Edit</h2>
   <p class="lede">Pick a video, go to the frame you want changed and leave a note, or change what the narrator says in its script. Send them together as one edit, or have the video re-made with them.</p>
+
+  <p class="takes-head">Raw footage</p>
+  <p class="takes-why">Drop in a long take and it is transcribed, then cut into short vertical videos with the brand captions on them. Only passages that open on something worth opening on are kept.</p>
+
+  <div class="drop">
+    <label for="take">The take</label>
+    <input id="take" type="file" accept="video/mp4,video/quicktime,video/x-matroska,video/webm">
+    <div class="row">
+      <div>
+        <label for="take-name">Call it</label>
+        <input id="take-name" type="text" maxlength="200" placeholder="e.g. Monday morning, four deals">
+      </div>
+      <button class="btn" id="take-send" type="button">Upload</button>
+    </div>
+    <div class="bar" id="take-bar" hidden><span id="take-fill"></span></div>
+    <p class="hint" id="take-hint">mp4, mov, mkv or webm, up to 5GB. A twenty minute take is a few gigabytes and takes a while to send — leave the tab open.</p>
+  </div>
+
+  <ol class="takes" id="takes"></ol>
+
+  <p class="takes-head">Finished videos</p>
 
   <p class="state" id="state" role="status">Loading videos…</p>
 
@@ -794,6 +856,244 @@ function say(text, bad) {
   sendNote.className = 'action-note' + (bad ? ' bad' : '');
   sendNote.textContent = text;
 }
+
+/* --- raw footage ---------------------------------------------------------
+
+   The bytes go straight from here to storage, never through the Worker, which
+   could not carry them: Cloudflare caps a request body at 100MB and a take is
+   measured in gigabytes. What the Worker gives us is a signature good for one
+   path, which is why the page never needs a key of its own.
+
+   This is the TUS protocol by hand rather than a library: create an upload,
+   then send it 6MB at a time, each chunk saying where it starts. A chunk that
+   fails is retried from wherever storage says it got to, so a flaky minute in
+   the middle of a twenty minute upload costs seconds rather than starting
+   again. Supabase requires exactly 6MB chunks. */
+
+/* The other pages each have one of these; this one had been calling
+   AikoAuth.fetch inline everywhere instead. */
+async function callWorker(path, body) {
+  const res = await AikoAuth.fetch(WORKER_URL + path, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "that didn't work (" + res.status + ')');
+  return data;
+}
+
+const CHUNK = 6 * 1024 * 1024;
+const RETRIES = 4;
+
+const b64 = (text) => btoa(String.fromCharCode(...new TextEncoder().encode(text)));
+const gb = (n) => (n >= 1e9 ? (n / 1e9).toFixed(1) + 'GB' : Math.round(n / 1e6) + 'MB');
+const mins = (s) => (s ? Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0') : '');
+
+async function tusCreate({ endpoint, token, bucket, path, file }) {
+  const meta = [
+    ['bucketName', bucket],
+    ['objectName', path],
+    ['contentType', file.type || 'video/mp4'],
+    ['cacheControl', '3600'],
+  ].map(([k, v]) => k + ' ' + b64(v)).join(',');
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'tus-resumable': '1.0.0',
+      'upload-length': String(file.size),
+      'upload-metadata': meta,
+      'x-signature': token,
+    },
+  });
+  if (!res.ok) throw new Error('storage would not start the upload (' + res.status + ')');
+  const where = res.headers.get('location');
+  if (!where) throw new Error('storage started the upload but did not say where');
+  return new URL(where, endpoint).href;
+}
+
+async function tusOffset(url, token) {
+  const res = await fetch(url, {
+    method: 'HEAD',
+    headers: { 'tus-resumable': '1.0.0', 'x-signature': token },
+  });
+  if (!res.ok) throw new Error('lost track of the upload (' + res.status + ')');
+  return Number(res.headers.get('upload-offset') || 0);
+}
+
+async function tusSend({ url, token, file, from, onProgress }) {
+  let offset = from;
+  while (offset < file.size) {
+    const end = Math.min(offset + CHUNK, file.size);
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'tus-resumable': '1.0.0',
+        'upload-offset': String(offset),
+        'content-type': 'application/offset+octet-stream',
+        'x-signature': token,
+      },
+      body: file.slice(offset, end),
+    });
+    if (!res.ok) throw new Error('the upload stopped at ' + Math.round((offset / file.size) * 100) + '% (' + res.status + ')');
+    offset = Number(res.headers.get('upload-offset') || end);
+    onProgress(offset);
+  }
+  return offset;
+}
+
+/* Keep going through a bad patch: ask storage where it got to, carry on from
+   there, and only give up after several tries. */
+async function sendFile({ endpoint, token, bucket, path, file, onProgress }) {
+  const url = await tusCreate({ endpoint, token, bucket, path, file });
+  let from = 0;
+  for (let attempt = 0; attempt <= RETRIES; attempt += 1) {
+    try {
+      return await tusSend({ url, token, file, from, onProgress });
+    } catch (err) {
+      if (attempt === RETRIES) throw err;
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      from = await tusOffset(url, token).catch(() => from);
+      onProgress(from);
+    }
+  }
+  return 0;
+}
+
+let takes = [];
+let takePoll = null;
+
+async function loadTakes() {
+  try { takes = (await callWorker('/footage/list')).footage || []; }
+  catch { return; }
+  drawTakes();
+  pollTakes();
+}
+
+function pollTakes() {
+  clearTimeout(takePoll);
+  if (!takes.some((t) => t.status === 'uploaded' || t.status === 'transcribing')) return;
+  takePoll = setTimeout(loadTakes, 15000);
+}
+
+function drawTakes() {
+  const list = $('takes');
+  list.textContent = '';
+  for (const t of takes) {
+    const li = document.createElement('li');
+    li.className = 'take';
+
+    const top = document.createElement('div');
+    top.className = 'top';
+    const name = document.createElement('p');
+    name.className = 'name';
+    name.textContent = t.name || 'Untitled take';
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + t.status;
+    tag.textContent = t.status === 'uploaded' ? 'Waiting to be cut'
+      : t.status === 'ready' ? 'Transcribed'
+      : t.status === 'transcribing' ? 'Transcribing…'
+      : t.status;
+    const meta = document.createElement('span');
+    meta.className = 'meta';
+    meta.textContent = [t.bytes ? gb(t.bytes) : '', mins(t.seconds), t.word_count ? t.word_count + ' words' : '']
+      .filter(Boolean).join(' · ');
+    top.append(name, tag, meta);
+    li.append(top);
+
+    if (t.error) {
+      const why = document.createElement('p');
+      why.className = 'why';
+      why.textContent = t.error;
+      li.append(why);
+    }
+
+    const acts = document.createElement('div');
+    acts.className = 'acts';
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn small secondary';
+    del.textContent = 'Delete';
+    del.addEventListener('click', async () => {
+      if (!confirm('Delete "' + (t.name || 'this take') + '" and its file?')) return;
+      del.disabled = true;
+      try {
+        await callWorker('/footage/delete', { id: t.id });
+        takes = takes.filter((x) => x.id !== t.id);
+        drawTakes();
+      } catch (err) { del.disabled = false; }
+    });
+    acts.append(del);
+    li.append(acts);
+    list.append(li);
+  }
+}
+
+$('take').addEventListener('change', () => {
+  const file = $('take').files[0];
+  if (file && !$('take-name').value) {
+    $('take-name').value = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').slice(0, 200);
+  }
+});
+
+$('take-send').addEventListener('click', async () => {
+  const file = $('take').files[0];
+  const hint = $('take-hint');
+  const btn = $('take-send');
+  hint.className = 'hint';
+  if (!file) { hint.className = 'hint bad'; hint.textContent = 'Pick a take first.'; return; }
+
+  btn.disabled = true;
+  $('take-bar').hidden = false;
+  $('take-fill').style.width = '0%';
+  hint.textContent = 'Asking for somewhere to put it…';
+
+  let start;
+  try {
+    start = await callWorker('/footage/start', {
+      name: $('take-name').value || file.name,
+      bytes: file.size,
+      content_type: file.type,
+    });
+  } catch (err) {
+    hint.className = 'hint bad';
+    hint.textContent = err.message;
+    btn.disabled = false;
+    $('take-bar').hidden = true;
+    return;
+  }
+
+  try {
+    await sendFile({
+      endpoint: start.endpoint,
+      token: start.token,
+      bucket: start.bucket,
+      path: start.path,
+      file,
+      onProgress: (sent) => {
+        const pct = Math.min(100, Math.round((sent / file.size) * 100));
+        $('take-fill').style.width = pct + '%';
+        hint.textContent = 'Sending — ' + pct + '% of ' + gb(file.size) + '. Leave this tab open.';
+      },
+    });
+    await callWorker('/footage/uploaded', { id: start.id });
+    hint.textContent = 'Uploaded. It will be transcribed and cut from here.';
+    $('take').value = '';
+    $('take-name').value = '';
+    $('take-bar').hidden = true;
+    await loadTakes();
+  } catch (err) {
+    hint.className = 'hint bad';
+    hint.textContent = err.message;
+    await callWorker('/footage/failed', { id: start.id, error: err.message }).catch(() => {});
+    await loadTakes();
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+loadTakes();
 
 /* --- the script -------------------------------------------------------- */
 
