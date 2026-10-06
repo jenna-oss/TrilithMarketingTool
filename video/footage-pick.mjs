@@ -38,6 +38,12 @@ const LEAD = 0.25;
 const TAIL = 0.35;
 /* Never let one clip's tail run into the next clip's lead. */
 const APART = 0.1;
+/* Daylight to leave between a clip's edge and the neighbouring word, so a
+ * lead or a tail can never clip the sound of one. */
+const GAP = 0.06;
+/* Less of a gap than this after a sentence is not a pause, it is a breath —
+ * ending there sounds like an interruption rather than a finish. */
+const PAUSE = 0.3;
 
 const [, , footageId, slidesFile] = process.argv;
 if (!footageId) {
@@ -167,6 +173,21 @@ try {
   const words = Array.isArray(take.words) ? take.words : [];
   if (!words.length) throw new Error('that take has no word timings, so there is nothing to cut on');
 
+  /* The neighbours of a cut: where the previous word finished, and where the
+   * next one starts. Words come back in order, so a walk is enough. */
+  const lastEndBefore = (t) => {
+    let out = -Infinity;
+    for (const w of words) {
+      if (w.e > t + 0.001) break;
+      out = w.e;
+    }
+    return out;
+  };
+  const firstStartAfter = (t) => {
+    for (const w of words) if (w.s >= t - 0.001) return w.s;
+    return Infinity;
+  };
+
   const duration = Number(take.seconds) || words[words.length - 1].e;
   let slides = [];
   if (slidesFile) {
@@ -245,8 +266,31 @@ try {
     }
 
     const run = stretches[opens.run];
-    const start = Math.max(run.from, opens.s - LEAD, endOfLast + APART);
-    const end = Math.min(run.to, closes.e + TAIL);
+
+    /* The lead and the tail assume silence either side, and he does not leave
+     * any: after one sentence ended, the next began 0.12s later, so a 0.35s
+     * tail ran into it and the clip stopped halfway through a word. Both are
+     * clamped to the actual gap. */
+    const before = lastEndBefore(opens.s);
+    const after = firstStartAfter(closes.e);
+    const start = Math.max(run.from, endOfLast + APART, Math.min(opens.s, Math.max(opens.s - LEAD, before + GAP)));
+    let end = Math.min(run.to, Math.max(closes.e, Math.min(closes.e + TAIL, after - GAP)));
+
+    /* Ending on a full stop he talks straight through still sounds like an
+     * interruption. If there is no real pause there, carry on to the next
+     * place he actually stops, while it still fits. */
+    let ends = to;
+    if (after - closes.e < PAUSE) {
+      for (let j = to; j < kept.length && kept[j].run === opens.run; j += 1) {
+        const settles = firstStartAfter(kept[j].e);
+        const longer = Math.min(run.to, Math.max(kept[j].e, Math.min(kept[j].e + TAIL, settles - GAP)));
+        if (longer - start > MAX_S) break;
+        end = longer;
+        ends = j + 1;
+        if (settles - kept[j].e >= PAUSE) break;
+      }
+    }
+
     const seconds = end - start;
     if (seconds < MIN_S || seconds > MAX_S) {
       console.log(`  skipping ${from}–${to}: ${seconds.toFixed(1)}s is outside ${MIN_S}–${MAX_S}`);
@@ -263,7 +307,7 @@ try {
         .filter((w) => w.s >= start && w.e <= end)
         .map((w) => ({ t: w.t, s: Number((w.s - start).toFixed(3)), e: Number((w.e - start).toFixed(3)) })),
     });
-    last = to;
+    last = ends;
     endOfLast = end;
     if (clips.length >= MOST_CLIPS) break;
   }
