@@ -20,6 +20,25 @@ GITHUB_REPO = "jenna-oss/TrilithMarketingTool"
 #   npx wrangler secret put GITHUB_TOKEN
 #   npx wrangler secret put ELEVENLABS_API_KEY
 #   npx wrangler secret put SUPADATA_API_KEY
+#   npx wrangler secret put INSTAGRAM_APP_ID
+#   npx wrangler secret put INSTAGRAM_APP_SECRET
+#   npx wrangler secret put INSTAGRAM_TOKEN_KEY
+#
+# The three Instagram keys are what lets the Schedule page publish. The app id
+# and secret come from the app you create at developers.facebook.com, with
+# Instagram added to it and this Worker's /instagram/callback registered as an
+# OAuth redirect URI. There is no password login for Instagram and there must
+# not be one here: you approve the connection on Instagram's own page.
+#
+# INSTAGRAM_TOKEN_KEY is 32 random bytes, base64, and it is ours, not Meta's.
+# The access token is encrypted with it before it is stored, because this
+# Supabase project is shared with other AIKO tools and anything holding its
+# anon key can read the row. Make one with:
+#
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+#
+# Keep it. Changing it makes the stored token unreadable and the account has to
+# be connected again.
 #
 # ELEVENLABS_API_KEY transcribes what is uploaded or recorded on the Recordings
 # page. Without it /recordings returns 503 and says so.

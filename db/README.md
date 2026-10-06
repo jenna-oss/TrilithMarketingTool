@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 40 migrations applied to the Supabase project
+The `kb` schema is defined by 41 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 39 | `kb_instagram_account` | connecting the Instagram account posts go to: `ig_account` holds the access token **encrypted** — this project is shared with other AIKO tools, so anything with its anon key can call `kb_ig_secret`, and what that returns is ciphertext the Worker's `INSTAGRAM_TOKEN_KEY` opens — and `ig_ticket` is the one-use, ten-minute ticket that stands in for a session on the OAuth callback, which arrives as a browser navigation with no header on it. `kb_ig_account` is the half the page may see: who, and until when |
 | 38 | `kb_light_reads` | three reads that were pulling far more than they needed: `kb_link_status` is a link's row without its body, for the poll the Plan page runs every two seconds while a page is being read (an article can be 200,000 characters, and the Worker was throwing the text away after transferring it), and `kb_links_by_ids` / `kb_recordings_by_ids` take the handful of ids a planning session picked instead of listing 200 rows to filter in the Worker |
 | 37 | `kb_scripts` | scripts for solo talking-head videos, the ones read to camera rather than spoken over b-roll: `scripts` (the planned slot it came from, the lines, the word count, what the checks flagged, written or filmed) and `kb_script_save` / `kb_scripts` / `kb_script_read` / `kb_script_lines` / `kb_script_status` / `kb_script_delete`. One script per slot — writing it again replaces it, because a slot has one script the way it has one video |
 | 36 | `kb_link_create_skip_partial` | pasting a link again hands back the read we already have, but only a real one: a partial read is a video whose words could not be got, and caching that meant the first paste after the transcript service was wired up returned the description again without asking anyone for a transcript |

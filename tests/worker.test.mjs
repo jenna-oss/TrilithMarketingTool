@@ -20,6 +20,7 @@ import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const worker = (await import(pathToFileURL(join(here, '..', 'worker', 'src', 'index.js')).href)).default;
+const { accessToken } = await import(pathToFileURL(join(here, '..', 'worker', 'src', 'instagram.js')).href);
 
 /* --- the fakes ----------------------------------------------------------- */
 
@@ -79,6 +80,10 @@ globalThis.fetch = async (url, init = {}) => {
     return sse(block);
   }
   if (u.startsWith('https://api.supadata.ai/v1/transcript/')) return jsonRes(supaJob);
+  if (u.startsWith('https://api.instagram.com/oauth/access_token')) return jsonRes({ access_token: 'SHORT-LIVED', user_id: '178414' });
+  if (u.startsWith('https://graph.instagram.com/access_token')) return jsonRes({ access_token: 'LONG-LIVED-SECRET', token_type: 'bearer', expires_in: 5184000 });
+  if (u.startsWith('https://graph.instagram.com/refresh_access_token')) return jsonRes({ access_token: 'RENEWED-SECRET', expires_in: 5184000 });
+  if (u.startsWith('https://graph.instagram.com/v23.0/me')) return jsonRes({ user_id: '178414', username: 'thebuyboxre' });
   if (u.endsWith('/auth/v1/user')) return jsonRes({ email: 'me@x.io' });
   const fn = (u.match(/\/rpc\/([a-z_]+)/) || [])[1];
   if (fn === 'kb_app_user_allowed') return jsonRes(true);
@@ -89,6 +94,16 @@ const env = {
   SUPABASE_URL: 'https://db.example', SUPABASE_ANON_KEY: 'anon',
   ANTHROPIC_API_KEY: 'sk-test', GITHUB_TOKEN: 'tok', VOYAGE_API_KEY: '',
 };
+/* The token key is 32 bytes, base64, as the real one must be. */
+const igEnv = {
+  ...env,
+  INSTAGRAM_APP_ID: '1234567890',
+  INSTAGRAM_APP_SECRET: 'app-secret',
+  INSTAGRAM_TOKEN_KEY: Buffer.alloc(32, 7).toString('base64'),
+};
+const get = (path, e = igEnv) => worker.fetch(new Request('https://w.example' + path, {
+  method: 'GET', headers: { origin: 'http://localhost:8788' },
+}), e, ctx);
 let pending = [];
 const ctx = { waitUntil(p) { pending.push(p); } };
 const settle = async () => { const all = pending; pending = []; await Promise.allSettled(all); };
@@ -119,7 +134,7 @@ const REC = '77777777-7777-7777-7777-777777777777';
 
 /* --- the gate ------------------------------------------------------------ */
 
-for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/list', '/scripts/list', '/scripts/write', '/kb/upload']) {
+for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/list', '/scripts/list', '/scripts/write', '/kb/upload', '/instagram/account', '/instagram/start']) {
   reset();
   const res = await post(path, {}, '');
   check(`${path} without a session -> 401`, res.status === 401, res.status);
@@ -239,6 +254,85 @@ check('a recording that is not audio -> 415, nothing stored',
 reset();
 res = await post('/nonsense', {});
 check('an unknown route -> 404', res.status === 404, res.status);
+
+/* --- connecting Instagram -------------------------------------------------- */
+
+reset();
+res = await post('/instagram/start', {}, 'signed-in', env);   // no keys set
+j = await res.json();
+check('connecting with no Instagram keys -> 503 saying which to set',
+  res.status === 503 && /INSTAGRAM_APP_SECRET/.test(j.hint || ''), JSON.stringify(j));
+
+reset();
+rpcAnswer.kb_ig_ticket_new = '00000000-aaaa-4aaa-8aaa-000000000001';
+res = await post('/instagram/start', {}, 'signed-in', igEnv);
+j = await res.json();
+const authorize = new URL(j.url || 'https://x.invalid');
+check('connecting hands back Instagram own page, not a form here',
+  authorize.origin + authorize.pathname === 'https://www.instagram.com/oauth/authorize', j.url);
+check('...asking only to read the account and publish to it',
+  authorize.searchParams.get('scope') === 'instagram_business_basic,instagram_business_content_publish',
+  authorize.searchParams.get('scope'));
+check('...with the one-time ticket as state, and our callback as the redirect',
+  authorize.searchParams.get('state') === '00000000-aaaa-4aaa-8aaa-000000000001'
+  && authorize.searchParams.get('redirect_uri') === 'https://w.example/instagram/callback',
+  authorize.search);
+
+/* The callback is the one route with no session on it, so the ticket is the
+ * whole of its security. */
+reset();
+rpcAnswer.kb_ig_ticket_take = null;
+res = await get('/instagram/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000009');
+let html = await res.text();
+check('a callback with a ticket we did not issue saves nothing',
+  res.status === 200 && /expired, or had already been used/.test(html) && rpcs('kb_ig_save').length === 0,
+  res.status);
+
+reset();
+rpcAnswer.kb_ig_ticket_take = 'me@x.io';
+res = await get('/instagram/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000001');
+html = await res.text();
+const connected = rpcs('kb_ig_save')[0]?.body;
+check('a good callback connects the account and names it',
+  /thebuyboxre is connected/.test(html) && connected?.p_ig_user_id === '178414' && connected.p_username === 'thebuyboxre',
+  html.slice(0, 140));
+check('the short-lived token is traded for a sixty-day one',
+  calls.some((c) => c.url.includes('ig_exchange_token'))
+  && new Date(connected.p_expires).getTime() - Date.now() > 50 * 86400000);
+check('what is stored is ciphertext, not the token',
+  typeof connected.p_cipher === 'string' && connected.p_cipher.length > 0
+  && !JSON.stringify(connected).includes('LONG-LIVED-SECRET'),
+  JSON.stringify(connected).slice(0, 200));
+
+/* And it has to come back out again, or nothing can ever post. */
+reset();
+rpcAnswer.kb_ig_secret = {
+  ig_user_id: '178414', cipher: connected.p_cipher, iv: connected.p_iv,
+  expires_at: new Date(Date.now() + 50 * 86400000).toISOString(),
+};
+const opened = await accessToken(igEnv);
+check('the Worker can open it again with its own key',
+  opened?.token === 'LONG-LIVED-SECRET' && opened.igUserId === '178414', JSON.stringify(opened));
+check('...and a token with weeks left is not renewed needlessly',
+  !calls.some((c) => c.url.includes('ig_refresh_token')));
+
+reset();
+rpcAnswer.kb_ig_secret = {
+  ig_user_id: '178414', cipher: connected.p_cipher, iv: connected.p_iv,
+  expires_at: new Date(Date.now() + 2 * 86400000).toISOString(),
+};
+const renewed = await accessToken(igEnv);
+check('a token close to running out is renewed and stored again',
+  renewed?.token === 'RENEWED-SECRET' && rpcs('kb_ig_save').length === 1,
+  JSON.stringify({ token: renewed?.token, saved: rpcs('kb_ig_save').length }));
+
+reset();
+rpcAnswer.kb_ig_account = { ig_user_id: '178414', username: 'thebuyboxre', expires_at: new Date().toISOString() };
+res = await post('/instagram/account', {}, 'signed-in', igEnv);
+j = await res.json();
+check('the page is told who is connected, and never the token',
+  j.connected === true && j.username === 'thebuyboxre' && !JSON.stringify(j).includes('cipher'),
+  JSON.stringify(j));
 
 console.log(failures ? `\n${failures} FAILED` : '\nall passed');
 process.exit(failures ? 1 : 0);

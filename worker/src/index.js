@@ -20,6 +20,7 @@ import { handleUpload } from './upload.js';
 import { handleRecordings } from './recordings.js';
 import { handleLinks } from './links.js';
 import { handleScripts } from './scripts.js';
+import { handleInstagram, handleInstagramCallback } from './instagram.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -68,6 +69,19 @@ export default {
       return json({ error: 'origin not allowed' }, 403, headers);
     }
 
+    /* Instagram sends the browser here after you approve: a GET navigation,
+     * with no session on it and no JSON in it. It has to come before the
+     * POST-only rule below, which would otherwise turn every connection into
+     * a 405. What stands in for a session is the single-use ticket the
+     * Schedule page asked for before sending you there. */
+    if (path === '/instagram/callback') {
+      try { return await handleInstagramCallback(request, env); }
+      catch (err) {
+        console.error('instagram callback failed:', err?.message);
+        return new Response('Something went wrong connecting that account.', { status: 502 });
+      }
+    }
+
     if (request.method !== 'POST') {
       return json({ error: 'POST a JSON body to /ideas or /kb/upload.' }, 405, headers);
     }
@@ -99,6 +113,16 @@ export default {
       catch (err) {
         console.error('recordings route failed:', err?.message);
         return json({ error: 'Something went wrong with that recording. Try again.' }, 502, headers);
+      }
+    }
+
+    /* Connecting the Instagram account posts go to. The callback above is
+     * the open half of this; these are the signed-in half. */
+    if (path.startsWith('/instagram/')) {
+      try { return await handleInstagram(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('instagram route failed:', err?.message);
+        return json({ error: 'Something went wrong with that. Try again.' }, 502, headers);
       }
     }
 
