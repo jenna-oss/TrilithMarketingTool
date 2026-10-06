@@ -1,6 +1,6 @@
 # Schema
 
-The `kb` schema is defined by 42 migrations applied to the Supabase project
+The `kb` schema is defined by 43 migrations applied to the Supabase project
 `kugnlobgsguxggnqiseh`, listed below in order. They are **not** duplicated here
 as files, for the same reason `adspy` and `content` are not: Supabase holds the
 authoritative record in `supabase_migrations.schema_migrations`, and a
@@ -33,6 +33,7 @@ npx supabase db pull
 | 14 | `kb_content_mirror_source` | pages in `content` not yet mirrored into `published_content` |
 | 15 | `kb_hook_seed_rpcs` | hook patterns not yet adapted into the hook library |
 | 16 | `kb_pin_search_path` | pinned `search_path` on all 25 kb functions |
+| 41 | `kb_footage` | raw footage, before it is cut into shorts: the private `kb-footage` bucket (5GB a file) and `footage` (the take, its status, and the transcript kept twice — plain text to read, word timings to cut on). The only bucket whose policies are for `authenticated` rather than the Worker's anon key, because a 4GB file cannot pass through a Worker at all (Cloudflare caps a request body at 100MB), so the browser uploads straight to storage with the session it already holds. Scoped to this bucket and to emails on `kb.app_users`, since this project is shared and `authenticated` means more people here than it does in this app |
 | 40 | `kb_posts` | posts waiting to go to Instagram, which has no scheduling of its own: `posts` (kind, the media as `[{url, kind}]` so a reel, an image and a carousel are one table rather than three, caption, when, and where it got to with Instagram), plus `kb_post_create` / `kb_posts` / `kb_post_read` / `kb_post_edit` / `kb_post_cancel` / `kb_post_state`. `kb_post_claim` is the one that matters: publishing is two calls with processing in between, so a post is a state machine any cron run can resume, and the claim is an update only one run can win — two overlapping runs can never publish the same post twice |
 | 39 | `kb_instagram_account` | connecting the Instagram account posts go to: `ig_account` holds the access token **encrypted** — this project is shared with other AIKO tools, so anything with its anon key can call `kb_ig_secret`, and what that returns is ciphertext the Worker's `INSTAGRAM_TOKEN_KEY` opens — and `ig_ticket` is the one-use, ten-minute ticket that stands in for a session on the OAuth callback, which arrives as a browser navigation with no header on it. `kb_ig_account` is the half the page may see: who, and until when |
 | 38 | `kb_light_reads` | three reads that were pulling far more than they needed: `kb_link_status` is a link's row without its body, for the poll the Plan page runs every two seconds while a page is being read (an article can be 200,000 characters, and the Worker was throwing the text away after transferring it), and `kb_links_by_ids` / `kb_recordings_by_ids` take the handful of ids a planning session picked instead of listing 200 rows to filter in the Worker |
