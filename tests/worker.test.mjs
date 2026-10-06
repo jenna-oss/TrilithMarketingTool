@@ -26,6 +26,7 @@ const worker = (await import(pathToFileURL(join(here, '..', 'worker', 'src', 'in
 let calls = [];
 let rpcAnswer = {};
 let claudeReply = { type: 'text', text: 'Here are some ideas.' };
+let supaJob = { status: 'active' };
 
 const jsonRes = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
 
@@ -77,6 +78,7 @@ globalThis.fetch = async (url, init = {}) => {
     }
     return sse(block);
   }
+  if (u.startsWith('https://api.supadata.ai/v1/transcript/')) return jsonRes(supaJob);
   if (u.endsWith('/auth/v1/user')) return jsonRes({ email: 'me@x.io' });
   const fn = (u.match(/\/rpc\/([a-z_]+)/) || [])[1];
   if (fn === 'kb_app_user_allowed') return jsonRes(true);
@@ -107,6 +109,7 @@ const check = (name, ok, extra) => {
 const reset = () => {
   calls = []; rpcAnswer = {}; pending = [];
   claudeReply = { type: 'text', text: 'Here are some ideas.' };
+  supaJob = { status: 'active' };
 };
 /* Exactly this function: '/rpc/kb_links' is a prefix of '/rpc/kb_links_by_ids',
  * and matching loosely made the new call look like the old one. */
@@ -141,6 +144,39 @@ rpcAnswer.kb_link_status = { id: LINK, url: 'https://www.youtube.com/watch?v=abc
 rpcAnswer.kb_link_read = { ...rpcAnswer.kb_link_status, body: 'the description' };
 res = await post('/links/read', { id: LINK }, 'signed-in', { ...env, SUPADATA_API_KEY: '' });
 check('a job with no transcript key does not reach for the body', rpcs('kb_link_read').length === 0);
+
+/* The other half of that: when the job has finished, the poll is what stores
+ * the result, and it needs the full row to fall back to on a failure. This is
+ * the path the light read above was threaded through, so it is checked both
+ * ways round. */
+const JOB_ROW = {
+  id: LINK, url: 'https://www.youtube.com/watch?v=abc12345678', kind: 'video',
+  status: 'reading', job_id: 'job-1', title: 'A video', site: 'The Buy Box',
+};
+const withSupa = { ...env, SUPADATA_API_KEY: 'sd-test' };
+
+reset();
+rpcAnswer.kb_link_status = JOB_ROW;
+rpcAnswer.kb_link_read = { ...JOB_ROW, body: 'the description, kept as the fallback' };
+rpcAnswer.kb_upload_document = { id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', changed: true };
+supaJob = { status: 'completed', content: new Array(300).fill('spoken').join(' ') };
+res = await post('/links/read', { id: LINK }, 'signed-in', withSupa);
+let stored = rpcs('kb_link_ready')[0]?.body;
+check('a finished job is collected by the poll and stored as a transcript',
+  stored?.p_partial === false && stored.p_words === 300
+  && rpcs('kb_upload_document')[0]?.body?.payload?.document_type === 'transcript',
+  JSON.stringify({ partial: stored?.p_partial, words: stored?.p_words }));
+
+reset();
+rpcAnswer.kb_link_status = JOB_ROW;
+rpcAnswer.kb_link_read = { ...JOB_ROW, body: new Array(60).fill('described').join(' ') };
+rpcAnswer.kb_upload_document = { id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', changed: true };
+supaJob = { status: 'failed', error: 'could not process' };
+res = await post('/links/read', { id: LINK }, 'signed-in', withSupa);
+stored = rpcs('kb_link_ready')[0]?.body;
+check('a failed job falls back to the description it saved, flagged partial',
+  stored?.p_partial === true && stored.p_words === 60,
+  JSON.stringify({ partial: stored?.p_partial, words: stored?.p_words }));
 
 reset();
 res = await post('/links/read', { id: 'not-an-id' });
