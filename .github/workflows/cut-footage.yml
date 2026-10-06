@@ -118,12 +118,30 @@ jobs:
 
       # Whatever went wrong, the take should say so rather than sit on
       # 'transcribing' for ever.
+      # Only when nothing more useful was recorded. The scripts write the real
+      # reason as they fail, and "your subscription has a failed payment" is
+      # worth far more than "the run did not finish" — which is precisely what
+      # this step used to overwrite it with.
       - name: Record a run that fell over
         if: failure()
         run: |
-          curl -fsS -X POST "$SUPABASE_URL/rest/v1/rpc/kb_footage_state" \
-            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "content-type: application/json" \
-            -d "{\"p_id\":\"$FOOTAGE_ID\",\"p_status\":\"failed\",\"p_error\":\"The cutting run did not finish. See the Actions log.\"}" \
-            >/dev/null || true
+          node --input-type=module -e '
+            const base = process.env.SUPABASE_URL.replace(/[/]+$/, "");
+            const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const call = (fn, args) => fetch(base + "/rest/v1/rpc/" + fn, {
+              method: "POST",
+              headers: { apikey: key, authorization: "Bearer " + key, "content-type": "application/json" },
+              body: JSON.stringify(args),
+            });
+            const res = await call("kb_footage_read", { p_id: process.env.FOOTAGE_ID });
+            const take = res.ok ? await res.json() : null;
+            if (take && take.status === "failed" && (take.error || "").trim()) {
+              console.log("the reason is already on the take:", take.error);
+            } else {
+              await call("kb_footage_state", {
+                p_id: process.env.FOOTAGE_ID,
+                p_status: "failed",
+                p_error: "The cutting run did not finish. See the Actions log.",
+              });
+            }
+          ' || true

@@ -1028,6 +1028,28 @@ function drawTakes() {
 
     const acts = document.createElement('div');
     acts.className = 'acts';
+
+    /* The file is already in storage, so a take that fell over for a passing
+       reason is one button rather than another upload. */
+    if (t.status === 'failed') {
+      const again = document.createElement('button');
+      again.type = 'button';
+      again.className = 'btn small secondary';
+      again.textContent = 'Try again';
+      again.addEventListener('click', async () => {
+        again.disabled = true;
+        again.textContent = 'Starting…';
+        try { await callWorker('/footage/retry', { id: t.id }); await loadTakes(); }
+        catch (err) {
+          again.disabled = false;
+          again.textContent = 'Try again';
+          const why = li.querySelector('.why');
+          if (why) why.textContent = err.message;
+        }
+      });
+      acts.append(again);
+    }
+
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'btn small secondary';

@@ -564,6 +564,24 @@ check('a take whose run could not be started is marked failed, not left waiting'
   res.status === 502 && rpcs('kb_footage_state').some((c) => c.body.p_status === 'failed'),
   res.status);
 
+/* A take that fell over is run again from the file already in storage. */
+reset();
+rpcAnswer.kb_footage_read = { id: '66666666-6666-4666-8666-666666666666', status: 'failed', storage_path: 'abc.mov' };
+rpcAnswer.kb_footage_state = true;
+res = await post('/footage/retry', { id: '66666666-6666-4666-8666-666666666666' });
+const again = calls.find((c) => c.url.includes('/actions/workflows/'));
+check('retrying a failed take starts the run again, without a second upload',
+  res.status === 202 && /cut-footage\.yml\/dispatches$/.test(again?.url || '')
+  && rpcs('kb_footage_state').some((c) => c.body.p_status === 'uploaded' && c.body.p_error === null)
+  && !calls.some((c) => c.url.includes('/upload/sign/')),
+  res.status);
+
+reset();
+rpcAnswer.kb_footage_read = { id: '66666666-6666-4666-8666-666666666666', status: 'transcribing' };
+res = await post('/footage/retry', { id: '66666666-6666-4666-8666-666666666666' });
+check('one already being transcribed is left alone',
+  res.status === 200 && !calls.some((c) => c.url.includes('/actions/workflows/')), res.status);
+
 reset();
 rpcAnswer.kb_footage_delete = { ok: true, storage_path: 'abc.mov' };
 res = await post('/footage/delete', { id: '66666666-6666-4666-8666-666666666666' });

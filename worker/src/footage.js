@@ -149,6 +149,27 @@ export async function handleFootage(path, request, env, headers, ctx, user) {
     return json({ status: 'uploaded' }, 202, headers);
   }
 
+  /* Run it again from the file already in storage. A take that failed for a
+   * passing reason — a billing hiccup at the transcriber, a flaky minute —
+   * should not mean uploading gigabytes a second time. */
+  if (path === '/footage/retry') {
+    let take;
+    try { take = await rpc(env, 'kb_footage_read', { p_id: id }); }
+    catch { return json({ error: 'could not load that take' }, 502, headers); }
+    if (!take) return json({ error: 'no take with that id' }, 404, headers);
+    if (take.status === 'transcribing') return json({ status: 'transcribing' }, 200, headers);
+
+    try { await rpc(env, 'kb_footage_state', { p_id: id, p_status: 'uploaded', p_error: null }); }
+    catch { return json({ error: 'could not mark that take' }, 502, headers); }
+
+    const again = await dispatchWorkflow(env, 'cut-footage.yml', { footage_id: id }, 'the cutting');
+    if (!again.ok) {
+      await rpc(env, 'kb_footage_state', { p_id: id, p_status: 'failed', p_error: again.error }).catch(() => {});
+      return json({ error: again.error }, 502, headers);
+    }
+    return json({ status: 'uploaded' }, 202, headers);
+  }
+
   if (path === '/footage/read') {
     try {
       const take = await rpc(env, 'kb_footage_read', { p_id: id });
