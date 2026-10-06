@@ -97,10 +97,16 @@ jobs:
       - name: Transcribe it
         run: node video/footage-transcribe.mjs "$FOOTAGE_ID" /tmp/audio.mp3
 
+      # Which seconds are full-frame title cards rather than him. A card
+      # centre-cropped to 9:16 is an unreadable fragment of a word, so the
+      # picker is not allowed to choose a passage containing one.
+      - name: Find the title cards
+        run: node video/footage-slides.mjs "$TAKE_FILE" > /tmp/slides.json
+
       - name: Pick what is worth cutting
         id: pick
         run: |
-          node video/footage-pick.mjs "$FOOTAGE_ID" | tee /tmp/pick.log
+          node video/footage-pick.mjs "$FOOTAGE_ID" /tmp/slides.json | tee /tmp/pick.log
           grep -o 'CLIPS=[0-9]*' /tmp/pick.log | tail -1 >> "$GITHUB_OUTPUT"
 
       - name: Install the renderer

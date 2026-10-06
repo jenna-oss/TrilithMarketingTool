@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  * Which parts of a take are worth cutting out.
  *
- *   node video/footage-pick.mjs <footage-id>
+ *   node video/footage-pick.mjs <footage-id> [slides.json]
  *
  * A short lives or dies on its first sentence, so this only keeps passages
  * that OPEN on something worth opening on — judged against the brand guide's
@@ -16,7 +16,15 @@
  *
  * The model picks whole sentences by number rather than timestamps, so a cut
  * always lands on a sentence boundary that really exists in the take.
+ *
+ * It also only sees the stretches where he is actually on camera. A long-form
+ * video cuts to full-frame title cards, and a 16:9 card centre-cropped to 9:16
+ * is an unreadable fragment of a word — on the first real take, two of three
+ * clips opened on one. A clip must live entirely inside one on-camera stretch,
+ * which is enforced here rather than asked for.
  * ------------------------------------------------------------------------ */
+
+import { readFileSync } from 'node:fs';
 
 const MODEL = 'claude-sonnet-5';
 const API = 'https://api.anthropic.com/v1/messages';
@@ -28,10 +36,12 @@ const MOST_CLIPS = 8;
 /* A breath before the first word, and a beat after the last. */
 const LEAD = 0.25;
 const TAIL = 0.35;
+/* Never let one clip's tail run into the next clip's lead. */
+const APART = 0.1;
 
-const [, , footageId] = process.argv;
+const [, , footageId, slidesFile] = process.argv;
 if (!footageId) {
-  console.error('usage: footage-pick.mjs <footage-id>');
+  console.error('usage: footage-pick.mjs <footage-id> [slides.json]');
   process.exit(2);
 }
 
@@ -72,6 +82,18 @@ function sentences(words) {
   return out.filter((s) => s.text.trim());
 }
 
+/* The gaps between the slides: where he is on camera. */
+function onCamera(slides, duration) {
+  const out = [];
+  let at = 0;
+  for (const s of [...slides].sort((a, b) => a.from - b.from)) {
+    if (s.from > at) out.push({ from: at, to: Math.min(s.from, duration) });
+    at = Math.max(at, s.to);
+  }
+  if (at < duration) out.push({ from: at, to: duration });
+  return out.filter((r) => r.to - r.from >= MIN_S);
+}
+
 const PICK_TOOL = {
   name: 'clips',
   description: 'The passages worth cutting out of this take, each one opening on a sentence that works as a hook.',
@@ -95,7 +117,7 @@ const PICK_TOOL = {
   },
 };
 
-function prompt(lines) {
+function prompt(lines, parts) {
   return `Below is everything said in one long take to camera, one sentence per line, numbered, with how
 long each lasts. It is a real estate investor talking about lending and deals, for The Buy Box
 (@thebuyboxre), a channel for people who want to own property.
@@ -110,13 +132,22 @@ What that channel's hook sounds like — sharp, declarative, a little confrontat
   No:  "So anyway, as I was saying about points..."
   No:  "Obviously you'll want to weigh points against rate."
 
-So an opening sentence is good when it names something countable, or states a position plainly enough
-that someone would stay to hear why. It is bad when it depends on what came before it, when it is hype,
-when it talks down, or when it is certain about the future.
+A good opening sentence names something countable, or states a position plainly enough that someone would
+stay to hear why. A bad one depends on what came before it, is hype, talks down, or is certain about the
+future.
+
+It must also SAY something rather than promise something. A sentence that only announces that a point is
+coming is not a hook, however confident it sounds:
+  No:  "The mistake that costs investors is this."
+  No:  "Here's the thing nobody tells you."
+  Yes: "Most investors price a bridge loan off the Fed, and the Fed has nothing to do with it."
+If you cannot tell what the claim is from the opening sentence alone, it is not an opening sentence.
 
 Each clip also has to stand on its own: a whole thought, beginning to end, not a fragment of an argument
 that only makes sense with the rest of the take around it. It should last between ${MIN_S} and ${MAX_S}
 seconds.
+
+${parts}
 
 Take as many as the take really holds and no more. Most takes hold two or three. If this one holds
 nothing — nobody opens anything cleanly — come back with an empty list and say so. An empty list is a
@@ -136,12 +167,40 @@ try {
   const words = Array.isArray(take.words) ? take.words : [];
   if (!words.length) throw new Error('that take has no word timings, so there is nothing to cut on');
 
-  const said = sentences(words);
-  console.log(`${said.length} sentences across ${Math.round((words[words.length - 1].e) / 60)} minutes`);
+  const duration = Number(take.seconds) || words[words.length - 1].e;
+  let slides = [];
+  if (slidesFile) {
+    try { slides = JSON.parse(readFileSync(slidesFile, 'utf8')); }
+    catch { slides = []; }
+  }
+  const stretches = onCamera(slides, duration);
+  console.log(`${slides.length} stretch(es) are not him; ${stretches.length} usable run(s) of ${MIN_S}s or more`);
 
-  const lines = said
-    .map((s, i) => `${i + 1}. [${s.s.toFixed(1)}s–${s.e.toFixed(1)}s] ${s.text}`)
-    .join('\n');
+  /* Only sentences inside a usable run, grouped by which run they are in. */
+  const said = sentences(words);
+  const kept = [];
+  said.forEach((s) => {
+    const mid = (s.s + s.e) / 2;
+    const run = stretches.findIndex((r) => mid >= r.from && mid <= r.to);
+    if (run >= 0 && s.s >= stretches[run].from - 0.5 && s.e <= stretches[run].to + 0.5) {
+      kept.push({ ...s, run });
+    }
+  });
+  if (!kept.length) throw new Error('none of this take is him talking for long enough to cut from');
+
+  let lines = '';
+  let lastRun = -1;
+  kept.forEach((s, i) => {
+    if (s.run !== lastRun) {
+      lines += `${lines ? '\n' : ''}--- he is on camera from ${stretches[s.run].from}s to ${stretches[s.run].to}s ---\n`;
+      lastRun = s.run;
+    }
+    lines += `${i + 1}. [${s.s.toFixed(1)}s–${s.e.toFixed(1)}s] ${s.text}\n`;
+  });
+
+  const parts = stretches.length > 1
+    ? `The take cuts away to full-frame title cards, which cannot be used. Only the stretches below are him on\ncamera, and they are marked. A clip must sit entirely inside ONE of them — never spanning a gap between\nthem, because the gap is a title card.`
+    : '';
 
   const res = await fetch(API, {
     method: 'POST',
@@ -155,7 +214,7 @@ try {
       max_tokens: 4000,
       tools: [PICK_TOOL],
       tool_choice: { type: 'tool', name: 'clips' },
-      messages: [{ role: 'user', content: prompt(lines) }],
+      messages: [{ role: 'user', content: prompt(lines, parts) }],
     }),
   });
   if (!res.ok) throw new Error(`Anthropic answered ${res.status}: ${(await res.text()).slice(0, 300)}`);
@@ -166,28 +225,38 @@ try {
 
   /* Everything it says is checked against the take rather than trusted: a
    * sentence number that does not exist, a clip that runs backwards, one that
-   * is too short or too long, or one that overlaps a clip already taken. */
-  const kept = [];
+   * crosses a title card, one outside the length, or one overlapping a clip
+   * already taken. */
+  const clips = [];
   let last = -1;
+  let endOfLast = -Infinity;
   for (const c of picked) {
     const from = Number(c.from);
     const to = Number(c.to);
     if (!Number.isInteger(from) || !Number.isInteger(to)) continue;
-    if (from < 1 || to > said.length || to < from) continue;
+    if (from < 1 || to > kept.length || to < from) continue;
     if (from <= last) continue;
 
-    const start = Math.max(0, said[from - 1].s - LEAD);
-    const end = said[to - 1].e + TAIL;
+    const opens = kept[from - 1];
+    const closes = kept[to - 1];
+    if (opens.run !== closes.run) {
+      console.log(`  skipping ${from}–${to}: it would cut across a title card`);
+      continue;
+    }
+
+    const run = stretches[opens.run];
+    const start = Math.max(run.from, opens.s - LEAD, endOfLast + APART);
+    const end = Math.min(run.to, closes.e + TAIL);
     const seconds = end - start;
     if (seconds < MIN_S || seconds > MAX_S) {
       console.log(`  skipping ${from}–${to}: ${seconds.toFixed(1)}s is outside ${MIN_S}–${MAX_S}`);
       continue;
     }
 
-    kept.push({
+    clips.push({
       start,
       end,
-      hook: said[from - 1].text,
+      hook: opens.text,
       why: String(c.why || '').slice(0, 600),
       /* The words inside this clip, on the clip's own clock. */
       words: words
@@ -195,10 +264,11 @@ try {
         .map((w) => ({ t: w.t, s: Number((w.s - start).toFixed(3)), e: Number((w.e - start).toFixed(3)) })),
     });
     last = to;
-    if (kept.length >= MOST_CLIPS) break;
+    endOfLast = end;
+    if (clips.length >= MOST_CLIPS) break;
   }
 
-  if (!kept.length) {
+  if (!clips.length) {
     console.log('nothing in this take opens cleanly enough to cut');
     await rpc('kb_footage_state', {
       p_id: footageId, p_status: 'ready',
@@ -208,8 +278,8 @@ try {
     process.exit(0);
   }
 
-  for (let i = 0; i < kept.length; i += 1) {
-    const c = kept[i];
+  for (let i = 0; i < clips.length; i += 1) {
+    const c = clips[i];
     const id = await rpc('kb_clip_create', {
       p_footage: footageId,
       p_idx: i + 1,
@@ -222,7 +292,7 @@ try {
     console.log(`  ${i + 1}. ${c.start.toFixed(1)}s–${c.end.toFixed(1)}s (${(c.end - c.start).toFixed(0)}s) ${id}`);
     console.log(`     "${c.hook.slice(0, 90)}"`);
   }
-  console.log(`CLIPS=${kept.length}`);
+  console.log(`CLIPS=${clips.length}`);
 } catch (err) {
   const why = String(err?.message || err).slice(0, 400);
   console.error('picking failed:', why);
