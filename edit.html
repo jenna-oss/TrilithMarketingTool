@@ -899,6 +899,11 @@ async function tusCreate({ endpoint, token, bucket, path, file }) {
     ['cacheControl', '3600'],
   ].map(([k, v]) => k + ' ' + b64(v)).join(',');
 
+  /* The token is a JWT, and storage's auth runs before it looks at the
+     signature — a request with no authorization at all is rejected as an
+     unparseable one ("Invalid Compact JWS") long before x-signature matters.
+     So it goes in both places: as the credential, and as the upload's own
+     authority. */
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -906,6 +911,7 @@ async function tusCreate({ endpoint, token, bucket, path, file }) {
       'upload-length': String(file.size),
       'upload-metadata': meta,
       'x-signature': token,
+      authorization: 'Bearer ' + token,
     },
   });
   if (!res.ok) {
@@ -922,7 +928,7 @@ async function tusCreate({ endpoint, token, bucket, path, file }) {
 async function tusOffset(url, token) {
   const res = await fetch(url, {
     method: 'HEAD',
-    headers: { 'tus-resumable': '1.0.0', 'x-signature': token },
+    headers: { 'tus-resumable': '1.0.0', 'x-signature': token, authorization: 'Bearer ' + token },
   });
   if (!res.ok) throw new Error('lost track of the upload (' + res.status + ')');
   return Number(res.headers.get('upload-offset') || 0);
@@ -939,6 +945,7 @@ async function tusSend({ url, token, file, from, onProgress }) {
         'upload-offset': String(offset),
         'content-type': 'application/offset+octet-stream',
         'x-signature': token,
+        authorization: 'Bearer ' + token,
       },
       body: file.slice(offset, end),
     });
