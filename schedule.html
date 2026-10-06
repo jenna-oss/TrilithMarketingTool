@@ -333,7 +333,14 @@ function draw(account) {
     ? 'Connect the account you post to. You approve it on Instagram, not here.'
     : 'The Worker is missing its Instagram keys — see below.';
   $('setup').hidden = Boolean(account.ready);
-  buttonsEl.append(button('Connect Instagram', '', connect));
+
+  /* With no keys set there is nothing to connect to, and pressing it opened a
+     blank tab that shut again — which looks like the button is broken rather
+     than like the Worker is unconfigured. */
+  const go = button('Connect Instagram', '', connect);
+  go.disabled = !account.ready;
+  if (!account.ready) go.title = 'The Worker needs its Instagram keys first — see the steps below.';
+  buttonsEl.append(go);
 }
 
 /* The popup is opened on the click itself and pointed at Instagram once the
