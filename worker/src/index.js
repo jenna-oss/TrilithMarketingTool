@@ -22,6 +22,7 @@ import { handleLinks } from './links.js';
 import { handleScripts } from './scripts.js';
 import { handleInstagram, handleInstagramCallback } from './instagram.js';
 import { handlePosts, publishDue } from './posts.js';
+import { handleFootage } from './footage.js';
 import { rpc } from './db.js';
 import { handleAuth, requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
@@ -114,6 +115,16 @@ export default {
       catch (err) {
         console.error('recordings route failed:', err?.message);
         return json({ error: 'Something went wrong with that recording. Try again.' }, 502, headers);
+      }
+    }
+
+    /* Raw takes. The bytes go straight from the browser to storage — this
+     * only signs the upload and keeps track of what is there. */
+    if (path.startsWith('/footage/')) {
+      try { return await handleFootage(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('footage route failed:', err?.message);
+        return json({ error: 'Something went wrong with that take. Try again.' }, 502, headers);
       }
     }
 

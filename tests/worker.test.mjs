@@ -94,6 +94,9 @@ globalThis.fetch = async (url, init = {}) => {
   if (u.includes('/v23.0/') && u.includes('status_code')) return jsonRes({ status_code: container.shift() || 'FINISHED' });
   if (u.includes('/v23.0/') && u.endsWith('/media') === false && /\/v23\.0\/\d+\/media$/.test(u.split('?')[0])) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
   if (/\/v23\.0\/\d+\/media$/.test(u)) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
+  if (u.includes('/storage/v1/object/upload/sign/')) {
+    return jsonRes({ url: '/object/upload/sign/kb-footage/abc.mp4?token=SIGNED-TOKEN-123' });
+  }
   if (u.endsWith('/auth/v1/user')) return jsonRes({ email: 'me@x.io' });
   const fn = (u.match(/\/rpc\/([a-z_]+)/) || [])[1];
   if (fn === 'kb_app_user_allowed') return jsonRes(true);
@@ -101,7 +104,7 @@ globalThis.fetch = async (url, init = {}) => {
 };
 
 const env = {
-  SUPABASE_URL: 'https://db.example', SUPABASE_ANON_KEY: 'anon',
+  SUPABASE_URL: 'https://db.supabase.co', SUPABASE_ANON_KEY: 'anon',
   ANTHROPIC_API_KEY: 'sk-test', GITHUB_TOKEN: 'tok', VOYAGE_API_KEY: '',
 };
 /* The token key is 32 bytes, base64, as the real one must be. */
@@ -146,7 +149,7 @@ const REC = '77777777-7777-7777-7777-777777777777';
 
 /* --- the gate ------------------------------------------------------------ */
 
-for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/list', '/scripts/list', '/scripts/write', '/kb/upload', '/instagram/account', '/instagram/start']) {
+for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/list', '/scripts/list', '/scripts/write', '/kb/upload', '/instagram/account', '/instagram/start', '/footage/list', '/footage/start']) {
   reset();
   const res = await post(path, {}, '');
   check(`${path} without a session -> 401`, res.status === 401, res.status);
@@ -492,6 +495,57 @@ said = rpcs('kb_post_state').map((c) => c.body).at(-1);
 check('after five tries it is marked failed rather than retried forever',
   said.p_status === 'failed' && out.done[0]?.outcome === 'failed',
   JSON.stringify({ status: said.p_status, outcome: out.done[0]?.outcome }));
+
+/* --- raw footage ----------------------------------------------------------- */
+
+reset();
+res = await post('/footage/start', { name: 'A take', bytes: 2e9, content_type: 'application/pdf' });
+check('footage that is not video -> 415, no row and no signature',
+  res.status === 415 && rpcs('kb_footage_create').length === 0
+  && !calls.some((c) => c.url.includes('/upload/sign/')), res.status);
+
+reset();
+res = await post('/footage/start', { name: 'A take', bytes: 1000, content_type: 'video/mp4' });
+check('a file too small to be a take -> 400', res.status === 400, res.status);
+
+reset();
+res = await post('/footage/start', { name: 'A take', bytes: 9e9, content_type: 'video/mp4' });
+check('a file over the bucket limit -> 413, said in gigabytes',
+  res.status === 413 && /GB/.test((await res.json()).error || ''), res.status);
+
+reset();
+rpcAnswer.kb_footage_create = '66666666-6666-4666-8666-666666666666';
+res = await post('/footage/start', { name: 'Monday morning take', bytes: 2.4e9, content_type: 'video/quicktime' });
+j = await res.json();
+check('a take is signed for upload, and the row records it',
+  res.status === 200 && j.id === '66666666-6666-4666-8666-666666666666'
+  && j.token === 'SIGNED-TOKEN-123' && /\.mov$/.test(j.path)
+  && rpcs('kb_footage_create')[0].body.p_bytes === 2.4e9,
+  JSON.stringify(j).slice(0, 200));
+check('the upload goes to the direct storage host, resumable',
+  j.endpoint === 'https://db.storage.supabase.co/storage/v1/upload/resumable', j.endpoint);
+check('the browser is never handed the anon key',
+  !JSON.stringify(j).includes('anon'), JSON.stringify(j).slice(0, 200));
+
+reset();
+rpcAnswer.kb_footage_read = {
+  id: '66666666-6666-4666-8666-666666666666', name: 'Monday morning take', status: 'ready',
+  storage_path: 'abc.mov', transcript: 'Four rowhomes...', words: [{ t: 'Four', s: 0.1, e: 0.4 }],
+};
+res = await post('/footage/read', { id: '66666666-6666-4666-8666-666666666666' });
+j = await res.json();
+check('reading a take gives the page the transcript but not the word timings',
+  j.footage.transcript.startsWith('Four rowhomes') && j.footage.has_words === true
+  && !('words' in j.footage) && !('storage_path' in j.footage),
+  JSON.stringify(j.footage).slice(0, 200));
+
+reset();
+rpcAnswer.kb_footage_delete = { ok: true, storage_path: 'abc.mov' };
+res = await post('/footage/delete', { id: '66666666-6666-4666-8666-666666666666' });
+await settle();
+check('deleting a take takes the file with it',
+  res.status === 200 && calls.some((c) => c.url.includes('/object/kb-footage/abc.mov') && c.url),
+  res.status);
 
 console.log(failures ? `\n${failures} FAILED` : '\nall passed');
 process.exit(failures ? 1 : 0);
