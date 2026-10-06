@@ -33,6 +33,29 @@ function hookSize(lines: string[]): number {
   return Math.max(HOOK_MIN, Math.min(HOOK_MAX, Math.floor(fits)));
 }
 
+/** The most the card can hold in the two lines the guide draws. Past about 74
+ *  characters the font has already shrunk as far as it goes and the card just
+ *  grows downward — a 30-word opener came out six lines deep, over his face.
+ *  He still says the whole sentence; this is only what is worth reading at a
+ *  glance. */
+const HOOK_CHARS = 70;
+
+function shorten(text: string): string {
+  const whole = text.trim();
+  if (whole.length <= HOOK_CHARS) return whole;
+
+  const window = whole.slice(0, HOOK_CHARS + 1);
+  /* A clause break reads as a finished thought; a cut mid-phrase does not. */
+  const clause = Math.max(
+    window.lastIndexOf(", "),
+    window.lastIndexOf("; "),
+    window.lastIndexOf(" — "),
+    window.lastIndexOf(": "),
+  );
+  const cut = clause > HOOK_CHARS * 0.3 ? clause : window.lastIndexOf(" ");
+  return whole.slice(0, cut > 0 ? cut : HOOK_CHARS).replace(/[,;:\s]+$/, "").trim();
+}
+
 /** Split a sentence into two balanced lines, on a word. One line if it is
  *  short enough to need only one. */
 function twoLines(text: string): string[] {
@@ -80,7 +103,7 @@ const Hook: React.FC<{ text: string }> = ({ text }) => {
   const t = frame / fps;
   if (t > HOOK_S) return null;
 
-  const lines = twoLines(text);
+  const lines = twoLines(shorten(text));
   const size = hookSize(lines);
   return (
     <AbsoluteFill
