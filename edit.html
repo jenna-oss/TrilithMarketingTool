@@ -908,7 +908,12 @@ async function tusCreate({ endpoint, token, bucket, path, file }) {
       'x-signature': token,
     },
   });
-  if (!res.ok) throw new Error('storage would not start the upload (' + res.status + ')');
+  if (!res.ok) {
+    /* Storage explains itself in the body; throwing away the explanation is
+       how one 400 becomes three guesses. */
+    const why = await res.text().catch(() => '');
+    throw new Error('storage would not start the upload (' + res.status + ') ' + why.slice(0, 200));
+  }
   const where = res.headers.get('location');
   if (!where) throw new Error('storage started the upload but did not say where');
   return new URL(where, endpoint).href;
@@ -937,7 +942,11 @@ async function tusSend({ url, token, file, from, onProgress }) {
       },
       body: file.slice(offset, end),
     });
-    if (!res.ok) throw new Error('the upload stopped at ' + Math.round((offset / file.size) * 100) + '% (' + res.status + ')');
+    if (!res.ok) {
+      const why = await res.text().catch(() => '');
+      throw new Error('the upload stopped at ' + Math.round((offset / file.size) * 100)
+        + '% (' + res.status + ') ' + why.slice(0, 200));
+    }
     offset = Number(res.headers.get('upload-offset') || end);
     onProgress(offset);
   }
