@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-14T03:38:42.213Z",
+  "fetchedAt": "2026-10-14T17:48:09.009Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -554,16 +554,6 @@
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/13f1534cb501fd7eae4b8c26d6804e8a.mp4"
         },
         {
-          "id": "4b5c3549-fa1a-47a8-a855-18e54aa6204f",
-          "hook": "You want to know something absolutely fucking wild?",
-          "hookSource": "hook",
-          "category": "Explainer",
-          "views": "42636",
-          "postedAt": "2026-10-12",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/a821a4bbe76624b8d79d9c1709913be7.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/a821a4bbe76624b8d79d9c1709913be7.mp4"
-        },
-        {
           "id": "c4b06e86-44f6-4dd0-98ea-2866ce3309dd",
           "hook": "Trying to time the market is just going to cost you more.",
           "hookSource": "title",
@@ -572,6 +562,16 @@
           "postedAt": "2026-10-11",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2ed1db695c78d61edd55d7a996f15a26.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2ed1db695c78d61edd55d7a996f15a26.mp4"
+        },
+        {
+          "id": "169e9cef-3748-4fd9-b34f-9222a67e681f",
+          "hook": "I had a lunch with a private wealth client the other day who's almost 70.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "27383",
+          "postedAt": "2026-10-10",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c589f32524dc6490bfbd20274ff84a1b.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c589f32524dc6490bfbd20274ff84a1b.mp4"
         }
       ]
     },
@@ -702,44 +702,34 @@
       "addedOn": "2026-09-09",
       "videos": [
         {
-          "id": "f4590e6f-9cb9-476b-84bd-4c8df761fdb0",
-          "hook": "Let's have AI make us 10 grand in two weeks.",
+          "id": "4289134f-0a14-4e81-94a1-65175f9afd67",
+          "hook": "To get this one contract signed, let's break down the numbers.",
           "hookSource": "hook",
-          "category": "Tutorial",
-          "views": "6446",
-          "postedAt": "2026-09-03",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/9623dc15fe290deebbdf32d26d1b7725.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/9623dc15fe290deebbdf32d26d1b7725.mp4"
+          "category": "Explainer",
+          "views": "8225",
+          "postedAt": "2026-09-16",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/794c842e3919642186df1bffc328e912.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/794c842e3919642186df1bffc328e912.mp4"
         },
         {
-          "id": "93305da1-040c-4bb0-81e3-9bb4efde9f0e",
-          "hook": "Whenever me and my buddy need to make five grand, this is what we do.",
+          "id": "d87c39b1-4b81-4452-8697-8fc45c4ff88f",
+          "hook": "You had a closed deal today?",
           "hookSource": "hook",
-          "category": "Tutorial",
-          "views": "43791",
-          "postedAt": "2026-08-29",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c7983628d3bd2ca7e7e978edde296bee.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c7983628d3bd2ca7e7e978edde296bee.mp4"
+          "category": "Storytime",
+          "views": "6178",
+          "postedAt": "2026-09-16",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2169b4fb8951aec2045f8f80e490b97a.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2169b4fb8951aec2045f8f80e490b97a.mp4"
         },
         {
-          "id": "604e0791-6ccc-4c34-9fd9-a992f4895d28",
-          "hook": "I guess what areas do you invest in, how frequently?",
-          "hookSource": "hook",
-          "category": "Interview",
-          "views": "9959",
-          "postedAt": "2026-08-26",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8eb7314fa3acff2ecbd5124cce116455.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8eb7314fa3acff2ecbd5124cce116455.mp4"
-        },
-        {
-          "id": "adddc60f-a663-4586-8a63-8e72238723c2",
-          "hook": "Let's make 10 grand in two weeks.",
+          "id": "c60a27b1-f90d-4505-a1d9-e63fa70ea953",
+          "hook": "Whenever me and my boy need to make $5,000, this is what we do.",
           "hookSource": "hook",
           "category": "Tutorial",
-          "views": "53182",
-          "postedAt": "2026-08-26",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/199ac87ed8db701a24eaa45e6f8a287d.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/199ac87ed8db701a24eaa45e6f8a287d.mp4"
+          "views": "16668",
+          "postedAt": "2026-09-16",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/476d7bfc0956e7f67a43ce5d6a40c634.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/476d7bfc0956e7f67a43ce5d6a40c634.mp4"
         }
       ]
     },
@@ -818,16 +808,6 @@
           "postedAt": "2026-01-05",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/15b33a37d9d4fe69d6b5caf570e7e800.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/15b33a37d9d4fe69d6b5caf570e7e800.mp4"
-        },
-        {
-          "id": "de8ed6bc-80cd-48d8-9fe8-a02c57c2ce8e",
-          "hook": "I'm a nurse. I work 12 hour shifts. I have no extra time, but I own five houses that pay me while I sleep.",
-          "hookSource": "hook",
-          "category": "Text Overlay",
-          "views": "2120",
-          "postedAt": "2026-01-04",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/19541a566e91c6878c4af7978b16117a.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/19541a566e91c6878c4af7978b16117a.mp4"
         }
       ]
     }
