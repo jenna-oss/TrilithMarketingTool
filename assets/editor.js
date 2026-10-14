@@ -200,7 +200,7 @@
     }
     function drawNotes() {
       var radio = function (id, label) {
-        return el('button', { type: 'button', role: 'radio', class: 'chip chip-sm', 'data-scope': id, 'aria-checked': String(scope === id), onclick: function () { scope = id; drawNotes(); noteBox.focus(); } }, label);
+        return el('button', { type: 'button', role: 'radio', class: 'chip chip-sm', 'data-scope': id, 'aria-checked': String(scope === id), onclick: function () { scope = id; draw(); if (noteBox) noteBox.focus(); } }, label);
       };
       noteBox = el('textarea', { class: 'field', rows: '3', maxlength: '400', 'aria-label': 'Note' });
       noteBox.value = body.dataset.draft || '';
