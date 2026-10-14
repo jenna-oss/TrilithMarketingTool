@@ -20,7 +20,8 @@ import { handleUpload } from './upload.js';
 import { handleRecordings } from './recordings.js';
 import { handleLinks } from './links.js';
 import { handleScripts } from './scripts.js';
-import { handleInstagram, handleInstagramCallback } from './instagram.js';
+import { handleMeta, handleMetaCallback } from './meta.js';
+import { handleSocial } from './uploadpost.js';
 import { handlePosts, publishDue } from './posts.js';
 import { handleFootage } from './footage.js';
 import { dispatchWorkflow } from './github.js';
@@ -72,15 +73,15 @@ export default {
       return json({ error: 'origin not allowed' }, 403, headers);
     }
 
-    /* Instagram sends the browser here after you approve: a GET navigation,
+    /* Facebook sends the browser here after you approve: a GET navigation,
      * with no session on it and no JSON in it. It has to come before the
      * POST-only rule below, which would otherwise turn every connection into
      * a 405. What stands in for a session is the single-use ticket the
      * Schedule page asked for before sending you there. */
-    if (path === '/instagram/callback') {
-      try { return await handleInstagramCallback(request, env); }
+    if (path === '/meta/callback') {
+      try { return await handleMetaCallback(request, env); }
       catch (err) {
-        console.error('instagram callback failed:', err?.message);
+        console.error('meta callback failed:', err?.message);
         return new Response('Something went wrong connecting that account.', { status: 502 });
       }
     }
@@ -139,12 +140,22 @@ export default {
       }
     }
 
-    /* Connecting the Instagram account posts go to. The callback above is
-     * the open half of this; these are the signed-in half. */
-    if (path.startsWith('/instagram/')) {
-      try { return await handleInstagram(path, request, env, headers, ctx, gate.user); }
+    /* Connecting The Buy Box's four accounts through Upload-Post. */
+    if (path.startsWith('/social/')) {
+      try { return await handleSocial(path, request, env, headers, ctx, gate.user); }
       catch (err) {
-        console.error('instagram route failed:', err?.message);
+        console.error('social route failed:', err?.message);
+        return json({ error: 'Something went wrong with that. Try again.' }, 502, headers);
+      }
+    }
+
+    /* The fallback: connecting the Facebook Page, and its Instagram, straight
+     * to Meta. The callback above is the open half of this; these are the
+     * signed-in half. */
+    if (path.startsWith('/meta/')) {
+      try { return await handleMeta(path, request, env, headers, ctx, gate.user); }
+      catch (err) {
+        console.error('meta route failed:', err?.message);
         return json({ error: 'Something went wrong with that. Try again.' }, 502, headers);
       }
     }
@@ -395,8 +406,8 @@ export default {
     }, 404, headers);
   },
 
-  /* Instagram will not hold a post for you, so this is what waiting looks
-   * like: every five minutes, take whatever is due and move it along. A post
+  /* Neither Instagram nor Facebook will hold a post for us, so this is what
+   * waiting looks like: every five minutes, take whatever is due and move it along. A post
    * mid-flight is picked up by whichever run comes next, and kb_post_claim
    * makes sure two runs never take the same one. */
   async scheduled(event, env, ctx) {

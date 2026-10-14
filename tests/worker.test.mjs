@@ -20,7 +20,7 @@ import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const worker = (await import(pathToFileURL(join(here, '..', 'worker', 'src', 'index.js')).href)).default;
-const { accessToken } = await import(pathToFileURL(join(here, '..', 'worker', 'src', 'instagram.js')).href);
+const { pageAccount } = await import(pathToFileURL(join(here, '..', 'worker', 'src', 'meta.js')).href);
 const { publishDue } = await import(pathToFileURL(join(here, '..', 'worker', 'src', 'posts.js')).href);
 
 /* --- the fakes ----------------------------------------------------------- */
@@ -33,6 +33,28 @@ let githubOk = true;
 /* What the container reports, run by run, and how many have been made. */
 let container = [];
 let made = 0;
+/* The Pages an approval covers, and what a Facebook reel reports, run by run. */
+const PAGES = () => [{
+  id: '555', name: 'The Buy Box', access_token: 'PAGE-SECRET',
+  instagram_business_account: { id: '178414', username: 'thebuyboxre' },
+}];
+let fbPages = PAGES();
+let reelStatus = [];
+let photos = 0;
+/* Upload-Post: the profile it reports, its Pages, how /upload answers, and
+ * what the status call says, run by run. */
+const PROFILE = () => ({
+  username: 'thebuybox',
+  social_accounts: {
+    youtube: { handle: '@thebuyboxre', display_name: 'The Buy Box' },
+    instagram: { username: 'thebuyboxre', display_name: 'The Buy Box' },
+    facebook: { display_name: 'The Buy Box' },
+    tiktok: null,
+  },
+});
+let upProfile = PROFILE();
+let upSend = null;
+let upStatus = [];
 
 const jsonRes = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
 
@@ -65,7 +87,8 @@ globalThis.fetch = async (url, init = {}) => {
   let body = null;
   if (init.body && typeof init.body === 'string') { try { body = JSON.parse(init.body); } catch { body = init.body; } }
   else if (init.body instanceof URLSearchParams) body = Object.fromEntries(init.body);
-  calls.push({ url: u, body });
+  else if (init.body instanceof FormData) body = Object.fromEntries(init.body);
+  calls.push({ url: u, body, headers: init.headers });
 
   if (u.includes('api.anthropic.com')) {
     const block = claudeReply.type === 'tool_use'
@@ -86,15 +109,38 @@ globalThis.fetch = async (url, init = {}) => {
     return sse(block);
   }
   if (u.startsWith('https://api.supadata.ai/v1/transcript/')) return jsonRes(supaJob);
-  if (u.startsWith('https://api.instagram.com/oauth/access_token')) return jsonRes({ access_token: 'SHORT-LIVED', user_id: '178414' });
-  if (u.startsWith('https://graph.instagram.com/access_token')) return jsonRes({ access_token: 'LONG-LIVED-SECRET', token_type: 'bearer', expires_in: 5184000 });
-  if (u.startsWith('https://graph.instagram.com/refresh_access_token')) return jsonRes({ access_token: 'RENEWED-SECRET', expires_in: 5184000 });
-  if (u.startsWith('https://graph.instagram.com/v23.0/me')) return jsonRes({ user_id: '178414', username: 'thebuyboxre' });
+  if (u.startsWith('https://graph.facebook.com/v25.0/oauth/access_token')) {
+    return jsonRes({ access_token: u.includes('fb_exchange_token') ? 'LONG-USER' : 'SHORT-USER', token_type: 'bearer' });
+  }
+  if (u.startsWith('https://graph.facebook.com/v25.0/me/accounts')) return jsonRes({ data: fbPages });
+  if (u.startsWith('https://rupload.facebook.com/video-upload/v25.0/')) return jsonRes({ success: true });
   if (u.includes('/media_publish')) return jsonRes({ id: 'MEDIA-1' });
-  if (u.includes('/v23.0/') && u.includes('fields=permalink')) return jsonRes({ permalink: 'https://www.instagram.com/reel/xyz/' });
-  if (u.includes('/v23.0/') && u.includes('status_code')) return jsonRes({ status_code: container.shift() || 'FINISHED' });
-  if (u.includes('/v23.0/') && u.endsWith('/media') === false && /\/v23\.0\/\d+\/media$/.test(u.split('?')[0])) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
-  if (/\/v23\.0\/\d+\/media$/.test(u)) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
+  if (u.includes('/v25.0/') && u.includes('fields=permalink_url')) return jsonRes({ permalink_url: '/reel/123' });
+  if (u.includes('/v25.0/') && u.includes('fields=permalink')) return jsonRes({ permalink: 'https://www.instagram.com/reel/xyz/' });
+  if (u.includes('/v25.0/') && u.includes('status_code')) return jsonRes({ status_code: container.shift() || 'FINISHED' });
+  if (u.includes('/v25.0/') && u.includes('fields=status')) return jsonRes({ status: reelStatus.shift() || {} });
+  if (/\/v25\.0\/\d+\/media$/.test(u)) return jsonRes({ id: 'CONTAINER-' + (made += 1) });
+  if (/\/v25\.0\/\d+\/video_reels$/.test(u)) {
+    return jsonRes(body?.upload_phase === 'start' ? { video_id: 'VID-1', upload_url: 'https://rupload.facebook.com/video-upload/v25.0/VID-1' } : { success: true });
+  }
+  if (/\/v25\.0\/\d+\/photos$/.test(u)) {
+    photos += 1;
+    return jsonRes(body?.published === 'false' ? { id: 'PHOTO-' + photos } : { id: 'PHOTO-' + photos, post_id: 'PAGE_POST-1' });
+  }
+  if (/\/v25\.0\/\d+\/feed$/.test(u)) return jsonRes({ id: 'FEED-1' });
+  if (u.startsWith('https://api.upload-post.com/api/')) {
+    const path = new URL(u).pathname.replace('/api', '');
+    if (path === '/uploadposts/users/thebuybox') {
+      return upProfile ? jsonRes({ success: true, profile: upProfile }) : jsonRes({ success: false, message: 'not found' }, 404);
+    }
+    if (path === '/uploadposts/users' && init.method === 'POST') { upProfile = PROFILE(); return jsonRes({ success: true }, 201); }
+    if (path === '/uploadposts/users/generate-jwt') return jsonRes({ success: true, access_url: 'https://app.upload-post.com/connect?token=JWT', duration: '48h' });
+    if (path === '/uploadposts/facebook/pages') {
+      return jsonRes({ success: true, pages: [{ page_id: '555', page_name: 'The Buy Box' }, { page_id: '666', page_name: 'Trilith Funding' }] });
+    }
+    if (path === '/upload') return upSend ? jsonRes(upSend.body, upSend.status) : jsonRes({ success: true, request_id: 'REQ-1' });
+    if (path === '/uploadposts/status') return jsonRes(upStatus.shift() || { status: 'processing', results: [] });
+  }
   if (u.includes('/actions/workflows/')) {
     /* 204 must carry no body at all, or the Response constructor throws. */
     return githubOk ? new Response(null, { status: 204 }) : new Response('no', { status: 403 });
@@ -113,13 +159,13 @@ const env = {
   ANTHROPIC_API_KEY: 'sk-test', GITHUB_TOKEN: 'tok', VOYAGE_API_KEY: '',
 };
 /* The token key is 32 bytes, base64, as the real one must be. */
-const igEnv = {
+const metaEnv = {
   ...env,
-  INSTAGRAM_APP_ID: '1234567890',
-  INSTAGRAM_APP_SECRET: 'app-secret',
-  INSTAGRAM_TOKEN_KEY: Buffer.alloc(32, 7).toString('base64'),
+  META_APP_ID: '1234567890',
+  META_APP_SECRET: 'app-secret',
+  META_TOKEN_KEY: Buffer.alloc(32, 7).toString('base64'),
 };
-const get = (path, e = igEnv) => worker.fetch(new Request('https://w.example' + path, {
+const get = (path, e = metaEnv) => worker.fetch(new Request('https://w.example' + path, {
   method: 'GET', headers: { origin: 'http://localhost:8788' },
 }), e, ctx);
 let pending = [];
@@ -146,6 +192,12 @@ const reset = () => {
   githubOk = true;
   container = [];
   made = 0;
+  fbPages = PAGES();
+  reelStatus = [];
+  photos = 0;
+  upProfile = PROFILE();
+  upSend = null;
+  upStatus = [];
 };
 /* Exactly this function: '/rpc/kb_links' is a prefix of '/rpc/kb_links_by_ids',
  * and matching loosely made the new call look like the old one. */
@@ -155,7 +207,7 @@ const REC = '77777777-7777-7777-7777-777777777777';
 
 /* --- the gate ------------------------------------------------------------ */
 
-for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/list', '/scripts/list', '/scripts/write', '/kb/upload', '/instagram/account', '/instagram/start', '/footage/list', '/footage/start']) {
+for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/list', '/scripts/list', '/scripts/write', '/kb/upload', '/meta/account', '/meta/start', '/meta/pick', '/social/account', '/social/connect', '/footage/list', '/footage/start']) {
   reset();
   const res = await post(path, {}, '');
   check(`${path} without a session -> 401`, res.status === 401, res.status);
@@ -276,84 +328,98 @@ reset();
 res = await post('/nonsense', {});
 check('an unknown route -> 404', res.status === 404, res.status);
 
-/* --- connecting Instagram -------------------------------------------------- */
+/* --- connecting Facebook and Instagram ------------------------------------- */
 
 reset();
-res = await post('/instagram/start', {}, 'signed-in', env);   // no keys set
+res = await post('/meta/start', {}, 'signed-in', env);   // no keys set
 j = await res.json();
-check('connecting with no Instagram keys -> 503 saying which to set',
-  res.status === 503 && /INSTAGRAM_APP_SECRET/.test(j.hint || ''), JSON.stringify(j));
+check('connecting with no Meta keys -> 503 saying which to set',
+  res.status === 503 && /META_APP_SECRET/.test(j.hint || ''), JSON.stringify(j));
 
 reset();
 rpcAnswer.kb_ig_ticket_new = '00000000-aaaa-4aaa-8aaa-000000000001';
-res = await post('/instagram/start', {}, 'signed-in', igEnv);
+res = await post('/meta/start', {}, 'signed-in', metaEnv);
 j = await res.json();
-const authorize = new URL(j.url || 'https://x.invalid');
-check('connecting hands back Instagram own page, not a form here',
-  authorize.origin + authorize.pathname === 'https://www.instagram.com/oauth/authorize', j.url);
-check('...asking only to read the account and publish to it',
-  authorize.searchParams.get('scope') === 'instagram_business_basic,instagram_business_content_publish',
+let authorize = new URL(j.url || 'https://x.invalid');
+check('connecting hands back Facebook own page, not a form here',
+  authorize.origin + authorize.pathname === 'https://www.facebook.com/v25.0/dialog/oauth', j.url);
+check('...asking for the Page, posting to it, and its Instagram',
+  ['pages_show_list', 'pages_manage_posts', 'instagram_content_publish', 'business_management']
+    .every((s) => (authorize.searchParams.get('scope') || '').split(',').includes(s)),
   authorize.searchParams.get('scope'));
 check('...with the one-time ticket as state, and our callback as the redirect',
   authorize.searchParams.get('state') === '00000000-aaaa-4aaa-8aaa-000000000001'
-  && authorize.searchParams.get('redirect_uri') === 'https://w.example/instagram/callback',
+  && authorize.searchParams.get('redirect_uri') === 'https://w.example/meta/callback',
   authorize.search);
+
+reset();
+rpcAnswer.kb_ig_ticket_new = '00000000-aaaa-4aaa-8aaa-000000000001';
+res = await post('/meta/start', {}, 'signed-in', { ...metaEnv, META_LOGIN_CONFIG_ID: '42' });
+authorize = new URL((await res.json()).url || 'https://x.invalid');
+check('with a Login for Business configuration it sends that, not a scope list',
+  authorize.searchParams.get('config_id') === '42' && !authorize.searchParams.has('scope'), authorize.search);
 
 /* The callback is the one route with no session on it, so the ticket is the
  * whole of its security. */
 reset();
 rpcAnswer.kb_ig_ticket_take = null;
-res = await get('/instagram/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000009');
+res = await get('/meta/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000009');
 let html = await res.text();
 check('a callback with a ticket we did not issue saves nothing',
-  res.status === 200 && /expired, or had already been used/.test(html) && rpcs('kb_ig_save').length === 0,
+  res.status === 200 && /expired, or had already been used/.test(html) && rpcs('kb_meta_save').length === 0,
   res.status);
 
 reset();
-rpcAnswer.kb_ig_ticket_take = 'me@x.io';
-res = await get('/instagram/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000001');
+res = await get('/meta/callback?error=access_denied&error_description=%3Cscript%3Ex%3C%2Fscript%3E');
 html = await res.text();
-const connected = rpcs('kb_ig_save')[0]?.body;
-check('a good callback connects the account and names it',
-  /thebuyboxre is connected/.test(html) && connected?.p_ig_user_id === '178414' && connected.p_username === 'thebuyboxre',
-  html.slice(0, 140));
-check('the short-lived token is traded for a sixty-day one',
-  calls.some((c) => c.url.includes('ig_exchange_token'))
-  && new Date(connected.p_expires).getTime() - Date.now() > 50 * 86400000);
-check('what is stored is ciphertext, not the token',
-  typeof connected.p_cipher === 'string' && connected.p_cipher.length > 0
-  && !JSON.stringify(connected).includes('LONG-LIVED-SECRET'),
-  JSON.stringify(connected).slice(0, 200));
+check('what Facebook says on a refusal is shown as text, not run',
+  !html.includes('<script>x') && html.includes('&#60;script&#62;'), html.slice(0, 200));
+
+reset();
+rpcAnswer.kb_ig_ticket_take = 'me@x.io';
+res = await get('/meta/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000001');
+html = await res.text();
+const saved = rpcs('kb_meta_save')[0]?.body;
+const one = saved?.p_pages?.[0];
+check('a good callback connects the Page and its Instagram, and names them',
+  /The Buy Box and @thebuyboxre are connected/.test(html)
+  && saved.p_pages.length === 1 && one.page_id === '555' && one.ig_user_id === '178414'
+  && one.ig_username === 'thebuyboxre' && saved.p_email === 'me@x.io',
+  html.slice(0, 200));
+check('the short-lived token is traded for a long-lived one before the Pages are asked for',
+  calls.some((c) => c.url.includes('fb_exchange_token'))
+  && calls.find((c) => c.url.includes('/me/accounts'))?.url.includes('access_token=LONG-USER'));
+check('what is stored is ciphertext, not the Page token',
+  typeof one.cipher === 'string' && one.cipher.length > 0
+  && !JSON.stringify(saved).includes('PAGE-SECRET'),
+  JSON.stringify(saved).slice(0, 200));
+
+reset();
+rpcAnswer.kb_ig_ticket_take = 'me@x.io';
+fbPages = [];
+res = await get('/meta/callback?code=abc&state=00000000-aaaa-4aaa-8aaa-000000000001');
+html = await res.text();
+check('an approval that shared no Pages saves nothing and says what to do',
+  /didn’t share any Pages/.test(html) && rpcs('kb_meta_save').length === 0, html.slice(0, 200));
 
 /* And it has to come back out again, or nothing can ever post. */
 reset();
-rpcAnswer.kb_ig_secret = {
-  ig_user_id: '178414', cipher: connected.p_cipher, iv: connected.p_iv,
-  expires_at: new Date(Date.now() + 50 * 86400000).toISOString(),
-};
-const opened = await accessToken(igEnv);
+rpcAnswer.kb_meta_secret = { page_id: '555', page_name: 'The Buy Box', ig_user_id: '178414', cipher: one.cipher, iv: one.iv };
+const opened = await pageAccount(metaEnv);
 check('the Worker can open it again with its own key',
-  opened?.token === 'LONG-LIVED-SECRET' && opened.igUserId === '178414', JSON.stringify(opened));
-check('...and a token with weeks left is not renewed needlessly',
-  !calls.some((c) => c.url.includes('ig_refresh_token')));
+  opened?.token === 'PAGE-SECRET' && opened.pageId === '555' && opened.igUserId === '178414', JSON.stringify(opened));
 
 reset();
-rpcAnswer.kb_ig_secret = {
-  ig_user_id: '178414', cipher: connected.p_cipher, iv: connected.p_iv,
-  expires_at: new Date(Date.now() + 2 * 86400000).toISOString(),
-};
-const renewed = await accessToken(igEnv);
-check('a token close to running out is renewed and stored again',
-  renewed?.token === 'RENEWED-SECRET' && rpcs('kb_ig_save').length === 1,
-  JSON.stringify({ token: renewed?.token, saved: rpcs('kb_ig_save').length }));
-
-reset();
-rpcAnswer.kb_ig_account = { ig_user_id: '178414', username: 'thebuyboxre', expires_at: new Date().toISOString() };
-res = await post('/instagram/account', {}, 'signed-in', igEnv);
+rpcAnswer.kb_meta_account = [{ page_id: '555', page_name: 'The Buy Box', ig_user_id: '178414', ig_username: 'thebuyboxre', selected: true }];
+res = await post('/meta/account', {}, 'signed-in', metaEnv);
 j = await res.json();
-check('the page is told who is connected, and never the token',
-  j.connected === true && j.username === 'thebuyboxre' && !JSON.stringify(j).includes('cipher'),
+check('the page is told which Page is connected, and never the token',
+  j.connected === true && j.page?.ig_username === 'thebuyboxre' && !JSON.stringify(j).includes('cipher'),
   JSON.stringify(j));
+
+reset();
+res = await post('/meta/pick', { page_id: 'not-a-page' }, 'signed-in', metaEnv);
+check('choosing a Page that is not an id -> 400', res.status === 400, res.status);
 
 /* --- scheduling ------------------------------------------------------------ */
 
@@ -366,6 +432,8 @@ for (const [what, payload] of [
   ['media that is not https', { kind: 'reel', media: [{ url: 'http://x/a.mp4' }], scheduled_for: soon() }],
   ['a carousel of one', { kind: 'carousel', media: [{ url: 'https://x/a.jpg' }], scheduled_for: soon() }],
   ['a time that has gone', { kind: 'reel', media: [{ url: 'https://x/a.mp4' }], scheduled_for: new Date(Date.now() - 7200000).toISOString() }],
+  ['to a platform we do not post to', { kind: 'reel', media: [{ url: 'https://x/a.mp4' }], scheduled_for: soon(), platforms: ['myspace'] }],
+  ['a Facebook carousel with a video in it', { kind: 'carousel', media: [{ url: 'https://x/a.jpg' }, { url: 'https://x/b.mp4', kind: 'video' }], scheduled_for: soon(), platforms: ['facebook'] }],
 ]) {
   reset();
   res = await post('/posts/create', payload);
@@ -387,70 +455,92 @@ check('a reel is scheduled, with its caption, time and the video it came from',
   && scheduled.p_media[0].kind === 'video' && scheduled.p_caption === 'Four rowhomes, one loan.'
   && scheduled.p_render_id === 'cccc3333-3333-4333-8333-cccccccccccc',
   JSON.stringify(scheduled).slice(0, 200));
+check('...to Instagram when no platform is named, as before',
+  rpcs('kb_post_create').length === 1 && scheduled.p_platform === 'instagram', scheduled.p_platform);
+
+reset();
+rpcAnswer.kb_post_create = '55555555-5555-4555-8555-555555555555';
+res = await post('/posts/create', {
+  kind: 'reel', media: [{ url: 'https://videos.example/a.mp4' }], scheduled_for: soon(),
+  platforms: ['instagram', 'facebook', 'facebook'],
+});
+check('scheduling to both makes one row each, and only one each',
+  res.status === 200 && rpcs('kb_post_create').map((c) => c.body.p_platform).join() === 'instagram,facebook',
+  rpcs('kb_post_create').map((c) => c.body.p_platform).join());
 
 reset();
 rpcAnswer.kb_post_cancel = false;
 res = await post('/posts/cancel', { id: '55555555-5555-4555-8555-555555555555' });
 check('cancelling one that has already gone out -> 409', res.status === 409, res.status);
 
-/* --- sending it ------------------------------------------------------------ */
+/* --- sending it to Instagram ---------------------------------------------- */
 
 /* The publisher needs a token it can open, so reuse the one sealed above. */
-const igPublish = {
-  ...igEnv, POST_WAIT_TRIES: 2, POST_WAIT_MS: 1,
+const publishEnv = {
+  ...metaEnv, POST_WAIT_TRIES: 2, POST_WAIT_MS: 1,
 };
-const sealed = () => ({
-  ig_user_id: '178414', cipher: connected.p_cipher, iv: connected.p_iv,
-  expires_at: new Date(Date.now() + 50 * 86400000).toISOString(),
+const sealed = (over) => ({
+  page_id: '555', page_name: 'The Buy Box', ig_user_id: '178414', cipher: one.cipher, iv: one.iv, ...over,
 });
 const DUE = (over) => ({
-  id: '55555555-5555-4555-8555-555555555555', kind: 'reel', attempts: 1,
+  id: '55555555-5555-4555-8555-555555555555', kind: 'reel', attempts: 1, platform: 'instagram',
   media: [{ url: 'https://videos.example/a.mp4', kind: 'video' }],
   caption: 'Four rowhomes, one loan.', container_id: null, ...over,
 });
+const IG_MEDIA = /\/v25\.0\/178414\/media$/;
 
 reset();
-rpcAnswer.kb_ig_secret = null;
+rpcAnswer.kb_meta_secret = null;
 rpcAnswer.kb_post_claim = DUE();
-let out = await publishDue(igPublish);
-check('with no account connected nothing is claimed or sent',
-  out.error === 'no Instagram account is connected' && rpcs('kb_post_claim').length === 0, JSON.stringify(out));
+let out = await publishDue(publishEnv);
+check('with no Page connected nothing is claimed or sent',
+  out.error === 'no Facebook Page is connected' && rpcs('kb_post_claim').length === 0, JSON.stringify(out));
 
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE();
 container = ['IN_PROGRESS', 'FINISHED'];
-out = await publishDue(igPublish, 1);
-let built = calls.find((c) => /\/v23\.0\/178414\/media$/.test(c.url))?.body;
-check('a reel is built as a REELS container from the video url',
+out = await publishDue(publishEnv, 1);
+let builtCall = calls.find((c) => IG_MEDIA.test(c.url));
+let built = builtCall?.body;
+check('a reel is built as a REELS container from the video url, with the Page token',
   built?.media_type === 'REELS' && built.video_url === 'https://videos.example/a.mp4'
-  && built.caption === 'Four rowhomes, one loan.', JSON.stringify(built));
+  && built.caption === 'Four rowhomes, one loan.' && built.access_token === 'PAGE-SECRET', JSON.stringify(built));
 check('...and published only once the container says it is finished',
   calls.some((c) => c.url.includes('/media_publish')) && out.done[0]?.outcome === 'posted',
   JSON.stringify(out.done));
-const posted = rpcs('kb_post_state').map((c) => c.body).find((b) => b.p_status === 'posted');
+let posted = rpcs('kb_post_state').map((c) => c.body).find((b) => b.p_status === 'posted');
 check('...with the permalink kept',
   posted?.p_permalink === 'https://www.instagram.com/reel/xyz/' && posted.p_media_id === 'MEDIA-1',
   JSON.stringify(posted));
 
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed({ ig_user_id: null });
+rpcAnswer.kb_post_claim = DUE();
+out = await publishDue(publishEnv, 1);
+let said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('an Instagram post on a Page with no Instagram linked says so, and builds nothing',
+  /no Instagram account linked/.test(said?.p_error || '') && !calls.some((c) => c.url.includes('/media')),
+  JSON.stringify(said));
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE({ kind: 'image', media: [{ url: 'https://videos.example/a.jpg', kind: 'image' }] });
 container = ['FINISHED'];
-await publishDue(igPublish, 1);
-built = calls.find((c) => /\/v23\.0\/178414\/media$/.test(c.url))?.body;
+await publishDue(publishEnv, 1);
+built = calls.find((c) => IG_MEDIA.test(c.url))?.body;
 check('an image is built from image_url, with no media_type',
   built?.image_url === 'https://videos.example/a.jpg' && !built.media_type, JSON.stringify(built));
 
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE({
   kind: 'carousel',
   media: [{ url: 'https://videos.example/1.jpg', kind: 'image' }, { url: 'https://videos.example/2.mp4', kind: 'video' }],
 });
 container = ['FINISHED'];
-await publishDue(igPublish, 1);
-const containers = calls.filter((c) => /\/v23\.0\/178414\/media$/.test(c.url)).map((c) => c.body);
+await publishDue(publishEnv, 1);
+const containers = calls.filter((c) => IG_MEDIA.test(c.url)).map((c) => c.body);
 check('a carousel builds each child first, then one container holding them',
   containers.length === 3 && containers[0].is_carousel_item === 'true'
   && containers[1].media_type === 'VIDEO' && containers[1].is_carousel_item === 'true'
@@ -462,45 +552,276 @@ check('...and only the holding container carries the caption',
 /* Still processing when the run gives up: the container is kept so the next
  * run carries on, and nothing is published. */
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE();
 container = ['IN_PROGRESS', 'IN_PROGRESS', 'IN_PROGRESS'];
-out = await publishDue(igPublish, 1);
-const left = rpcs('kb_post_state').map((c) => c.body).at(-1);
+out = await publishDue(publishEnv, 1);
+let left = rpcs('kb_post_state').map((c) => c.body).at(-1);
 check('a container still processing is left working, with its id kept',
   out.done[0]?.outcome === 'waiting' && left.p_status === 'working' && left.p_container === 'CONTAINER-1'
   && !calls.some((c) => c.url.includes('/media_publish')),
   JSON.stringify({ outcome: out.done[0]?.outcome, status: left.p_status, container: left.p_container }));
 
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE({ container_id: 'CONTAINER-EARLIER' });
 container = ['FINISHED'];
-await publishDue(igPublish, 1);
+await publishDue(publishEnv, 1);
 check('a post picked up mid-flight does not build a second container',
-  !calls.some((c) => /\/v23\.0\/178414\/media$/.test(c.url))
+  !calls.some((c) => IG_MEDIA.test(c.url))
   && calls.some((c) => c.url.includes('/media_publish')));
 
 /* Instagram refusing the media. */
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE({ attempts: 1 });
 container = ['ERROR'];
-out = await publishDue(igPublish, 1);
-let said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+out = await publishDue(publishEnv, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
 check('a container that errors goes back to scheduled, with the reason on it',
   said.p_status === 'scheduled' && (said.p_error || '').length > 0,
   JSON.stringify({ status: said.p_status, error: said.p_error }));
 
 reset();
-rpcAnswer.kb_ig_secret = sealed();
+rpcAnswer.kb_meta_secret = sealed();
 rpcAnswer.kb_post_claim = DUE({ attempts: 5 });
 container = ['ERROR'];
-out = await publishDue(igPublish, 1);
+out = await publishDue(publishEnv, 1);
 said = rpcs('kb_post_state').map((c) => c.body).at(-1);
 check('after five tries it is marked failed rather than retried forever',
   said.p_status === 'failed' && out.done[0]?.outcome === 'failed',
   JSON.stringify({ status: said.p_status, outcome: out.done[0]?.outcome }));
+
+/* --- sending it to Facebook ------------------------------------------------ */
+
+const REELS = /\/v25\.0\/555\/video_reels$/;
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook' });
+reelStatus = [
+  { video_status: 'processing', uploading_phase: { status: 'complete' }, processing_phase: { status: 'in_progress' } },
+  { video_status: 'ready', uploading_phase: { status: 'complete' }, processing_phase: { status: 'complete' } },
+];
+out = await publishDue(publishEnv, 1);
+const reelCalls = calls.filter((c) => REELS.test(c.url)).map((c) => c.body);
+const upload = calls.find((c) => c.url.startsWith('https://rupload.facebook.com/video-upload/v25.0/VID-1'));
+check('a Facebook reel opens an upload on the Page, then hands Facebook the video url',
+  reelCalls[0]?.upload_phase === 'start' && upload?.headers?.file_url === 'https://videos.example/a.mp4'
+  && upload.headers.authorization === 'OAuth PAGE-SECRET',
+  JSON.stringify({ first: reelCalls[0], headers: upload?.headers }));
+check('...and finishes it as published, with the caption, only once it is processed',
+  reelCalls.length === 2 && reelCalls[1].upload_phase === 'finish' && reelCalls[1].video_id === 'VID-1'
+  && reelCalls[1].video_state === 'PUBLISHED' && reelCalls[1].description === 'Four rowhomes, one loan.'
+  && calls.filter((c) => c.url.includes('/VID-1?') && c.url.includes('fields=status')).length === 2,
+  JSON.stringify(reelCalls));
+posted = rpcs('kb_post_state').map((c) => c.body).find((b) => b.p_status === 'posted');
+check('...with a full link to it kept, not Facebook’s relative one',
+  out.done[0]?.outcome === 'posted' && posted?.p_permalink === 'https://www.facebook.com/reel/123'
+  && posted.p_media_id === 'VID-1', JSON.stringify(posted));
+check('...and nothing sent to the Instagram endpoints',
+  !calls.some((c) => c.url.includes('/178414/')));
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook' });
+reelStatus = [
+  { video_status: 'processing', uploading_phase: { status: 'complete' }, processing_phase: { status: 'in_progress' } },
+  { video_status: 'processing', uploading_phase: { status: 'complete' }, processing_phase: { status: 'in_progress' } },
+];
+out = await publishDue(publishEnv, 1);
+left = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('a Facebook reel still processing is left working with its video id, not finished',
+  out.done[0]?.outcome === 'waiting' && left.p_container === 'VID-1'
+  && !calls.some((c) => REELS.test(c.url) && c.body?.upload_phase === 'finish'),
+  JSON.stringify(left));
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook', container_id: 'VID-1' });
+reelStatus = [{ video_status: 'ready', uploading_phase: { status: 'complete' }, processing_phase: { status: 'complete' } }];
+out = await publishDue(publishEnv, 1);
+check('a Facebook reel picked up mid-flight does not open a second upload',
+  out.done[0]?.outcome === 'posted' && !calls.some((c) => c.url.startsWith('https://rupload.'))
+  && calls.filter((c) => REELS.test(c.url)).map((c) => c.body.upload_phase).join() === 'finish');
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook', container_id: 'VID-1' });
+reelStatus = [{ video_status: 'error', processing_phase: { status: 'error', errors: [{ message: 'Video too long' }] } }];
+out = await publishDue(publishEnv, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('a reel Facebook cannot process goes back with Facebook’s reason on it',
+  said.p_status === 'scheduled' && said.p_error === 'Video too long', JSON.stringify(said));
+
+reset();
+rpcAnswer.kb_meta_secret = sealed({ ig_user_id: null });
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook', kind: 'image', media: [{ url: 'https://videos.example/a.jpg', kind: 'image' }] });
+out = await publishDue(publishEnv, 1);
+built = calls.find((c) => /\/v25\.0\/555\/photos$/.test(c.url))?.body;
+posted = rpcs('kb_post_state').map((c) => c.body).find((b) => b.p_status === 'posted');
+check('a Facebook photo is one call with the caption, and needs no Instagram',
+  built?.url === 'https://videos.example/a.jpg' && built.message === 'Four rowhomes, one loan.'
+  && posted?.p_media_id === 'PAGE_POST-1', JSON.stringify({ built, posted }));
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({
+  platform: 'facebook', kind: 'carousel',
+  media: [{ url: 'https://videos.example/1.jpg', kind: 'image' }, { url: 'https://videos.example/2.jpg', kind: 'image' }],
+});
+out = await publishDue(publishEnv, 1);
+const uploads = calls.filter((c) => /\/v25\.0\/555\/photos$/.test(c.url)).map((c) => c.body);
+const feed = calls.find((c) => /\/v25\.0\/555\/feed$/.test(c.url))?.body;
+check('several Facebook photos are uploaded unpublished, then posted together once',
+  uploads.length === 2 && uploads.every((p) => p.published === 'false' && !p.message)
+  && JSON.parse(feed?.['attached_media[1]'] || '{}').media_fbid === 'PHOTO-2'
+  && feed.message === 'Four rowhomes, one loan.', JSON.stringify({ uploads, feed }));
+
+/* --- Upload-Post: connecting ----------------------------------------------- */
+
+const upEnv = { ...env, UPLOAD_POST_API_KEY: 'up-key', POST_WAIT_TRIES: 2, POST_WAIT_MS: 1 };
+const upCalls = () => calls.filter((c) => c.url.startsWith('https://api.upload-post.com/'));
+
+reset();
+res = await post('/social/account', {}, 'signed-in', env);
+j = await res.json();
+check('with no Upload-Post key the page is told it is not set up, and nothing is called',
+  res.status === 200 && j.ready === false && upCalls().length === 0, JSON.stringify(j));
+
+reset();
+res = await post('/social/connect', {}, 'signed-in', env);
+j = await res.json();
+check('connecting with no Upload-Post key -> 503 saying which to set',
+  res.status === 503 && /UPLOAD_POST_API_KEY/.test(j.hint || ''), JSON.stringify(j));
+
+reset();
+upProfile = null;   // not made yet
+res = await post('/social/connect', {}, 'signed-in', upEnv);
+j = await res.json();
+const createdProfile = upCalls().find((c) => c.url.endsWith('/api/uploadposts/users') && c.body?.username);
+const jwt = upCalls().find((c) => c.url.endsWith('/generate-jwt'));
+check('connecting makes the profile the first time, then hands back Upload-Post’s own page',
+  res.status === 200 && j.url === 'https://app.upload-post.com/connect?token=JWT' && createdProfile?.body.username === 'thebuybox',
+  JSON.stringify({ status: res.status, j, made: createdProfile?.body }));
+check('...for all four platforms, coming back to the Schedule page',
+  ['instagram', 'facebook', 'youtube', 'tiktok'].every((p) => jwt?.body.platforms.includes(p))
+  && jwt.body.redirect_url === 'http://localhost:8788/schedule.html',
+  JSON.stringify(jwt?.body));
+check('...and the API key goes in the header, never to the page',
+  jwt?.headers?.authorization === 'Apikey up-key' && !JSON.stringify(j).includes('up-key'));
+
+reset();
+res = await post('/social/account', {}, 'signed-in', upEnv);
+j = await res.json();
+check('the page is told which accounts are connected, by handle',
+  j.ready === true && j.accounts.youtube?.handle === '@thebuyboxre' && j.accounts.tiktok === null
+  && j.accounts.instagram?.handle === 'thebuyboxre', JSON.stringify(j));
+check('...and with two Facebook Pages and none chosen, that one has to be chosen',
+  j.facebook_pages.length === 2 && j.facebook_page_id === null, JSON.stringify(j.facebook_pages));
+
+reset();
+res = await post('/social/facebook-page', { page_id: '999' }, 'signed-in', upEnv);
+check('choosing a Page Upload-Post does not have -> 404, nothing saved',
+  res.status === 404 && rpcs('kb_social_set').length === 0, res.status);
+
+reset();
+res = await post('/social/facebook-page', { page_id: '555' }, 'signed-in', upEnv);
+check('choosing one of the connected Pages saves it',
+  res.status === 200 && rpcs('kb_social_set')[0]?.body.p_value === '555', res.status);
+
+/* --- Upload-Post: sending -------------------------------------------------- */
+
+reset();
+rpcAnswer.kb_post_create = '55555555-5555-4555-8555-555555555555';
+res = await post('/posts/create', {
+  kind: 'reel', media: [{ url: 'https://videos.example/a.mp4' }], scheduled_for: soon(),
+  platforms: ['youtube', 'tiktok'], title: 'Four rowhomes, one loan',
+});
+check('YouTube and TikTok can be scheduled, with a title kept for YouTube',
+  res.status === 200 && rpcs('kb_post_create').map((c) => c.body.p_platform).join() === 'youtube,tiktok'
+  && rpcs('kb_post_create')[0].body.p_title === 'Four rowhomes, one loan',
+  JSON.stringify(rpcs('kb_post_create').map((c) => c.body)));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'youtube', title: 'Four rowhomes, one loan' });
+upStatus = [{ status: 'processing', results: [] },
+  { status: 'completed', results: [{ platform: 'youtube', success: true, url: 'https://youtube.com/shorts/abc', post_id: 'abc' }] }];
+out = await publishDue(upEnv, 1);
+let sent = upCalls().find((c) => c.url.endsWith('/api/upload'))?.body;
+check('with Upload-Post set, a due post is sent there and not to Meta',
+  sent && !calls.some((c) => c.url.includes('graph.facebook.com')) && rpcs('kb_meta_secret').length === 0,
+  JSON.stringify(sent));
+check('...as the video url, to the one platform, in the background, with our id on it',
+  sent['platform[]'] === 'youtube' && sent.video === 'https://videos.example/a.mp4' && sent.user === 'thebuybox'
+  && sent.async_upload === 'true' && sent.external_id === '55555555-5555-4555-8555-555555555555',
+  JSON.stringify(sent));
+check('...with the YouTube title and the caption as its description, public',
+  sent.title === 'Four rowhomes, one loan' && sent.youtube_description === 'Four rowhomes, one loan.'
+  && sent.privacyStatus === 'public', JSON.stringify(sent));
+posted = rpcs('kb_post_state').map((c) => c.body).find((b) => b.p_status === 'posted');
+check('...followed until it is up, and the link kept',
+  out.done[0]?.outcome === 'posted' && posted?.p_permalink === 'https://youtube.com/shorts/abc'
+  && rpcs('kb_post_state').some((c) => c.body.p_container === 'REQ-1'), JSON.stringify(posted));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'tiktok' });
+upStatus = [{ status: 'processing', results: [] }, { status: 'processing', results: [] }];
+out = await publishDue(upEnv, 1);
+left = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('one still going is left working with its request id, to be followed next run',
+  out.done[0]?.outcome === 'waiting' && left.p_status === 'working' && left.p_container === 'REQ-1',
+  JSON.stringify(left));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'tiktok', container_id: 'REQ-EARLIER' });
+upStatus = [{ status: 'completed', results: [{ platform: 'tiktok', success: true, url: 'https://tiktok.com/@thebuyboxre/video/1' }] }];
+out = await publishDue(upEnv, 1);
+check('a post picked up mid-flight is followed, not sent a second time',
+  out.done[0]?.outcome === 'posted' && !upCalls().some((c) => c.url.endsWith('/api/upload'))
+  && upCalls().some((c) => c.url.includes('request_id=REQ-EARLIER')));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'tiktok', container_id: 'REQ-1' });
+upStatus = [{ status: 'failed', results: [{ platform: 'tiktok', success: false, error_message: 'Video must be at least 3 seconds' }] }];
+out = await publishDue(upEnv, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('a platform refusing it goes back with the platform’s reason on it',
+  said.p_status === 'scheduled' && said.p_error === 'Video must be at least 3 seconds', JSON.stringify(said));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook' });
+rpcAnswer.kb_social_get = '555';
+upStatus = [{ status: 'completed', results: [{ platform: 'facebook', success: true, url: 'https://facebook.com/reel/9' }] }];
+out = await publishDue(upEnv, 1);
+sent = upCalls().find((c) => c.url.endsWith('/api/upload'))?.body;
+check('a Facebook post goes to the chosen Page',
+  out.done[0]?.outcome === 'posted' && sent?.facebook_page_id === '555', JSON.stringify(sent));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'facebook' });
+rpcAnswer.kb_social_get = null;
+out = await publishDue(upEnv, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('with several Pages and none chosen, it says to choose one rather than guessing',
+  /choose which Facebook Page/.test(said?.p_error || '') && !upCalls().some((c) => c.url.endsWith('/api/upload')),
+  JSON.stringify(said));
+
+reset();
+rpcAnswer.kb_post_claim = DUE({ platform: 'youtube' });
+upSend = { status: 403, body: { success: false, message: 'TikTok requires a paid plan' } };
+out = await publishDue(upEnv, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('Upload-Post refusing the request puts its own reason on the post',
+  said.p_status === 'scheduled' && said.p_error === 'TikTok requires a paid plan', JSON.stringify(said));
+
+reset();
+rpcAnswer.kb_meta_secret = sealed();
+rpcAnswer.kb_post_claim = DUE({ platform: 'tiktok' });
+out = await publishDue(publishEnv, 1);
+said = rpcs('kb_post_state').map((c) => c.body).at(-1);
+check('without Upload-Post, a TikTok post says it needs it',
+  /need Upload-Post/.test(said?.p_error || ''), JSON.stringify(said));
 
 /* --- raw footage ----------------------------------------------------------- */
 

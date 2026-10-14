@@ -119,11 +119,13 @@
   .says label {
     display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem;
   }
-  .says textarea, .says input[type="datetime-local"] {
+  .says textarea, .says input[type="datetime-local"], .says input[type="text"] {
     width:100%; font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
     border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
   }
   .says textarea { min-height:7rem; resize:vertical; line-height:1.5; }
+  #yt-title-wrap { margin-bottom:var(--s2); }
+  .handle.off { color:var(--clay); }
   .says .count { float:right; font-weight:500; font-size:.6875rem; color:var(--ink-quiet); font-family:var(--mono); }
   .says .row { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:flex-end; margin-top:var(--s2); }
   .says .row > div { flex:1 1 12rem; }
@@ -153,6 +155,18 @@
   .tag.posted { color:var(--ink-quiet); background:var(--card-sunk); }
   .tag.failed { color:var(--clay); border-color:var(--clay); }
   .tag.cancelled { color:var(--ink-quiet); }
+  .tag.platform { color:var(--ink-body); }
+
+  .choose { margin:0 0 var(--s3); }
+  .choose label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; }
+  .choose select {
+    font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
+    border:1px solid var(--rule-strong); border-radius:4px; padding:.4375rem .625rem; max-width:100%;
+  }
+  .where { border:0; padding:0; margin:0 0 var(--s2); display:flex; flex-wrap:wrap; gap:var(--s3); }
+  .where legend { font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; padding:0; }
+  .where label { font-size:.875rem; color:var(--ink-body); display:flex; gap:.375rem; align-items:center; }
+  .where .handle { font-size:.75rem; color:var(--ink-quiet); font-family:var(--mono); }
 
   .toast {
     position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
@@ -201,7 +215,7 @@
 <main class="wrap">
   <p class="eyebrow">Production</p>
   <h2>Schedule</h2>
-  <p class="lede">Connect the Instagram account once, and posts can go out from here at a time you choose. You sign in on Instagram's own page — this app never sees the password, only a token it can publish with, which it keeps encrypted.</p>
+  <p class="lede">Connect The Buy Box's accounts once, and posts can go out from here to Instagram, Facebook, YouTube and TikTok at a time you choose. You sign in to each one on its own page — Google's, TikTok's, Facebook's — so this app never sees a password.</p>
 
   <div class="account" id="account">
     <div class="who">
@@ -211,24 +225,49 @@
     <div id="buttons"></div>
   </div>
 
+  <div class="choose" id="choose" hidden>
+    <label for="page-pick">Post to this Page</label>
+    <select id="page-pick"></select>
+  </div>
+
+  <div class="setup" id="social-setup" hidden>
+    <h3>Before this can connect</h3>
+    <ol>
+      <li>Sign up at <code>upload-post.com</code>. TikTok needs a paid plan; the others work on any.</li>
+      <li>Copy the API key from its dashboard.</li>
+      <li>From the <code>worker</code> folder: <code>npx wrangler secret put UPLOAD_POST_API_KEY</code>, then deploy.</li>
+    </ol>
+  </div>
+
   <div class="setup" id="setup" hidden>
     <h3>Before this can connect</h3>
     <ol>
-      <li>At <code>developers.facebook.com</code>, create an app and add <strong>Instagram</strong> to it.</li>
-      <li>Register <code id="redirect">…/instagram/callback</code> as an OAuth redirect URI, exactly.</li>
-      <li>Add the Instagram account as a tester, and accept the invitation in that account's settings. It has to be a Professional account.</li>
-      <li>From the <code>worker</code> folder, set three secrets: <code>INSTAGRAM_APP_ID</code>, <code>INSTAGRAM_APP_SECRET</code> and <code>INSTAGRAM_TOKEN_KEY</code>, then deploy.</li>
+      <li>At <code>developers.facebook.com</code>, create a <strong>Business</strong> app owned by the Trilith Funding Business Portfolio, and add <strong>Facebook Login for Business</strong> to it.</li>
+      <li>Register <code id="redirect">…/meta/callback</code> as a Valid OAuth Redirect URI, exactly.</li>
+      <li>Make sure the Instagram account is linked to the Facebook Page in the Business Portfolio. It has to be a Professional account.</li>
+      <li>From the <code>worker</code> folder, set three secrets: <code>META_APP_ID</code>, <code>META_APP_SECRET</code> and <code>META_TOKEN_KEY</code>, then deploy.</li>
     </ol>
   </div>
 
   <section id="composer" hidden>
     <h3>Schedule a reel</h3>
+    <fieldset class="where" id="where">
+      <legend>Post to</legend>
+      <label><input type="checkbox" value="instagram" checked> Instagram <span class="handle" id="ig-handle"></span></label>
+      <label><input type="checkbox" value="facebook" checked> Facebook <span class="handle" id="fb-handle"></span></label>
+      <label hidden><input type="checkbox" value="youtube" checked> YouTube <span class="handle" id="yt-handle"></span></label>
+      <label hidden><input type="checkbox" value="tiktok" checked> TikTok <span class="handle" id="tt-handle"></span></label>
+    </fieldset>
     <div class="compose">
       <div>
         <label class="says-label" for="picks" style="display:block;font-size:.8125rem;font-weight:600;color:var(--ink);margin:0 0 .3125rem">Which video</label>
         <div class="picks" id="picks"></div>
       </div>
       <div class="says">
+        <div id="yt-title-wrap" hidden>
+          <label for="yt-title">YouTube title <span class="count" id="yt-count">0 / 100</span></label>
+          <input id="yt-title" type="text" maxlength="100" placeholder="YouTube wants a title of its own. The video's topic until you change it.">
+        </div>
         <label for="caption">Caption <span class="count" id="count">0 / 2200</span></label>
         <textarea id="caption" maxlength="2200" placeholder="What it says underneath. The script is below if you want to lift from it."></textarea>
         <div class="script-aside" id="script-aside" hidden></div>
@@ -267,7 +306,7 @@ const subEl = $('sub');
 const buttonsEl = $('buttons');
 const toastEl = $('toast');
 
-$('redirect').textContent = WORKER_URL + '/instagram/callback';
+$('redirect').textContent = WORKER_URL + '/meta/callback';
 
 let toastTimer;
 function toast(message) {
@@ -288,7 +327,6 @@ async function call(path, body) {
   return data;
 }
 
-const days = (iso) => Math.round((new Date(iso).getTime() - Date.now()) / 86400000);
 
 function button(label, kind, onClick) {
   const b = document.createElement('button');
@@ -299,49 +337,81 @@ function button(label, kind, onClick) {
   return b;
 }
 
-function draw(account) {
+function draw(acc) {
   buttonsEl.textContent = '';
   const dot = document.createElement('span');
-  dot.className = 'dot ' + (account.connected ? 'on' : 'off');
+  dot.className = 'dot ' + (acc.connected ? 'on' : 'off');
+  drawChoice(acc);
 
-  if (account.connected) {
+  if (acc.connected) {
+    const p = acc.page;
     nameEl.textContent = '';
-    nameEl.append(dot, document.createTextNode(account.username ? '@' + account.username : 'Connected'));
-    /* The Worker renews anything inside a week, so a number under seven is
-       the normal state of things, not a warning. Only say something is wrong
-       when renewal has had its chances and not taken them. */
-    const left = account.expires_at ? days(account.expires_at) : null;
-    subEl.className = 'sub' + (left !== null && left < 2 ? ' bad' : '');
-    subEl.textContent = left === null ? 'Connected.'
-      : left > 7 ? `Connected. The permission lasts another ${left} days, and renews itself before it runs out.`
-      : left > 1 ? `Connected. The permission is due to renew itself in the next day or so.`
-      : left > 0 ? 'Connected, but the permission has not renewed itself and runs out tomorrow. Connect it again.'
-      : 'The permission has run out — connect it again.';
+    nameEl.append(dot, document.createTextNode(p.page_name || 'Facebook Page'));
+    /* A Page token taken this way does not run out, so there is no countdown
+       to show — only whether Instagram came with it. */
+    subEl.className = 'sub' + (p.ig_user_id ? '' : ' bad');
+    subEl.textContent = p.ig_user_id
+      ? `Facebook Page, and Instagram @${p.ig_username || 'account'}. Connected; the permission does not run out.`
+      : 'Facebook Page connected, but no Instagram account is linked to it, so only Facebook posts can go out. Link them in the Business Portfolio, then connect again.';
+    buttonsEl.append(button('Connect again', 'secondary', connect));
     buttonsEl.append(button('Disconnect', 'secondary', async (b) => {
-      if (!confirm('Disconnect this Instagram account? Anything already scheduled will stop going out.')) return;
+      if (!confirm('Disconnect Facebook and Instagram? Anything already scheduled will stop going out.')) return;
       b.disabled = true;
-      try { await call('/instagram/disconnect'); toast('Disconnected'); await load(); }
+      try { await call('/meta/disconnect'); toast('Disconnected'); await load(); }
       catch (err) { toast(err.message); b.disabled = false; }
     }));
     return;
   }
 
   nameEl.textContent = '';
-  nameEl.append(dot, document.createTextNode('No account connected'));
+  nameEl.append(dot, document.createTextNode(acc.pages?.length ? 'Choose a Page' : 'No Page connected'));
   subEl.className = 'sub';
-  subEl.textContent = account.ready
-    ? 'Connect the account you post to. You approve it on Instagram, not here.'
-    : 'The Worker is missing its Instagram keys — see below.';
-  $('setup').hidden = Boolean(account.ready);
+  subEl.textContent = !acc.ready
+    ? 'The Worker is missing its Meta keys — see below.'
+    : acc.pages?.length
+      ? 'More than one Page came through. Choose the one posts go to.'
+      : 'Connect the Page you post to. You sign in as yourself on Facebook, not here.';
+  $('setup').hidden = Boolean(acc.ready);
 
   /* With no keys set there is nothing to connect to, and pressing it opened a
      blank tab that shut again — which looks like the button is broken rather
      than like the Worker is unconfigured. */
-  const go = button('Connect Instagram', '', connect);
-  go.disabled = !account.ready;
-  if (!account.ready) go.title = 'The Worker needs its Instagram keys first — see the steps below.';
+  const go = button('Connect Facebook', '', connect);
+  go.disabled = !acc.ready;
+  if (!acc.ready) go.title = 'The Worker needs its Meta keys first — see the steps below.';
   buttonsEl.append(go);
 }
+
+/* Only when the approval covered more than one Page. */
+function drawChoice(acc) {
+  const pages = acc.pages || [];
+  $('choose').hidden = pages.length < 2;
+  if (pages.length < 2) return;
+  const sel = $('page-pick');
+  sel.textContent = '';
+  if (!acc.connected) {
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = 'Choose…';
+    sel.append(none);
+  }
+  for (const p of pages) {
+    const o = document.createElement('option');
+    o.value = p.page_id;
+    o.textContent = p.page_name + (p.ig_username ? ` (and @${p.ig_username})` : ' (no Instagram)');
+    o.selected = Boolean(p.selected);
+    sel.append(o);
+  }
+}
+
+$('page-pick').addEventListener('change', async (e) => {
+  if (!e.target.value) return;
+  e.target.disabled = true;
+  const route = socialMode ? '/social/facebook-page' : '/meta/pick';
+  try { await call(route, { page_id: e.target.value }); toast('Page chosen'); await load(); }
+  catch (err) { toast(err.message); }
+  finally { e.target.disabled = false; }
+});
 
 /* The popup is opened on the click itself and pointed at Instagram once the
    Worker has handed back the URL: opening it after the await is what browsers
@@ -350,7 +420,7 @@ async function connect(btn) {
   const tab = window.open('', '_blank');
   btn.disabled = true;
   try {
-    const { url } = await call('/instagram/start');
+    const { url } = await call('/meta/start');
     if (tab) { tab.location = url; watch(); }
     else { window.location.href = url; }
   } catch (err) {
@@ -366,9 +436,14 @@ async function connect(btn) {
 /* While the other tab is being approved, check back for a couple of minutes. */
 function watch(tries = 0) {
   setTimeout(async () => {
-    let account = null;
-    try { account = await call('/instagram/account'); } catch { /* try again */ }
-    if (account?.connected) { draw(account); toast('Instagram connected'); return; }
+    let acc = null;
+    try { acc = await call('/meta/account'); } catch { /* try again */ }
+    /* Several Pages means a choice to make, which is also worth stopping for. */
+    if (acc?.connected || acc?.pages?.length > 1) {
+      await load();
+      toast(acc.connected ? 'Connected' : 'Choose a Page');
+      return;
+    }
     if (tries < 40) watch(tries + 1);
   }, 3000);
 }
@@ -426,6 +501,8 @@ async function loadVideos() {
 
 async function choose(v, btn) {
   picked = v;
+  const yt = $('yt-title');
+  if (!yt.dataset.typed) { yt.value = (v.topic || '').slice(0, 100); $('yt-count').textContent = `${yt.value.length} / 100`; }
   document.querySelectorAll('.pick').forEach((p) => p.setAttribute('aria-pressed', String(p === btn)));
   const aside = $('script-aside');
   aside.hidden = false;
@@ -461,12 +538,29 @@ $('caption').addEventListener('input', () => {
   $('count').textContent = `${$('caption').value.length} / 2200`;
 });
 
+$('yt-title').addEventListener('input', (e) => {
+  e.target.dataset.typed = e.target.value ? '1' : '';
+  $('yt-count').textContent = `${e.target.value.length} / 100`;
+});
+
+/* The YouTube title only matters when YouTube is ticked. */
+function showTitle() {
+  const yt = document.querySelector('#where input[value="youtube"]');
+  $('yt-title-wrap').hidden = !(yt && yt.checked && !yt.disabled && !yt.closest('label').hidden);
+}
+document.querySelectorAll('#where input').forEach((c) => c.addEventListener('change', showTitle));
+
 $('add').addEventListener('click', async (e) => {
   const note = $('compose-note');
   note.style.color = 'var(--ink-quiet)';
   if (!picked) { note.textContent = 'Pick a video first.'; return; }
   const at = $('when').value;
   if (!at) { note.textContent = 'Choose when it goes out.'; return; }
+
+  const platforms = [...document.querySelectorAll('#where input:checked:not(:disabled)')].map((c) => c.value);
+  if (!platforms.length) { note.textContent = 'Choose at least one place to post it.'; return; }
+  const title = $('yt-title').value.trim();
+  if (platforms.includes('youtube') && !title) { note.textContent = 'YouTube needs a title.'; return; }
 
   const btn = e.currentTarget;
   btn.disabled = true;
@@ -478,11 +572,13 @@ $('add').addEventListener('click', async (e) => {
       caption: $('caption').value,
       scheduled_for: new Date(at).toISOString(),
       render_id: picked.id,
+      platforms,
+      title: platforms.includes('youtube') ? title : undefined,
     });
     note.textContent = '';
     $('caption').value = '';
     $('count').textContent = '0 / 2200';
-    toast('Scheduled');
+    toast(platforms.length > 1 ? `Scheduled for ${platforms.length} places` : 'Scheduled');
     await loadPosts();
   } catch (err) {
     note.style.color = 'var(--clay)';
@@ -529,7 +625,10 @@ function drawQueue() {
     const tag = document.createElement('span');
     tag.className = 'tag ' + p.status;
     tag.textContent = p.status === 'working' ? 'Sending…' : p.status;
-    top.append(w, tag);
+    const where = document.createElement('span');
+    where.className = 'tag platform';
+    where.textContent = NAMES[p.platform] || p.platform;
+    top.append(w, where, tag);
     li.append(top);
 
     if (p.caption) {
@@ -566,7 +665,7 @@ function drawQueue() {
       a.href = p.permalink;
       a.target = '_blank';
       a.rel = 'noopener';
-      a.textContent = 'See it on Instagram';
+      a.textContent = `See it on ${NAMES[p.platform] || 'the site'}`;
       acts.append(a);
     }
     if (acts.children.length) li.append(acts);
@@ -574,14 +673,140 @@ function drawQueue() {
   }
 }
 
-async function load() {
+const NAMES = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok' };
+
+/* --- connecting through Upload-Post --------------------------------------- */
+
+let socialMode = false;
+
+function drawSocial(acc) {
+  socialMode = true;
+  buttonsEl.textContent = '';
+  const linked = Object.keys(NAMES).filter((k) => acc.accounts[k]);
+  const stale = linked.filter((k) => acc.accounts[k].reconnect);
+  const dot = document.createElement('span');
+  dot.className = 'dot ' + (linked.length ? 'on' : 'off');
+  nameEl.textContent = '';
+  nameEl.append(dot, document.createTextNode(linked.length
+    ? linked.map((k) => NAMES[k]).join(', ') + ' connected'
+    : 'Nothing connected yet'));
+
+  const missing = Object.keys(NAMES).filter((k) => !acc.accounts[k]);
+  subEl.className = 'sub' + (stale.length ? ' bad' : '');
+  subEl.textContent = stale.length
+    ? `${stale.map((k) => NAMES[k]).join(' and ')} needs signing in again — use Connect accounts.`
+    : missing.length
+      ? `Not yet: ${missing.map((k) => NAMES[k]).join(', ')}. Connect accounts opens a page where you sign in to each one on its own site.`
+      : 'All four are connected.';
+
+  buttonsEl.append(button('Connect accounts', linked.length ? 'secondary' : '', socialConnect));
+
+  /* Facebook needs to know which Page, when the account manages more than one. */
+  const pages = acc.facebook_pages || [];
+  $('choose').hidden = pages.length < 2;
+  if (pages.length >= 2) {
+    const sel = $('page-pick');
+    sel.textContent = '';
+    if (!acc.facebook_page_id) {
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = 'Choose…';
+      sel.append(none);
+    }
+    for (const p of pages) {
+      const o = document.createElement('option');
+      o.value = p.page_id;
+      o.textContent = p.page_name || p.page_id;
+      o.selected = p.page_id === acc.facebook_page_id;
+      sel.append(o);
+    }
+  }
+}
+
+/* Same popup rule as below: open the tab on the click, point it once the
+   Worker hands back the link. Coming back lands on this page again. */
+async function socialConnect(btn) {
+  const tab = window.open('', '_blank');
+  btn.disabled = true;
   try {
-    const account = await call('/instagram/account');
-    draw(account);
+    const { url } = await call('/social/connect');
+    if (tab) { tab.location = url; watchSocial(); }
+    else { window.location.href = url; }
+  } catch (err) {
+    if (tab) tab.close();
+    toast(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* While the other tab is open, notice new accounts as they are added. */
+function watchSocial(tries = 0, before = null) {
+  setTimeout(async () => {
+    let acc = null;
+    try { acc = await call('/social/account'); } catch { /* try again */ }
+    const now = acc ? Object.keys(NAMES).filter((k) => acc.accounts[k]).join() : null;
+    if (acc && before !== null && now !== before) { await load(); toast('Accounts updated'); }
+    if (tries < 60) watchSocial(tries + 1, now ?? before);
+  }, 4000);
+}
+
+function fillWhere(acc) {
+  for (const k of Object.keys(NAMES)) {
+    const box = document.querySelector(`#where input[value="${k}"]`);
+    const a = acc.accounts[k];
+    box.closest('label').hidden = false;
+    box.disabled = !a;
+    if (!a) box.checked = false;
+    const handle = $({ instagram: 'ig-handle', facebook: 'fb-handle', youtube: 'yt-handle', tiktok: 'tt-handle' }[k]);
+    handle.className = 'handle' + (a ? '' : ' off');
+    handle.textContent = a ? (a.handle ? (a.handle.startsWith('@') ? a.handle : '@' + a.handle) : a.name) : 'not connected';
+  }
+  if (acc.accounts.facebook && (acc.facebook_pages || []).length > 1 && !acc.facebook_page_id) {
+    const fb = document.querySelector('#where input[value="facebook"]');
+    fb.disabled = true;
+    fb.checked = false;
+    $('fb-handle').className = 'handle off';
+    $('fb-handle').textContent = 'choose a Page above';
+  }
+  showTitle();
+}
+
+async function load() {
+  /* Upload-Post first. The direct Meta connection is the fallback, used only
+     when the Worker has no Upload-Post key. */
+  let social = null;
+  try { social = await call('/social/account'); } catch { social = null; }
+
+  if (social?.ready) {
+    $('social-setup').hidden = true;
+    $('setup').hidden = true;
+    drawSocial(social);
+    const any = Object.values(social.accounts).some(Boolean);
+    $('composer').hidden = !any;
+    $('images-note').hidden = !any;
+    if (any) {
+      fillWhere(social);
+      $('when').value = $('when').value || defaultWhen();
+      await Promise.all([loadVideos(), loadPosts()]);
+    }
+    return;
+  }
+
+  try {
+    const acc = await call('/meta/account');
+    draw(acc);
+    /* With neither set up, Upload-Post is the one to set up. */
+    if (!acc.ready) { $('setup').hidden = true; $('social-setup').hidden = false; }
     /* The composer is only any use once there is somewhere to post to. */
-    $('composer').hidden = !account.connected;
-    $('images-note').hidden = !account.connected;
-    if (account.connected) {
+    $('composer').hidden = !acc.connected;
+    $('images-note').hidden = !acc.connected;
+    if (acc.connected) {
+      const ig = document.querySelector('#where input[value="instagram"]');
+      ig.disabled = !acc.page.ig_user_id;
+      if (ig.disabled) ig.checked = false;
+      $('ig-handle').textContent = acc.page.ig_username ? '@' + acc.page.ig_username : (ig.disabled ? 'not linked' : '');
+      $('fb-handle').textContent = acc.page.page_name || '';
       $('when').value = defaultWhen();
       await Promise.all([loadVideos(), loadPosts()]);
     }
