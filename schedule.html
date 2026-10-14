@@ -48,7 +48,7 @@
         <button type="button" class="chip chip-sm" id="view-month" aria-pressed="true">Month</button>
         <button type="button" class="chip chip-sm" id="view-list" aria-pressed="false">List</button>
       </div>
-      <button type="button" class="btn btn-s btn-sm" id="open-accounts">Posting accounts</button>
+      <button type="button" class="btn btn-s btn-sm" id="open-accounts">Social accounts</button>
     </div>
   </div>
 
@@ -76,11 +76,11 @@
   <section id="posts" class="stack" style="gap: 10px" aria-label="Posts" hidden></section>
 </main>
 
-<!-- Posting accounts -->
+<!-- Social accounts -->
 <div class="scrim" id="acct-scrim" hidden>
   <div class="side" role="dialog" aria-modal="true" aria-labelledby="acct-title" style="width: min(480px, 100%)">
     <div class="side-head">
-      <h2 id="acct-title">Posting accounts</h2>
+      <h2 id="acct-title">Social accounts</h2>
       <button type="button" class="icon-btn" aria-label="Close" data-close style="font-size: 22px">×</button>
     </div>
     <div class="side-body" id="acct-body"></div>
@@ -547,8 +547,20 @@ const stale = () => (mode === 'social' ? PLATFORMS.filter((k) => social.accounts
 function drawNotices() {
   const box = $('notices');
   box.textContent = '';
+  /* The button says what it does: connect, while nothing is; afterwards,
+     how many are connected. */
+  const linked = PLATFORMS.filter((k) => avail(k).ok);
+  const btn = $('open-accounts');
+  btn.className = 'btn btn-sm ' + (mode !== 'none' && mode !== 'error' && !linked.length ? 'btn-p' : 'btn-s');
+  btn.textContent = linked.length ? 'Social accounts · ' + linked.length + ' of ' + PLATFORMS.length + ' connected' : 'Connect social accounts';
   if (mode === 'none') {
     box.append(el('div', { class: 'card pad callout', text: 'Posting isn’t set up yet. Ask whoever runs the app to connect Upload-Post.' }));
+  } else if ((mode === 'social' || mode === 'meta') && !linked.length) {
+    box.append(el('div', { class: 'card pad callout stack', style: { gap: '10px' } },
+      el('h2', { text: 'Connect your social accounts to post from here' }),
+      el('span', { class: 'ink', text: 'Link Instagram, TikTok, YouTube and Facebook once. After that, any video you schedule here goes out to them at the time you pick.' }),
+      el('span', { class: 'quiet', text: 'You sign in on each platform’s own page, so this app never sees your passwords.' }),
+      el('div', {}, el('button', { type: 'button', class: 'btn btn-p', onclick: openAccounts }, 'Connect social accounts'))));
   } else if (mode === 'error') {
     box.append(el('div', { class: 'card pad callout bad row' },
       el('span', { class: 'ink grow', text: accountError }),
@@ -922,7 +934,7 @@ function drawWhere() {
     const on = a.ok && sched.plats.has(k);
     box.append(el('button', {
       type: 'button', class: 'chip', 'aria-pressed': String(on), disabled: !a.ok,
-      title: a.ok ? (a.handle ? 'Posts as ' + a.handle : null) : 'Connect it under Posting accounts',
+      title: a.ok ? (a.handle ? 'Posts as ' + a.handle : null) : 'Connect it under Social accounts',
       onclick: () => {
         sched.platsTouched = true;
         if (sched.plats.has(k)) sched.plats.delete(k); else sched.plats.add(k);
@@ -938,7 +950,7 @@ function drawWhere() {
   note.hidden = !!ok.length || !mode;
   if (!ok.length && mode) {
     note.append(el('span', { class: 'quiet grow', text: mode === 'none' ? 'Posting isn’t set up yet. Ask whoever runs the app to connect Upload-Post.' : 'Nothing is connected to post to yet.' }));
-    if (mode !== 'none') note.append(el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: openAccounts }, 'Open Posting accounts'));
+    if (mode !== 'none') note.append(el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: openAccounts }, 'Open Social accounts'));
   }
 
   /* The YouTube title only matters when YouTube is ticked. */

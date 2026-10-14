@@ -13,10 +13,7 @@
 
 <main class="page">
   <div id="next"></div>
-  <div class="row" style="justify-content: space-between">
-    <h1>Videos</h1>
-    <a class="btn btn-s" href="./?start=upload">Upload footage</a>
-  </div>
+  <h1>Videos</h1>
   <div role="tablist" aria-label="Filter videos" class="row" id="filters" style="gap: 8px"></div>
   <p class="quiet" id="state">Loading videos…</p>
   <div class="grid-videos" id="grid"></div>
@@ -169,7 +166,11 @@ function drawEditor(v, rejected) {
   pbody.append(host);
   editor = AikoEditor.mount(host, v, {
     approveLabel: 'Approve and schedule',
-    onApprove: async () => { await load(true); A.toast('Approved'); open(v, 'approved'); },
+    onApprove: async () => {
+      await load(true);
+      open(v, 'approved');
+      A.toast('Approved', () => unapprove(v));
+    },
     onReject: async () => {
       close();
       await load(true);
@@ -209,7 +210,7 @@ function drawApproved(v) {
   if (failed.length) b.append(el('div', { class: 'card pad callout bad small ink', text: 'A post of this video didn’t go out: ' + (failed[0].error || 'see Schedule for why.') }));
   b.append(el('p', { class: 'ink', style: { margin: 0 }, text: 'Ready to go out. Pick where and when it posts.' }));
   const actions = el('div', { class: 'row' },
-    el('button', { type: 'button', class: 'btn-q', onclick: () => backToReview(v) }, 'Edit the video'),
+    el('button', { type: 'button', class: 'btn btn-s', onclick: () => unapprove(v) }, 'Unapprove'),
     el('span', { class: 'grow' }),
     el('button', { type: 'button', class: 'btn-q', onclick: close }, 'Not now'),
     el('a', { class: 'btn btn-p', href: './schedule.html?video=' + encodeURIComponent(v.id) }, 'Schedule it'));
@@ -234,20 +235,35 @@ function drawScheduled(v) {
   });
   const confirmHost = el('div');
   b.append(confirmHost, el('div', { class: 'row' },
-    el('button', { type: 'button', class: 'btn-q', onclick: () => {
+    el('button', { type: 'button', class: 'btn btn-s', onclick: () => {
       const live = posts.filter((p) => p.status === 'scheduled');
       if (!live.length) { backToReview(v); return; }
       confirmHost.textContent = '';
-      confirmHost.append(el('div', { class: 'card pad' }, A.confirmRow('Editing takes it off the schedule. You’ll schedule it again once it’s approved.', 'Edit anyway', async () => {
+      confirmHost.append(el('div', { class: 'card pad' }, A.confirmRow('Unapproving takes it off the schedule, so it won’t post. It goes back to To review.', 'Unapprove', async () => {
         try {
           for (const p of live) await A.api('/posts/cancel', { id: p.id });
           await backToReview(v);
         } catch (err) { A.toast(err.message); }
       }, 'Keep it scheduled', () => { confirmHost.textContent = ''; })));
-    } }, 'Edit the video'),
+    } }, 'Unapprove'),
     el('span', { class: 'grow' }),
     el('a', { class: 'btn btn-s', href: './schedule.html' }, 'Open Schedule')));
   pbody.append(b);
+}
+
+/* Take an approval back: the video goes back to To review, where it can be
+   edited, approved again or rejected. */
+async function unapprove(v) {
+  try {
+    await A.api('/videos/review', { id: v.id, status: 'review' });
+    v.review_status = null;
+    close();
+    await load(true);
+    A.toast('Unapproved. It’s back in To review.', async () => {
+      await A.api('/videos/review', { id: v.id, status: 'to_post' }).catch(() => {});
+      load(true);
+    });
+  } catch (err) { A.toast(err.message); }
 }
 
 async function backToReview(v) {

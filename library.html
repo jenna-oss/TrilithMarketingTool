@@ -47,27 +47,28 @@
 
   <section role="tabpanel" id="panel-scripts" aria-labelledby="tab-scripts" class="stack" hidden>
     <div class="row lib-intro">
-      <span class="quiet">Scripts you’ve written to film. Open one to edit it or film it.</span>
+      <span class="ink">Scripts Aiko wrote for you to read to camera. Film one, then upload the video, and it’s cut into short clips for you.</span>
       <a class="btn btn-s btn-sm" href="./?start=film">Write a script</a>
     </div>
     <div class="lib-list" id="scripts-list"></div>
   </section>
 
   <section role="tabpanel" id="panel-recordings" aria-labelledby="tab-recordings" class="stack" hidden>
+    <p class="ink" style="margin: 0">Talk an idea through, or upload a call or voice memo. Aiko reads these when it plans videos with you. They’re never posted.</p>
     <div class="card lib-card" id="recorder" style="gap: 10px"></div>
     <div class="lib-list" id="recordings-list"></div>
   </section>
 
   <section role="tabpanel" id="panel-footage" aria-labelledby="tab-footage" class="stack" hidden>
     <div class="row lib-intro">
-      <span class="quiet">Long takes you’ve uploaded. Each one is transcribed, then cut into clips.</span>
-      <a class="btn btn-s btn-sm" href="./?start=upload">Upload footage</a>
+      <span class="ink">Long videos of you talking. Each one is cut into short, captioned clips automatically, and the clips go to Videos › To review. Nothing posts until you approve and schedule it.</span>
+      <a class="btn btn-s btn-sm" href="./?start=upload">Upload a video of you</a>
     </div>
     <div class="lib-list" id="footage-list"></div>
   </section>
 
   <section role="tabpanel" id="panel-files" aria-labelledby="tab-files" class="stack" hidden>
-    <span class="quiet">Aiko searches these files when it plans. Add one here, or press “Save to library” on a file you attach in a chat.</span>
+    <span class="ink">Articles, notes and links you want Aiko to know about. It reads them when it plans ideas and writes scripts. They’re never posted. Links you paste in a chat with Aiko are kept here too.</span>
     <div class="row" style="gap: 8px">
       <label class="sr-only" for="kb-type">What kind of file</label>
       <select class="field" id="kb-type" style="min-height: 40px">
@@ -78,7 +79,7 @@
         <option value="interview">Interview</option>
         <option value="other" selected>Other</option>
       </select>
-      <button type="button" class="btn btn-s btn-sm" id="kb-add">Add a text file</button>
+      <button type="button" class="btn btn-s btn-sm" id="kb-add">Add notes for Aiko</button>
       <input type="file" id="kb-file" accept=".txt,.md,.csv,.tsv,.json,.vtt,.srt,text/plain,text/markdown,text/csv,application/json,text/vtt" hidden>
     </div>
     <p class="say" id="kb-say" role="status" hidden></p>
@@ -110,20 +111,24 @@ const metaLine = (parts) => parts.filter(Boolean).join(' · ');
 
    The chosen tab lives in the URL (?tab=recordings) so another page can link
    straight to it and a refresh lands in the same place. */
-const TABS = [['scripts', 'Scripts'], ['recordings', 'Recordings'], ['footage', 'Footage'], ['files', 'Files']];
+/* Two kinds of thing live here, and the tab bar says which is which: what
+   you give Aiko to read, and what is for filming. */
+const TABS = [['recordings', 'Recordings'], ['files', 'Notes & links'], ['scripts', 'Scripts'], ['footage', 'Your videos']];
+const GROUPS = { recordings: 'For Aiko to read', scripts: 'For filming' };
 const ALIAS = { takes: 'footage', notes: 'files', kb: 'files' };
 const data = { scripts: null, recordings: null, footage: null, files: null };
 const failed = {};
 let tab = (() => {
   const t = new URLSearchParams(location.search).get('tab');
   const id = ALIAS[t] || t;
-  return TABS.some((x) => x[0] === id) ? id : 'scripts';
+  return TABS.some((x) => x[0] === id) ? id : 'recordings';
 })();
 
 function drawTabs() {
   const bar = $('tabs');
   bar.textContent = '';
   TABS.forEach(([id, label]) => {
+    if (GROUPS[id]) bar.append(el('span', { class: 'eyebrow', 'aria-hidden': 'true', style: { alignSelf: 'center', padding: '0 8px 0 ' + (id === 'scripts' ? '18px' : '0') }, text: GROUPS[id] }));
     const on = id === tab;
     const n = data[id];
     bar.append(el('button', {
@@ -883,7 +888,7 @@ function drawFootage() {
   list.textContent = '';
   const rows = data.footage || [];
   if (!rows.length) {
-    list.append(A.empty('No footage yet.', 'Upload footage', './?start=upload'));
+    list.append(A.empty('No videos of you yet.', 'Upload a video of you', './?start=upload'));
     return;
   }
   rows.forEach((t) => list.append(takeCard(t)));
@@ -982,7 +987,7 @@ function drawFiles() {
   list.textContent = '';
   const rows = data.files || [];
   if (!rows.length) {
-    list.append(A.empty('No files yet.', 'Add a text file', () => $('kb-file').click()));
+    list.append(A.empty('No notes or links yet.', 'Add notes for Aiko', () => $('kb-file').click()));
     return;
   }
   rows.forEach((f) => list.append(fileRow(f)));

@@ -163,7 +163,7 @@
 
   /* --- the header ----------------------------------------------------------- */
 
-  var TABS = [['create', 'Create', './'], ['videos', 'Videos', './videos.html'], ['library', 'Library', './library.html'], ['schedule', 'Schedule', './schedule.html']];
+  var TABS = [['create', 'Create', './?home'], ['videos', 'Videos', './videos.html'], ['library', 'Library', './library.html'], ['schedule', 'Schedule', './schedule.html']];
   var badgeEls = {};
 
   function header(active) {
@@ -193,7 +193,7 @@
       menu.append(
         el('div', { style: { padding: '8px 12px', borderBottom: '1px solid var(--rule)', marginBottom: '4px' } },
           el('div', { class: 'quiet', text: 'Signed in as' }), el('div', { class: 'ink', style: { fontWeight: 600, fontSize: '14px', overflowWrap: 'anywhere' }, text: email || '…' })),
-        el('a', { class: 'mi', role: 'menuitem', href: './schedule.html#accounts' }, 'Posting accounts'),
+        el('a', { class: 'mi', role: 'menuitem', href: './schedule.html#accounts' }, 'Social accounts'),
         el('button', { type: 'button', class: 'mi', role: 'menuitemcheckbox', 'aria-checked': String(AikoTheme.current() === 'dark'), onclick: function () { AikoTheme.toggle(); fillMenu(); } },
           el('span', { text: 'Dark mode' }), el('span', { class: 'tag', text: AikoTheme.current() === 'dark' ? 'On' : 'Off' })),
         el('button', { type: 'button', class: 'mi', role: 'menuitem', onclick: function () { AikoAuth.signOut(); } }, 'Sign out'));
@@ -212,7 +212,7 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
     var head = el('header', { class: 'app-head' },
-      el('a', { class: 'app-brand', href: './', html: '<svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.4"></circle><text x="15" y="18" text-anchor="middle" font-size="7" font-weight="700" fill="#EAE9D5" font-family="Poppins, sans-serif">AIKO</text></svg><span>Content studio</span>' }),
+      el('a', { class: 'app-brand', href: './?home', title: 'Home', html: '<svg width="28" height="28" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.4"></circle><text x="15" y="18" text-anchor="middle" font-size="7" font-weight="700" fill="#EAE9D5" font-family="Poppins, sans-serif">AIKO</text></svg><span>Content studio</span>' }),
       tabs,
       el('div', { class: 'app-right' }, researchBtn, avatar, research, menu));
     document.body.prepend(head);

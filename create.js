@@ -56,7 +56,11 @@
   /* --- URL shortcuts from other tabs ------------------------------------- */
   var params = new URLSearchParams(location.search);
   var startWith = params.get('start'), goTo = params.get('go'), sessionParam = params.get('session');
-  if (startWith || goTo || sessionParam) history.replaceState(null, '', location.pathname);
+  /* ?home: the home screen, even with a flow in progress. The flow stays
+     saved and the home screen offers to pick it up. */
+  var homeParam = params.has('home');
+  if (startWith || goTo || sessionParam || homeParam) history.replaceState(null, '', location.pathname);
+  if (homeParam) f = { screen: 'start' };
 
   /* =======================================================================
    * The composer: one box for typing, attaching, pasting links and
@@ -828,8 +832,9 @@
     var cur = steps.findIndex(function (s) { return s[0] === f.screen; });
     var ol = el('ol');
     steps.forEach(function (s, i) {
+      var skipped = f.skipped && (s[0] === 'script' || s[0] === 'film') && i < cur;
       ol.append(el('li', { class: i < cur ? 'done' : i === cur ? 'now' : '', 'aria-current': i === cur ? 'step' : null },
-        el('span', { class: 'n', text: i < cur ? '✓' : i + 1 }), el('span', { class: 'lbl', text: s[1] }),
+        el('span', { class: 'n', text: skipped ? '–' : i < cur ? '✓' : i + 1 }), el('span', { class: 'lbl', text: s[1] + (skipped ? ' (skipped)' : '') }),
         i < steps.length - 1 ? el('span', { class: 'sep', 'aria-hidden': 'true' }) : null));
     });
     stepperEl.append(el('nav', { 'aria-label': 'Progress' }, ol));
@@ -845,7 +850,7 @@
     var nx = footState = nextFor();
     var inner = el('div', { class: 'inner row' },
       el('button', { type: 'button', class: 'btn-q', onclick: back }, 'Back'),
-      el('button', { type: 'button', class: 'btn-q', onclick: finishLater }, 'Finish later'),
+      el('button', { type: 'button', class: 'btn-q', onclick: finishLater }, 'Save and go home'),
       el('span', { class: 'quiet grow', style: { textAlign: 'right' }, text: nx.note || '' }));
     if (!nx.hidden) {
       var b = el('button', { type: 'button', class: 'btn btn-p', disabled: Boolean(nx.disabled) }, nx.label);
@@ -880,9 +885,10 @@
     var cur = steps.findIndex(function (s) { return s[0] === f.screen; });
     if (f.screen === 'script' && script) { script = null; f.scriptId = null; save(); draw(); return; }
     if (cur <= 0) { f = { screen: 'start' }; save(); draw(); return; }
+    if (f.skipped && f.screen === 'upload') { f.skipped = false; go('script'); return; }
     go(steps[cur - 1][0]);
   }
-  function finishLater() { save(); A.toast('Saved. Pick it up from Create any time.'); setTimeout(function () { location.href = './videos.html'; }, 600); }
+  function finishLater() { save(); location.href = './?home'; }
 
   function draw() {
     if (editor) { editor.destroy(); editor = null; }
@@ -902,7 +908,19 @@
     drawFoot();
   }
 
+  var FLOW_NAME = { auto: 'Making videos with Aiko', film: 'Filming yourself', upload: 'Uploading a video', queue: 'Reviewing videos' };
+  var STEP_NAME = { plan: 'planning', making: 'waiting for the videos', script: 'the script', film: 'filming', upload: 'uploading', review: 'reviewing', schedule: 'scheduling' };
   function drawStart() {
+    /* Something left half-way: offer it first, with a way to drop it. */
+    var saved = A.flow();
+    if (saved && saved.screen && saved.screen !== 'start' && saved.screen !== 'done' && FLOWS[saved.kind]) {
+      main.append(el('div', { class: 'nextup', style: { cursor: 'default' } },
+        el('span', { class: 'grow', style: { display: 'flex', flexDirection: 'column' } },
+          el('span', { class: 'eyebrow', style: { color: 'var(--ochre)' }, text: 'In progress' }),
+          el('span', { class: 'ink', style: { fontWeight: 600 }, text: (FLOW_NAME[saved.kind] || 'Making something') + ' · at ' + (STEP_NAME[saved.screen] || saved.screen) })),
+        el('button', { type: 'button', class: 'btn-q', onclick: function () { A.saveFlow(null); f = { screen: 'start' }; draw(); A.toast('Cleared'); } }, 'Start over'),
+        el('button', { type: 'button', class: 'btn btn-p btn-sm', onclick: function () { f = saved; draw(); } }, 'Pick up where you left off')));
+    }
     var next = el('div');
     main.append(next);
     A.nextUp(next, { flow: true });
@@ -911,8 +929,8 @@
         el('button', { type: 'button', class: 'big', onclick: function () { start('auto'); } },
           el('span', { class: 'eyebrow', text: 'About 30 minutes' }), el('span', { class: 't', text: 'Make videos for me' }), el('span', { class: 'quiet', text: 'Plan with Aiko. We make the videos.' })),
         el('button', { type: 'button', class: 'big', onclick: function () { start('film'); } },
-          el('span', { class: 'eyebrow', style: { color: 'var(--ochre)' }, text: 'You on camera' }), el('span', { class: 't', text: 'Film myself' }), el('span', { class: 'quiet', text: 'Get a script, film it, we cut the clips.' }))),
-      el('button', { type: 'button', class: 'btn-q', style: { alignSelf: 'center' }, onclick: function () { start('upload'); } }, 'Already filmed? Upload footage'));
+          el('span', { class: 'eyebrow', style: { color: 'var(--ochre)' }, text: 'You on camera' }), el('span', { class: 't', text: 'Film myself' }), el('span', { class: 'quiet', text: 'Get a script to read, film it, and we cut it into clips.' }))),
+      el('button', { type: 'button', class: 'btn btn-s', style: { alignSelf: 'center' }, onclick: function () { start('upload'); } }, 'Already have a video of you? Upload it'));
     var recent = el('div', { class: 'stack', style: { gap: '8px' } });
     main.append(recent);
     A.api('/plan/list', { limit: 5 }).then(function (d) {
@@ -977,7 +995,17 @@
   function drawScript() {
     main.append(el('h1', { text: script ? 'Your script' : 'What’s the video about?' }));
     if (f.scriptId && !script) { main.append(el('p', { class: 'pulse', text: 'Loading the script…' })); loadScript(); return; }
-    if (!script) { composer.mount(main, 'script', false, function () { if (footState) drawFoot(); }); return; }
+    if (!script) {
+      /* Filmed already: the script step is skipped, not filled in. */
+      main.append(el('div', { class: 'card pad row' },
+        el('span', { class: 'grow', style: { display: 'flex', flexDirection: 'column' } },
+          el('span', { class: 'ink', style: { fontWeight: 600 }, text: 'Already filmed it?' }),
+          el('span', { class: 'quiet', text: 'Skip the script and upload your video. It’s cut into clips for you.' })),
+        el('button', { type: 'button', class: 'btn btn-s', onclick: function () { f.skipped = true; go('upload'); } }, 'Skip to upload')));
+      main.append(el('span', { class: 'quiet', text: 'Or tell Aiko what the video is about and it writes one:' }));
+      composer.mount(main, 'script', false, function () { if (footState) drawFoot(); });
+      return;
+    }
     drawScriptEditor(main);
   }
 
@@ -993,7 +1021,7 @@
   }
 
   function drawUpload() {
-    main.append(el('h1', { text: 'Upload the take' }));
+    main.append(el('h1', { text: 'Upload your video' }));
     if (f.take && upload.state !== 'sending') {
       var st = f.take.status || 'uploaded';
       var tag = { uploaded: ['Waiting to be cut', 'tag busy'], transcribing: ['Transcribing…', 'tag busy'], ready: ['Cutting clips…', 'tag busy'], failed: ['Failed', 'tag bad'], empty: ['No clips', 'tag'] }[st] || [st, 'tag'];
@@ -1013,10 +1041,17 @@
       main.append(card);
       return;
     }
-    var name = el('input', { class: 'field', maxlength: '200', placeholder: 'Filled in from the file name', 'aria-label': 'Name this take', disabled: upload.state === 'sending' });
+    main.append(el('div', { class: 'card pad stack', style: { gap: '6px' } },
+      el('span', { class: 'eyebrow', text: 'What happens to your video' }),
+      el('ol', { class: 'ink', style: { margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' } },
+        el('li', { text: 'We turn what you say into text.' }),
+        el('li', { text: 'We pick the best moments and cut them into short vertical clips with captions, automatically.' }),
+        el('li', { text: 'The clips come back here for you to review, edit and approve.' })),
+      el('span', { class: 'quiet', text: 'Nothing is posted until you approve a clip and schedule it.' })));
+    var name = el('input', { class: 'field', maxlength: '200', placeholder: 'Filled in from the file name', 'aria-label': 'Name this video', disabled: upload.state === 'sending' });
     name.value = f.takeName || (script ? script.topic : '');
     name.addEventListener('input', function () { f.takeName = name.value; save(); });
-    main.append(el('label', { class: 'stack', style: { gap: '6px' } }, el('span', { class: 'ink', style: { fontWeight: 600 }, text: 'Name this take' }), name));
+    main.append(el('label', { class: 'stack', style: { gap: '6px' } }, el('span', { class: 'ink', style: { fontWeight: 600 }, text: 'Name this video' }), name));
     if (upload.state === 'sending') {
       main.append(el('div', { class: 'card', style: { padding: '22px', display: 'flex', flexDirection: 'column', gap: '12px' } },
         el('div', { class: 'row', style: { justifyContent: 'space-between' } }, el('span', { class: 'ink', style: { fontWeight: 600 }, text: upload.name }), el('span', { class: 'tag busy', text: 'Uploading' })),
@@ -1053,7 +1088,7 @@
       save();
       if (!v) { advance(null); return; }
       var last = f.qi + 1 >= f.queue.length;
-      head.append(el('button', { type: 'button', class: 'btn-q', onclick: finishLater }, 'Finish later'),
+      head.append(el('button', { type: 'button', class: 'btn-q', onclick: finishLater }, 'Save and go home'),
         el('span', { class: 'ink', style: { fontWeight: 600 }, text: 'Video ' + (f.qi + 1) + ' of ' + f.queue.length }));
       host.textContent = '';
       editor = AikoEditor.mount(host, v, {
@@ -1081,13 +1116,13 @@
       if (!f.plats) { f.plats = {}; Object.keys(NAMES).forEach(function (k) { f.plats[k] = acc[k] === 'on'; }); save(); }
       host.textContent = '';
       var stale = Object.keys(NAMES).filter(function (k) { return acc[k] === 'reconnect'; });
-      if (stale.length) host.append(el('div', { class: 'card pad callout bad row' }, el('span', { class: 'ink grow', text: A.joinNames(stale.map(function (k) { return NAMES[k]; })) + ' needs you to sign in again before it can post.' }), el('a', { class: 'btn btn-s btn-sm', href: './schedule.html#accounts' }, 'Posting accounts')));
+      if (stale.length) host.append(el('div', { class: 'card pad callout bad row' }, el('span', { class: 'ink grow', text: A.joinNames(stale.map(function (k) { return NAMES[k]; })) + ' needs you to sign in again before it can post.' }), el('a', { class: 'btn btn-s btn-sm', href: './schedule.html#accounts' }, 'Social accounts')));
       if (!Object.keys(NAMES).some(function (k) { return acc[k] === 'on'; })) host.append(el('div', { class: 'card pad callout row' }, el('span', { class: 'ink grow', text: 'No accounts are connected yet.' }), el('a', { class: 'btn btn-s btn-sm', href: './schedule.html#accounts' }, 'Connect accounts')));
       host.append(el('div', { class: 'stack', style: { gap: '8px' } }, el('span', { class: 'ink', style: { fontWeight: 600 }, text: 'Post to' }),
         el('div', { class: 'row', style: { gap: '8px' } }, Object.keys(NAMES).map(function (k) {
           var off = acc[k] !== 'on';
           return el('button', { type: 'button', class: 'chip', 'aria-pressed': String(Boolean(f.plats[k]) && !off), disabled: off,
-            title: off ? 'Connect it under Posting accounts' : '', onclick: function () { f.plats[k] = !f.plats[k]; save(); draw(); } },
+            title: off ? 'Connect it under Schedule › Social accounts' : '', onclick: function () { f.plats[k] = !f.plats[k]; save(); draw(); } },
             NAMES[k] + (acc[k] === 'reconnect' ? ' · sign in again' : acc[k] === 'page' ? ' · choose a Page' : off ? ' · not connected' : ''));
         }))));
       var ytOn = f.plats.youtube && acc.youtube === 'on';
