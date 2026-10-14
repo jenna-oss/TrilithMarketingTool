@@ -979,5 +979,77 @@ check('deleting a take takes the file with it',
   res.status === 200 && calls.some((c) => c.url.includes('/object/kb-footage/abc.mov') && c.url),
   res.status);
 
+/* --- version 6: clip edits, the Library's files, recent plans ------------- */
+
+const CLIP = '2a020bb0-7912-4867-a484-17c01f1027ee';
+for (const path of ['/clips/info', '/clips/edit', '/kb/list', '/kb/delete', '/plan/list']) {
+  reset();
+  const r = await post(path, {}, '');
+  check(`${path} without a session -> 401`, r.status === 401, r.status);
+}
+
+reset();
+rpcAnswer.kb_clip_request_edit = { ok: true, id: CLIP };
+res = await post('/clips/edit', { id: CLIP, start_s: 112, end_s: 140, cuts: [{ from: 120, to: 122 }], fixes: [{ at: 125.3, text: 'bond' }], summary: 'Trimmed' });
+const clipRun = calls.find((c) => c.url.includes('/actions/workflows/'));
+const asked = rpcs('kb_clip_request_edit')[0]?.body;
+check('a clip edit is queued with its window and starts the cutting run for that clip',
+  res.status === 202 && /cut-footage\.yml\/dispatches$/.test(clipRun?.url || '') && clipRun.body.inputs.clip_id === CLIP
+  && asked.p_start === 112 && asked.p_end === 140 && asked.p_cuts[0].from === 120 && asked.p_fixes[0].text === 'bond',
+  JSON.stringify(asked));
+
+reset();
+rpcAnswer.kb_clip_request_edit = { ok: false, error: 'Only clips in To review can be edited.' };
+res = await post('/clips/edit', { id: CLIP, start_s: 112, end_s: 140 });
+check('a refused clip edit says why and starts nothing',
+  res.status === 409 && /To review/.test((await res.json()).error) && !calls.some((c) => c.url.includes('/actions/workflows/')), res.status);
+
+reset();
+rpcAnswer.kb_clip_request_edit = { ok: true, id: CLIP };
+rpcAnswer.kb_clip_edit_state = true;
+githubOk = false;
+res = await post('/clips/edit', { id: CLIP, start_s: 112, end_s: 140 });
+githubOk = true;
+check('a clip edit whose run could not start is marked failed',
+  res.status === 502 && rpcs('kb_clip_edit_state').some((c) => c.body.p_status === 'failed'), res.status);
+
+reset();
+rpcAnswer.kb_uploads_list = [{ id: LINK, title: 'An article', document_type: 'article' }];
+res = await post('/kb/list', {});
+j = await res.json();
+check('the Library lists files put in by hand', res.status === 200 && j.files[0].title === 'An article', JSON.stringify(j));
+
+reset();
+rpcAnswer.kb_upload_delete = false;
+res = await post('/kb/delete', { id: LINK });
+check('removing a file that is not an upload is refused', res.status === 404, res.status);
+
+reset();
+rpcAnswer.kb_plans_recent = [{ id: 'plan-1', goal: 'Financing basics', slots: 3, rendered: 3 }];
+res = await post('/plan/list', {});
+j = await res.json();
+check('recent plans are listed', res.status === 200 && j.plans[0].id === 'plan-1', JSON.stringify(j));
+
+reset();
+rpcAnswer.kb_video_set_review = { found: true, review_status: null, reviewed_at: null };
+res = await post('/videos/review', { id: CLIP, status: 'review' });
+check('a video can be moved back to review', res.status === 200 && rpcs('kb_video_set_review')[0]?.body.p_status === 'review', res.status);
+
+reset();
+rpcAnswer.kb_video_library = [{ id: CLIP, kind: 'clip', storage_path: 'clips/x.mp4', rendered_at: '2026-10-13T10:00:00Z' }];
+res = await post('/videos', {});
+j = await res.json();
+check('a clip’s URL changes when the clip does', /\/clips\/x\.mp4\?v=\d+$/.test(j.videos[0].url), j.videos[0].url);
+
+/* The arithmetic of an edited clip. */
+const { keptSegments, wordsFor, openingSentence } = await import(pathToFileURL(join(here, '..', 'video', 'clip-edit.mjs')).href);
+const segs = keptSegments(10, 20, [{ from: 12, to: 14 }]);
+check('cutting a section out leaves the two sides', JSON.stringify(segs) === '[[10,12],[14,20]]', JSON.stringify(segs));
+const ws = wordsFor([{ t: 'a', s: 10.5, e: 10.8 }, { t: 'gone', s: 12.5, e: 12.9 }, { t: 'wrod', s: 15, e: 15.4 }], segs, [{ at: 15, text: 'word' }]);
+check('words in a cut section go, fixes apply, and later words move up',
+  ws.length === 2 && ws[1].t === 'word' && ws[1].s === 3 && ws[0].s === 0.5, JSON.stringify(ws));
+check('the hook is the sentence the clip opens on',
+  openingSentence([{ t: 'Rates' }, { t: 'rose.' }, { t: 'Then' }]) === 'Rates rose.', '');
+
 console.log(failures ? `\n${failures} FAILED` : '\nall passed');
 process.exit(failures ? 1 : 0);

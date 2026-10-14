@@ -101,9 +101,20 @@ add a line to `PHOTO_LIBRARY` in `remotion/pipeline_workflow.mjs` saying what it
 shows, which is what the planning stage picks from and what the rules check
 against. To retire one, remove both.
 
+## Editing a clip
+
+A clip cut out of a long take is a window on that take, so it is edited by
+moving the window rather than by an agent: new start and end, sections cut out
+of the middle, and words the transcript got wrong. The Videos tab sends them to
+the Worker (`/clips/edit`), which queues them on the clip and starts
+`cut-footage.yml` with `clip_id`. That run re-cuts the clip from the same take
+(`footage-cut.mjs --edit`, arithmetic in `clip-edit.mjs`), captions it again and
+replaces its file. Everything is kept in the take's clock, so a fixed word
+survives a later trim.
+
 ## Editing a finished video
 
-On the Edit tab (`edit.html`), pick a video from Ready to review, step to the
+Open a video under Videos › To review (`videos.html`), step to the
 frame you want changed and leave a note there. Notes can also be about the
 whole video. They are sent together as one edit. The Worker queues it in
 `kb.video_edits` and starts `render-videos.yml` with `edit_id` set, so the run

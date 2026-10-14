@@ -4,717 +4,126 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Schedule — Private Real Estate Lending</title>
+<title>Schedule — Content studio</title>
 <script src="./assets/theme.js"></script>
 <script src="./assets/auth.js"></script>
-<link rel="stylesheet" href="./assets/nav.css">
+<link rel="stylesheet" href="./assets/app.css">
 <style>
-  :root {
-    --cream-text:#EAE9D5; --emerald:#2C785E; --emerald-bar:#407C62; --sage:#6E9C86;
-    --ground:#ECE9D8; --panel:#0B3529; --card:#F4F2E7; --card-sunk:#E3DFCB;
-    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
-    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
-    --sans:"Poppins","Century Gothic","Avenir Next","Futura",system-ui,-apple-system,"Segoe UI",sans-serif;
-    --mono:ui-monospace,"Cascadia Mono","Cascadia Code","SF Mono",Consolas,monospace;
-    --s1:.5rem; --s2:.75rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
-      --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
-      --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
-    }
-  }
-  :root[data-theme="light"] {
-    --ground:#ECE9D8; --card:#F4F2E7; --card-sunk:#E3DFCB;
-    --ink:#103224; --ink-body:#3B5850; --ink-quiet:#6F8279;
-    --rule:#D2CDB6; --rule-strong:#B8B29A; --accent:#2C785E; --clay:#A65A3C;
-  }
-  :root[data-theme="dark"] {
-    --ground:#072A1F; --card:#0E3B2C; --card-sunk:#0A3125;
-    --ink:#EAE9D5; --ink-body:#B9C9C0; --ink-quiet:#7E9A8D;
-    --rule:#1C4A3A; --rule-strong:#2A5D4A; --accent:#6E9C86; --clay:#C87A57;
-  }
+  /* Status colours. Each one also has words (the tag), a mark (! or ✓) or a
+     dashed edge, so colour is never the only thing saying it. */
+  .ent.s-scheduled { background:var(--emerald); color:#fff; }
+  .ent.s-working { background:var(--warn-bg); color:var(--warn-ink); outline:1px dashed var(--warn-ink); outline-offset:-1px; }
+  .ent.s-posted { background:var(--strong); color:var(--ink); }
+  .ent.s-failed { background:var(--clay); color:var(--chip-on-ink); }
+  .swatch { width:12px; height:12px; border-radius:2px; padding:0; display:inline-block; flex-shrink:0; }
 
-  * { box-sizing:border-box; }
-  [hidden] { display:none !important; }
-  body {
-    margin:0; background:var(--ground); color:var(--ink-body);
-    font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
-  }
-  .wrap { max-width:860px; margin:0 auto; padding:var(--s5) var(--s4) var(--s6); }
-  h2 { color:var(--ink); font-weight:700; line-height:1.12; margin:0 0 var(--s1); font-size:1.5rem; }
-  .eyebrow {
-    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase;
-    font-weight:700; color:var(--accent); margin:0 0 var(--s1);
-  }
-  .lede { margin:0 0 var(--s4); font-size:.875rem; color:var(--ink-quiet); max-width:62ch; }
+  .pcard { padding:12px 16px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; border-left-width:3px; }
+  .pcard.s-scheduled { border-left-color:var(--emerald); }
+  .pcard.s-working { border-left-color:var(--ochre-fill); border-left-style:dashed; }
+  .pcard.s-posted { border-left-color:var(--strong); }
+  .pcard.s-failed { border-left-color:var(--clay); }
+  .pcard.s-cancelled { border-left-color:var(--rule); }
+  .pcard .body { flex:1 1 260px; display:flex; flex-direction:column; gap:4px; min-width:0; overflow-wrap:anywhere; }
+  .pthumb { width:30px; height:54px; border-radius:3px; object-fit:cover; background:var(--sunk); flex-shrink:0; display:block; }
 
-  .btn {
-    display:inline-block; font-family:var(--sans); font-size:.875rem; font-weight:600;
-    color:#F4F2E7; background:var(--emerald); border:1px solid transparent; border-radius:4px;
-    padding:.5rem 1rem; cursor:pointer;
-  }
-  .btn:hover { background:var(--emerald-bar); }
-  .btn.secondary { background:transparent; color:var(--ink-body); border-color:var(--rule-strong); }
-  .btn.secondary:hover { background:var(--card-sunk); }
-  .btn:disabled { opacity:.55; cursor:default; }
-  .btn.small { font-size:.75rem; padding:.3125rem .625rem; }
-  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-
-  .account {
-    background:var(--card); border:1px solid var(--rule); border-radius:6px;
-    padding:var(--s3); margin:0 0 var(--s4);
-    display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center;
-  }
-  .account .who { flex:1 1 16rem; }
-  .account .name { font-size:1rem; font-weight:700; color:var(--ink); margin:0; }
-  .account .sub { font-size:.8125rem; color:var(--ink-quiet); margin:.1875rem 0 0; }
-  .account .sub.bad { color:var(--clay); }
-  .dot {
-    display:inline-block; width:.5rem; height:.5rem; border-radius:50%;
-    background:var(--rule-strong); margin-right:.375rem; vertical-align:.05em;
-  }
-  .dot.on { background:var(--accent); }
-  .dot.off { background:var(--clay); }
-
-  .setup {
-    border:1px solid var(--rule); border-left:3px solid var(--accent); border-radius:4px;
-    background:var(--card-sunk); padding:var(--s3); margin:0 0 var(--s4);
-    font-size:.8125rem;
-  }
-  .setup a { color:var(--accent); }
-  .setup h3 { margin:0 0 var(--s1); font-size:.8125rem; color:var(--ink); }
-  .setup ol { margin:0; padding-left:1.25rem; display:grid; gap:.3125rem; }
-  .setup code {
-    font-family:var(--mono); font-size:.75rem; background:var(--ground);
-    border:1px solid var(--rule); border-radius:3px; padding:.0625rem .25rem;
-  }
-
-  .soon {
-    border:1px dashed var(--rule-strong); border-radius:6px; padding:var(--s4);
-    font-size:.875rem; color:var(--ink-quiet);
-  }
-  .soon strong { color:var(--ink); font-weight:600; }
-
-  h3 {
-    font-size:.625rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
-    color:var(--accent); margin:var(--s5) 0 var(--s2);
-  }
-
-  /* Composing: what goes out on the left, what it says on the right. */
-  .compose { display:grid; grid-template-columns:minmax(0,15rem) minmax(0,1fr); gap:var(--s3); }
-  @media (max-width:720px) { .compose { grid-template-columns:1fr; } }
-
-  .picks { display:grid; gap:.375rem; max-height:22rem; overflow:auto; padding-right:.25rem; }
-  .pick {
-    text-align:left; font:inherit; font-size:.8125rem; color:var(--ink-body);
-    background:var(--card); border:1px solid var(--rule); border-radius:4px;
-    padding:.4375rem .625rem; cursor:pointer;
-  }
-  .pick:hover { border-color:var(--accent); }
-  .pick[aria-pressed="true"] { border-color:var(--accent); background:var(--card-sunk); }
-  .pick .t { display:block; font-weight:600; color:var(--ink); }
-  .pick .d { display:block; font-size:.6875rem; color:var(--ink-quiet); font-family:var(--mono); }
-
-  .says label {
-    display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem;
-  }
-  .says textarea, .says input[type="datetime-local"], .says input[type="text"] {
-    width:100%; font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
-    border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
-  }
-  .says textarea { min-height:7rem; resize:vertical; line-height:1.5; }
-  #yt-title-wrap { margin-bottom:var(--s2); }
-  .handle.off { color:var(--clay); }
-  .says .count { float:right; font-weight:500; font-size:.6875rem; color:var(--ink-quiet); font-family:var(--mono); }
-  .says .row { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:flex-end; margin-top:var(--s2); }
-  .says .row > div { flex:1 1 12rem; }
-
-  .script-aside {
-    margin-top:var(--s2); padding:var(--s2); background:var(--card-sunk); border-radius:4px;
-    font-size:.8125rem; max-height:11rem; overflow:auto;
-  }
-  .script-aside ol { margin:.25rem 0 0; padding-left:1.125rem; display:grid; gap:.25rem; }
-  .script-aside .h { font-size:.625rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-quiet); }
-
-  .queue { list-style:none; margin:0; padding:0; display:grid; gap:var(--s2); }
-  .post {
-    background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:var(--s2) var(--s3);
-  }
-  .post .top { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:baseline; }
-  .post .when { font-size:.875rem; font-weight:700; color:var(--ink); margin:0; flex:1 1 12rem; }
-  .post .cap { font-size:.8125rem; color:var(--ink-body); margin:.25rem 0 0; }
-  .post .why { font-size:.75rem; color:var(--clay); margin:.25rem 0 0; }
-  .post .acts { display:flex; flex-wrap:wrap; gap:.375rem; margin-top:var(--s2); }
-  .tag {
-    display:inline-block; font-size:.6875rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
-    border-radius:999px; padding:.0625rem .5rem; border:1px solid var(--rule-strong); color:var(--ink-quiet);
-  }
-  .tag.scheduled { color:var(--accent); border-color:var(--accent); }
-  .tag.working { border-style:dashed; color:var(--ink-body); }
-  .tag.posted { color:var(--ink-quiet); background:var(--card-sunk); }
-  .tag.failed { color:var(--clay); border-color:var(--clay); }
-  .tag.cancelled { color:var(--ink-quiet); }
-  .tag.platform { color:var(--ink-body); }
-
-  .choose { margin:0 0 var(--s3); }
-  .choose label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; }
-  .choose select {
-    font:inherit; font-size:.875rem; color:var(--ink); background:var(--ground);
-    border:1px solid var(--rule-strong); border-radius:4px; padding:.4375rem .625rem; max-width:100%;
-  }
-  .where { border:0; padding:0; margin:0 0 var(--s2); display:flex; flex-wrap:wrap; gap:var(--s3); }
-  .where legend { font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; padding:0; }
-  .where label { font-size:.875rem; color:var(--ink-body); display:flex; gap:.375rem; align-items:center; }
-  .where .handle { font-size:.75rem; color:var(--ink-quiet); font-family:var(--mono); }
-
-  /* Going out: a month calendar by default, the plain list a click away. */
-  .queue-bar { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center; justify-content:space-between; margin:var(--s5) 0 var(--s2); }
-  .queue-bar h3 { margin:0; }
-  .views { display:inline-flex; border:1px solid var(--rule-strong); border-radius:4px; overflow:hidden; }
-  .views button {
-    font:inherit; font-size:.75rem; font-weight:600; color:var(--ink-body); background:transparent;
-    border:0; padding:.3125rem .75rem; cursor:pointer;
-  }
-  .views button + button { border-left:1px solid var(--rule-strong); }
-  .views button[aria-pressed="true"] { background:var(--accent); color:var(--card); }
-  .views button:focus-visible, .cal-step:focus-visible, .cal-cell:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-
-  .cal { background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:var(--s3); }
-  .cal-top { display:flex; align-items:center; gap:var(--s1); margin:0 0 var(--s2); }
-  .cal-top h4 { margin:0; font-size:1rem; color:var(--ink); min-width:9.5rem; text-align:center; }
-  .cal-top .btn { margin-left:auto; }
-  .cal-step {
-    font:inherit; font-size:1.125rem; line-height:1; color:var(--ink-body); background:transparent;
-    border:1px solid var(--rule-strong); border-radius:4px; width:2rem; height:2rem; cursor:pointer;
-  }
-  .cal-step:hover { background:var(--card-sunk); }
-  .cal-grid { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:2px; }
-  .cal-dow {
-    font-size:.625rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
-    color:var(--ink-quiet); text-align:center; padding:.25rem 0;
-  }
-  .cal-cell {
-    font:inherit; text-align:left; color:var(--ink-body); background:var(--ground);
-    border:1px solid transparent; border-radius:4px; min-height:5.75rem; padding:.3125rem;
-    display:flex; flex-direction:column; gap:.1875rem; cursor:pointer; min-width:0;
-  }
-  .cal-cell:hover { border-color:var(--rule-strong); }
-  .cal-cell.other { opacity:.45; }
-  .cal-cell.past .d { color:var(--ink-quiet); }
-  .cal-cell[aria-pressed="true"] { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
-  .cal-cell .d { font-size:.75rem; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
-  .cal-cell.today .d {
-    background:var(--accent); color:var(--card); border-radius:999px; padding:0 .375rem; align-self:flex-start;
-  }
-  .chip {
-    display:flex; align-items:center; gap:.25rem; min-width:0;
-    font-size:.6875rem; line-height:1.25; color:var(--ink); background:var(--card);
-    border:1px solid var(--rule); border-left:3px solid var(--accent); border-radius:3px; padding:.125rem .25rem;
-  }
-  .chip .t { font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .chip { flex-wrap:wrap; }
-  .chip .m { display:flex; flex-wrap:wrap; gap:1px; min-width:0; }
-  .mark {
-    font-family:var(--mono); font-size:.5625rem; font-weight:700; letter-spacing:0;
-    color:var(--ink-body); background:var(--card-sunk); border-radius:2px; padding:0 .1875rem;
-  }
-  .chip.working { border-left-style:dashed; border-left-color:var(--ink-body); }
-  .chip.posted { border-left-color:var(--rule-strong); color:var(--ink-quiet); }
-  .chip.failed { border-left-color:var(--clay); }
-  .more { font-size:.625rem; color:var(--ink-quiet); }
-  .cal-key { display:flex; flex-wrap:wrap; gap:var(--s3); font-size:.6875rem; color:var(--ink-quiet); margin:var(--s2) 0 0; }
-  .cal-key span { display:inline-flex; align-items:center; gap:.3125rem; }
-  .k { width:.75rem; height:.625rem; border-radius:2px; background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--accent); }
-  .k.working { border-left-style:dashed; border-left-color:var(--ink-body); }
-  .k.posted { border-left-color:var(--rule-strong); }
-  .k.failed { border-left-color:var(--clay); }
-
-  .cal-day { border-top:1px solid var(--rule); margin-top:var(--s3); padding-top:var(--s3); }
-  .cal-day .day-head { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center; justify-content:space-between; margin:0 0 var(--s2); }
-  .cal-day h4 { margin:0; font-size:.9375rem; color:var(--ink); }
-  .cal-day .none { margin:0; font-size:.8125rem; color:var(--ink-quiet); }
-  .cal-day .queue .post { background:var(--ground); }
-
-  /* A phone has no room for times: a cell keeps its marks only. */
-  @media (max-width:560px) {
-    .cal { padding:var(--s2); }
-    .cal-cell { min-height:3.75rem; padding:.1875rem; }
-    .chip { padding:.0625rem .125rem; border-left-width:2px; }
-    .chip .t { display:none; }
-    .cal-top h4 { min-width:0; flex:1; }
-  }
-
-  .toast {
-    position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
-    background:var(--panel); color:var(--cream-text); font-size:.875rem;
-    padding:.5rem 1.125rem; border-radius:999px; box-shadow:0 4px 18px #0000003d;
-  }
+  .picks { max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding:2px; }
+  .pick { padding:8px 12px; text-align:left; color:inherit; gap:12px; flex-wrap:nowrap; width:100%; }
+  .pick:hover { border-color:var(--emerald); }
+  .pick[aria-pressed="true"] { border-color:var(--emerald); box-shadow:inset 0 0 0 1px var(--emerald); }
+  .pick .pthumb { width:26px; height:46px; }
+  .lbl { color:var(--ink); font-weight:600; }
+  .count { font-family:var(--mono); }
+  .see { display:inline-flex; align-items:center; min-height:44px; padding:0 10px; font-size:14px; text-decoration:none; }
 </style>
 </head>
 <body>
 
-<header class="site-head">
-  <a class="site-brand" href="./">
-    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
-      <circle cx="15" cy="15" r="13.5" fill="none" stroke="#6E9C86" stroke-width="1.25"/>
-      <text x="15" y="18.5" text-anchor="middle" fill="#EAE9D5"
-            font-family="Poppins, Century Gothic, sans-serif" font-size="7.5" font-weight="700">AIKO</text>
-    </svg>
-    <span>
-      <span class="name">Trilith marketing tool</span><br>
-      <span class="who">aikogroup.io — internal</span>
-    </span>
-  </a>
+<main class="page">
+  <div id="next"></div>
 
-  <nav class="site-nav" aria-label="Sections">
-    <span class="nav-group">
-      <span class="nav-group-label">Intelligence</span>
-      <a class="nav-link" href="./briefing.html">Competitors</a>
-      <a class="nav-link" href="./creators.html">Creators</a>
-    </span>
-    <span class="nav-group">
-      <span class="nav-group-label">Production</span>
-      <a class="nav-link" href="./">Plan</a>
-      <a class="nav-link" href="./scripts.html">Scripts</a>
-      <a class="nav-link" href="./edit.html">Edit</a>
-      <a class="nav-link" href="./recordings.html">Recordings</a>
-      <a class="nav-link" href="./output.html">Output</a>
-      <a class="nav-link" href="./schedule.html" aria-current="page">Schedule</a>
-    </span>
-    <button class="theme-toggle" id="theme-toggle" type="button"
-            aria-label="Toggle light and dark theme" aria-pressed="false">
-      <span data-theme-label>Dark</span>
-    </button>
-  </nav>
-</header>
-
-<main class="wrap">
-  <p class="eyebrow">Production</p>
-  <h2>Schedule</h2>
-  <p class="lede">Connect The Buy Box's accounts once, and posts can go out from here to Instagram, Facebook, YouTube and TikTok at a time you choose. You sign in to each one on its own page — Google's, TikTok's, Facebook's — so this app never sees a password.</p>
-
-  <div class="account" id="account">
-    <div class="who">
-      <p class="name" id="name"><span class="dot"></span>Checking…</p>
-      <p class="sub" id="sub"></p>
+  <div class="row" style="justify-content: space-between">
+    <h1>Schedule</h1>
+    <div class="row" style="gap: 6px">
+      <div role="group" aria-label="Show as" class="row" style="gap: 4px">
+        <button type="button" class="chip chip-sm" id="view-month" aria-pressed="true">Month</button>
+        <button type="button" class="chip chip-sm" id="view-list" aria-pressed="false">List</button>
+      </div>
+      <button type="button" class="btn btn-s btn-sm" id="open-accounts">Posting accounts</button>
     </div>
-    <div id="buttons"></div>
   </div>
 
-  <div class="choose" id="choose" hidden>
-    <label for="page-pick">Post to this Page</label>
-    <select id="page-pick"></select>
-  </div>
+  <div id="notices" class="stack" hidden></div>
+  <div id="state" class="row"><span class="quiet">Loading the schedule…</span></div>
 
-  <div class="setup" id="social-setup" hidden>
-    <h3>Before this can connect</h3>
-    <ol>
-      <li>Sign up at <a href="https://www.upload-post.com" target="_blank" rel="noopener">www.upload-post.com</a> (with the <code>www</code> — the bare address can hang). TikTok needs a paid plan; the others work on any.</li>
-      <li>Copy the API key from its dashboard.</li>
-      <li>From the <code>worker</code> folder: <code>npx wrangler secret put UPLOAD_POST_API_KEY</code>, then deploy.</li>
-    </ol>
-  </div>
-
-  <div class="setup" id="setup" hidden>
-    <h3>Before this can connect</h3>
-    <ol>
-      <li>At <code>developers.facebook.com</code>, create a <strong>Business</strong> app owned by the Trilith Funding Business Portfolio, and add <strong>Facebook Login for Business</strong> to it.</li>
-      <li>Register <code id="redirect">…/meta/callback</code> as a Valid OAuth Redirect URI, exactly.</li>
-      <li>Make sure the Instagram account is linked to the Facebook Page in the Business Portfolio. It has to be a Professional account.</li>
-      <li>From the <code>worker</code> folder, set three secrets: <code>META_APP_ID</code>, <code>META_APP_SECRET</code> and <code>META_TOKEN_KEY</code>, then deploy.</li>
-    </ol>
-  </div>
-
-  <section id="composer" hidden>
-    <h3>Schedule a reel</h3>
-    <fieldset class="where" id="where">
-      <legend>Post to</legend>
-      <label><input type="checkbox" value="instagram" checked> Instagram <span class="handle" id="ig-handle"></span></label>
-      <label><input type="checkbox" value="facebook" checked> Facebook <span class="handle" id="fb-handle"></span></label>
-      <label hidden><input type="checkbox" value="youtube" checked> YouTube <span class="handle" id="yt-handle"></span></label>
-      <label hidden><input type="checkbox" value="tiktok" checked> TikTok <span class="handle" id="tt-handle"></span></label>
-    </fieldset>
-    <div class="compose">
-      <div>
-        <label class="says-label" for="picks" style="display:block;font-size:.8125rem;font-weight:600;color:var(--ink);margin:0 0 .3125rem">Which video</label>
-        <div class="picks" id="picks"></div>
+  <section id="month" class="stack" aria-label="Calendar" hidden>
+    <div class="row" style="justify-content: space-between">
+      <div class="row" style="gap: 4px">
+        <button type="button" class="btn-q" id="cal-prev" aria-label="Previous month" style="font-size: 20px">‹</button>
+        <h2 id="cal-month" aria-live="polite" style="min-width: 150px; text-align: center"></h2>
+        <button type="button" class="btn-q" id="cal-next" aria-label="Next month" style="font-size: 20px">›</button>
       </div>
-      <div class="says">
-        <div id="yt-title-wrap" hidden>
-          <label for="yt-title">YouTube title <span class="count" id="yt-count">0 / 100</span></label>
-          <input id="yt-title" type="text" maxlength="100" placeholder="YouTube wants a title of its own. The video's topic until you change it.">
-        </div>
-        <label for="caption">Caption <span class="count" id="count">0 / 2200</span></label>
-        <textarea id="caption" maxlength="2200" placeholder="What it says underneath. The script is below if you want to lift from it."></textarea>
-        <div class="script-aside" id="script-aside" hidden></div>
-        <div class="row">
-          <div>
-            <label for="when">When</label>
-            <input id="when" type="datetime-local">
-          </div>
-          <button class="btn" id="add" type="button">Schedule it</button>
-        </div>
-        <p class="hint" id="compose-note" style="font-size:.75rem;color:var(--ink-quiet);margin:.5rem 0 0"></p>
-      </div>
+      <button type="button" class="btn btn-s btn-sm" id="cal-today">Today</button>
+    </div>
+    <div class="cal" id="cal-dow" aria-hidden="true"></div>
+    <div class="cal" id="cal-grid"></div>
+    <div class="row quiet" id="legend" style="gap: 14px; font-size: 12px"></div>
+    <div class="row" style="justify-content: space-between; border-top: 1px solid var(--rule); padding-top: 14px">
+      <h2 id="day-title"></h2>
+      <span id="day-action"></span>
     </div>
   </section>
 
-  <div class="queue-bar" id="queue-head" hidden>
-    <h3>Going out</h3>
-    <div class="views" role="group" aria-label="Show as">
-      <button type="button" id="view-calendar" aria-pressed="true">Calendar</button>
-      <button type="button" id="view-list" aria-pressed="false">List</button>
-    </div>
-  </div>
-
-  <section class="cal" id="cal" hidden aria-label="Calendar of posts">
-    <div class="cal-top">
-      <button type="button" class="cal-step" id="cal-prev" aria-label="Previous month">‹</button>
-      <h4 id="cal-month"></h4>
-      <button type="button" class="cal-step" id="cal-next" aria-label="Next month">›</button>
-      <button type="button" class="btn secondary small" id="cal-today">Today</button>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div class="cal-key" aria-hidden="true">
-      <span><i class="k scheduled"></i>Scheduled</span>
-      <span><i class="k working"></i>Sending</span>
-      <span><i class="k posted"></i>Posted</span>
-      <span><i class="k failed"></i>Failed</span>
-    </div>
-    <div class="cal-day" id="cal-day"></div>
-  </section>
-
-  <ol class="queue" id="queue"></ol>
-  <div class="soon" id="nothing" hidden>
-    <p>Nothing scheduled yet. Pick a video above, write the caption, choose a time.</p>
-  </div>
-
-  <div class="soon" id="images-note" hidden>
-    <p><strong>Images and carousels</strong> post through the same machinery — the publisher builds all three — but they need somewhere public to upload a still first, which is the next piece.</p>
-  </div>
+  <section id="posts" class="stack" style="gap: 10px" aria-label="Posts" hidden></section>
 </main>
 
-<div class="toast" id="toast" role="status" hidden></div>
+<!-- Posting accounts -->
+<div class="scrim" id="acct-scrim" hidden>
+  <div class="side" role="dialog" aria-modal="true" aria-labelledby="acct-title" style="width: min(480px, 100%)">
+    <div class="side-head">
+      <h2 id="acct-title">Posting accounts</h2>
+      <button type="button" class="icon-btn" aria-label="Close" data-close style="font-size: 22px">×</button>
+    </div>
+    <div class="side-body" id="acct-body"></div>
+  </div>
+</div>
 
+<!-- Scheduling a video, or changing a post -->
+<div class="scrim" id="sched-scrim" hidden>
+  <div class="side" role="dialog" aria-modal="true" aria-labelledby="sched-title">
+    <div class="side-head">
+      <h2 id="sched-title">Schedule a video</h2>
+      <button type="button" class="icon-btn" aria-label="Close" data-close style="font-size: 22px">×</button>
+    </div>
+    <div class="side-body" id="sched-body"></div>
+  </div>
+</div>
+
+<script src="./assets/shell.js"></script>
 <script>
-/* The same Worker as the other pages. */
-const WORKER_URL = 'https://trilith-ask.jenna-cbd.workers.dev';
+/* Where posts go out from: a month calendar (or a plain list) of what is
+   scheduled, sending, posted or failed; a drawer for scheduling an approved
+   video; and a drawer for the accounts it posts to.
+
+   Accounts come from Upload-Post when the Worker has its key (all four
+   platforms). Without it, the direct Meta connection is the fallback
+   (Facebook, and the Instagram account linked to the Page). */
+const A = AikoApp;
+const el = A.el;
+A.header('schedule');
+
+const NAMES = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok' };
+const MARKS = { instagram: 'IG', facebook: 'FB', youtube: 'YT', tiktok: 'TT' };
+const PLATFORMS = Object.keys(NAMES);
+const STATUS = {
+  scheduled: ['Scheduled', 'tag ok'], working: ['Sending…', 'tag busy'], posted: ['Posted', 'tag'],
+  failed: ['Failed', 'tag bad'], cancelled: ['Cancelled', 'tag'],
+};
+/* What a group of posts shows as on the calendar: the state most worth a look. */
+const RANK = ['failed', 'working', 'scheduled', 'posted'];
+const IMAGES_NOTE = 'Images and carousels aren’t available yet; reels and shorts are.';
 
 const $ = (id) => document.getElementById(id);
-const nameEl = $('name');
-const subEl = $('sub');
-const buttonsEl = $('buttons');
-const toastEl = $('toast');
-
-$('redirect').textContent = WORKER_URL + '/meta/callback';
-
-let toastTimer;
-function toast(message) {
-  toastEl.textContent = message;
-  toastEl.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2800);
-}
-
-async function call(path, body) {
-  const res = await AikoAuth.fetch(WORKER_URL + path, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body || {}),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `that didn't work (${res.status})`);
-  return data;
-}
-
-
-function button(label, kind, onClick) {
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.className = 'btn ' + kind;
-  b.textContent = label;
-  b.addEventListener('click', () => onClick(b));
-  return b;
-}
-
-function draw(acc) {
-  buttonsEl.textContent = '';
-  const dot = document.createElement('span');
-  dot.className = 'dot ' + (acc.connected ? 'on' : 'off');
-  drawChoice(acc);
-
-  if (acc.connected) {
-    const p = acc.page;
-    nameEl.textContent = '';
-    nameEl.append(dot, document.createTextNode(p.page_name || 'Facebook Page'));
-    /* A Page token taken this way does not run out, so there is no countdown
-       to show — only whether Instagram came with it. */
-    subEl.className = 'sub' + (p.ig_user_id ? '' : ' bad');
-    subEl.textContent = p.ig_user_id
-      ? `Facebook Page, and Instagram @${p.ig_username || 'account'}. Connected; the permission does not run out.`
-      : 'Facebook Page connected, but no Instagram account is linked to it, so only Facebook posts can go out. Link them in the Business Portfolio, then connect again.';
-    buttonsEl.append(button('Connect again', 'secondary', connect));
-    buttonsEl.append(button('Disconnect', 'secondary', async (b) => {
-      if (!confirm('Disconnect Facebook and Instagram? Anything already scheduled will stop going out.')) return;
-      b.disabled = true;
-      try { await call('/meta/disconnect'); toast('Disconnected'); await load(); }
-      catch (err) { toast(err.message); b.disabled = false; }
-    }));
-    return;
-  }
-
-  nameEl.textContent = '';
-  nameEl.append(dot, document.createTextNode(acc.pages?.length ? 'Choose a Page' : 'No Page connected'));
-  subEl.className = 'sub';
-  subEl.textContent = !acc.ready
-    ? 'The Worker is missing its Meta keys — see below.'
-    : acc.pages?.length
-      ? 'More than one Page came through. Choose the one posts go to.'
-      : 'Connect the Page you post to. You sign in as yourself on Facebook, not here.';
-  $('setup').hidden = Boolean(acc.ready);
-
-  /* With no keys set there is nothing to connect to, and pressing it opened a
-     blank tab that shut again — which looks like the button is broken rather
-     than like the Worker is unconfigured. */
-  const go = button('Connect Facebook', '', connect);
-  go.disabled = !acc.ready;
-  if (!acc.ready) go.title = 'The Worker needs its Meta keys first — see the steps below.';
-  buttonsEl.append(go);
-}
-
-/* Only when the approval covered more than one Page. */
-function drawChoice(acc) {
-  const pages = acc.pages || [];
-  $('choose').hidden = pages.length < 2;
-  if (pages.length < 2) return;
-  const sel = $('page-pick');
-  sel.textContent = '';
-  if (!acc.connected) {
-    const none = document.createElement('option');
-    none.value = '';
-    none.textContent = 'Choose…';
-    sel.append(none);
-  }
-  for (const p of pages) {
-    const o = document.createElement('option');
-    o.value = p.page_id;
-    o.textContent = p.page_name + (p.ig_username ? ` (and @${p.ig_username})` : ' (no Instagram)');
-    o.selected = Boolean(p.selected);
-    sel.append(o);
-  }
-}
-
-$('page-pick').addEventListener('change', async (e) => {
-  if (!e.target.value) return;
-  e.target.disabled = true;
-  const route = socialMode ? '/social/facebook-page' : '/meta/pick';
-  try { await call(route, { page_id: e.target.value }); toast('Page chosen'); await load(); }
-  catch (err) { toast(err.message); }
-  finally { e.target.disabled = false; }
-});
-
-/* The popup is opened on the click itself and pointed at Instagram once the
-   Worker has handed back the URL: opening it after the await is what browsers
-   treat as a popup and block. */
-async function connect(btn) {
-  const tab = window.open('', '_blank');
-  btn.disabled = true;
-  try {
-    const { url } = await call('/meta/start');
-    if (tab) { tab.location = url; watch(); }
-    else { window.location.href = url; }
-  } catch (err) {
-    if (tab) tab.close();
-    toast(err.message);
-    subEl.className = 'sub bad';
-    subEl.textContent = err.message;
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-/* While the other tab is being approved, check back for a couple of minutes. */
-function watch(tries = 0) {
-  setTimeout(async () => {
-    let acc = null;
-    try { acc = await call('/meta/account'); } catch { /* try again */ }
-    /* Several Pages means a choice to make, which is also worth stopping for. */
-    if (acc?.connected || acc?.pages?.length > 1) {
-      await load();
-      toast(acc.connected ? 'Connected' : 'Choose a Page');
-      return;
-    }
-    if (tries < 40) watch(tries + 1);
-  }, 3000);
-}
-
-/* --- composing ----------------------------------------------------------- */
-
-let videos = [];
-let picked = null;
-const scripts = {};
-
-const when = (iso) => new Date(iso).toLocaleString(undefined,
-  { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-
-/* An hour from now, in the box's own local format. */
-function defaultWhen() {
-  const t = new Date(Date.now() + 3600000 - new Date().getTimezoneOffset() * 60000);
-  return t.toISOString().slice(0, 16);
-}
-
-async function loadVideos() {
-  try {
-    const res = await AikoAuth.fetch(WORKER_URL + '/videos', {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-    });
-    if (!res.ok) return;
-    videos = ((await res.json()).videos || []).filter((v) => v.url);
-  } catch { return; }
-
-  const picks = $('picks');
-  picks.textContent = '';
-  for (const v of videos.slice(0, 40)) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'pick';
-    b.setAttribute('aria-pressed', 'false');
-    const t = document.createElement('span');
-    t.className = 't';
-    t.textContent = v.topic || 'Untitled';
-    const d = document.createElement('span');
-    d.className = 'd';
-    d.textContent = [v.duration ? Math.round(v.duration) + 's' : '', v.review_status === 'to_post' ? 'to be posted' : '']
-      .filter(Boolean).join(' · ');
-    b.append(t, d);
-    b.addEventListener('click', () => choose(v, b));
-    picks.append(b);
-  }
-  if (!videos.length) {
-    const none = document.createElement('p');
-    none.className = 'hint';
-    none.style.cssText = 'font-size:.75rem;color:var(--ink-quiet)';
-    none.textContent = 'No finished videos yet. They show up here once they are rendered.';
-    picks.append(none);
-  }
-}
-
-async function choose(v, btn) {
-  picked = v;
-  const yt = $('yt-title');
-  if (!yt.dataset.typed) { yt.value = (v.topic || '').slice(0, 100); $('yt-count').textContent = `${yt.value.length} / 100`; }
-  document.querySelectorAll('.pick').forEach((p) => p.setAttribute('aria-pressed', String(p === btn)));
-  const aside = $('script-aside');
-  aside.hidden = false;
-  aside.textContent = 'Loading the script…';
-
-  if (scripts[v.id] === undefined) {
-    try {
-      const res = await AikoAuth.fetch(WORKER_URL + '/videos/script', {
-        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: v.id }),
-      });
-      scripts[v.id] = res.ok ? ((await res.json()).lines || null) : null;
-    } catch { scripts[v.id] = null; }
-  }
-  if (picked !== v) return;
-
-  aside.textContent = '';
-  const head = document.createElement('p');
-  head.className = 'h';
-  head.textContent = scripts[v.id]?.length ? 'What it says' : 'No script was kept for this one';
-  aside.append(head);
-  if (scripts[v.id]?.length) {
-    const ol = document.createElement('ol');
-    for (const line of scripts[v.id]) {
-      const li = document.createElement('li');
-      li.textContent = line;
-      ol.append(li);
-    }
-    aside.append(ol);
-  }
-}
-
-$('caption').addEventListener('input', () => {
-  $('count').textContent = `${$('caption').value.length} / 2200`;
-});
-
-$('yt-title').addEventListener('input', (e) => {
-  e.target.dataset.typed = e.target.value ? '1' : '';
-  $('yt-count').textContent = `${e.target.value.length} / 100`;
-});
-
-/* The YouTube title only matters when YouTube is ticked. */
-function showTitle() {
-  const yt = document.querySelector('#where input[value="youtube"]');
-  $('yt-title-wrap').hidden = !(yt && yt.checked && !yt.disabled && !yt.closest('label').hidden);
-}
-document.querySelectorAll('#where input').forEach((c) => c.addEventListener('change', showTitle));
-
-$('add').addEventListener('click', async (e) => {
-  const note = $('compose-note');
-  note.style.color = 'var(--ink-quiet)';
-  if (!picked) { note.textContent = 'Pick a video first.'; return; }
-  const at = $('when').value;
-  if (!at) { note.textContent = 'Choose when it goes out.'; return; }
-
-  const platforms = [...document.querySelectorAll('#where input:checked:not(:disabled)')].map((c) => c.value);
-  if (!platforms.length) { note.textContent = 'Choose at least one place to post it.'; return; }
-  const title = $('yt-title').value.trim();
-  if (platforms.includes('youtube') && !title) { note.textContent = 'YouTube needs a title.'; return; }
-
-  const btn = e.currentTarget;
-  btn.disabled = true;
-  note.textContent = 'Scheduling…';
-  try {
-    await call('/posts/create', {
-      kind: 'reel',
-      media: [{ url: picked.url, kind: 'video' }],
-      caption: $('caption').value,
-      scheduled_for: new Date(at).toISOString(),
-      render_id: picked.id,
-      platforms,
-      title: platforms.includes('youtube') ? title : undefined,
-    });
-    note.textContent = '';
-    $('caption').value = '';
-    $('count').textContent = '0 / 2200';
-    toast(platforms.length > 1 ? `Scheduled for ${platforms.length} places` : 'Scheduled');
-    selectedDay = dayKey(new Date(at));
-    calMonth = new Date(new Date(at).getFullYear(), new Date(at).getMonth(), 1);
-    await loadPosts();
-  } catch (err) {
-    note.style.color = 'var(--clay)';
-    note.textContent = err.message;
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-/* --- the queue ------------------------------------------------------------ */
-
-let posts = [];
-let pollTimer = null;
-
-async function loadPosts() {
-  try { posts = (await call('/posts/list')).posts || []; }
-  catch { return; }
-  drawQueue();
-  schedulePoll();
-}
-
-/* Only while something is mid-flight, and not forever. */
-function schedulePoll() {
-  clearTimeout(pollTimer);
-  if (!posts.some((p) => p.status === 'working')) return;
-  pollTimer = setTimeout(loadPosts, 20000);
-}
-
-/* --- calendar or list ---------------------------------------------------- */
-
-let view = 'calendar';
-try { view = localStorage.getItem('schedule-view') === 'list' ? 'list' : 'calendar'; } catch { /* private mode */ }
+const params = new URLSearchParams(location.search);
 
 /* Days are the viewer's own, not UTC: a 9pm post belongs to tonight. */
 const dayKey = (d) => {
@@ -722,285 +131,543 @@ const dayKey = (d) => {
   return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
 };
 const fromKey = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
-let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-let selectedDay = dayKey(new Date());
+const todayKey = () => dayKey(new Date());
+const timeOf = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+const nameOf = (k) => NAMES[k] || k;
 
-const MARKS = { instagram: 'IG', facebook: 'FB', youtube: 'YT', tiktok: 'TT' };
-/* What a group of posts shows as: the state that most needs attention. */
-const RANK = ['failed', 'working', 'scheduled', 'posted'];
+let view = 'month';
+try { view = localStorage.getItem('schedule-view') === 'list' ? 'list' : 'month'; } catch (e) { /* private mode */ }
+if (params.get('view') === 'list') view = 'list';
+
+let videos = [];
+let posts = [];
+let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let selectedDay = todayKey();
+let confirmPost = null;      // { key, kind: 'send' | 'cancel' } — the card asking a question
+let refocusKey = null;       // the data-k of what should have focus after a redraw
+let pollTimer = null;
+let loaded = false;        // nothing is drawn until the posts have come back once
+
+/* --- the posts ------------------------------------------------------------- */
+
+async function loadData(fresh) {
+  let s;
+  try { s = await A.status(fresh); }
+  catch (err) {
+    const st = $('state');
+    st.hidden = false;
+    st.textContent = '';
+    st.append(el('span', { class: 'bad-text', text: 'Couldn’t load the schedule. ' + err.message }),
+      el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: () => loadData(true) }, 'Try again'));
+    return;
+  }
+  videos = s.videos || [];
+  posts = s.posts || [];
+  loaded = true;
+  $('state').hidden = true;
+  draw();
+  A.nextUp($('next'), { failed: false });
+  schedulePoll();
+}
+
+/* Only while something is mid-flight: a post sending, or one whose time has
+   just come and the publisher hasn't picked up yet. Not forever. */
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  const now = Date.now();
+  const busy = posts.some((p) => p.status === 'working'
+    || (p.status === 'scheduled' && new Date(p.scheduled_for) <= now && now - new Date(p.scheduled_for) < 15 * 60000));
+  if (busy) pollTimer = setTimeout(() => loadData(true), 20000);
+}
+
+const mediaUrl = (p) => (p.media && p.media[0] && p.media[0].url) || '';
+function videoFor(p) { return videos.find((v) => A.postsFor(v, [p]).length) || null; }
+
+/* The same video at the same time to several platforms is one entry, on the
+   calendar (any status) and as a card (same status, so its actions fit all). */
+function groupBy(list, withStatus) {
+  const groups = new Map();
+  for (const p of list) {
+    const k = [p.scheduled_for, p.caption || '', p.render_id || mediaUrl(p), withStatus ? p.status : ''].join('|');
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(p);
+  }
+  return [...groups.entries()]
+    .map(([key, g]) => ({ key, posts: g }))
+    .sort((a, b) => new Date(a.posts[0].scheduled_for) - new Date(b.posts[0].scheduled_for));
+}
+const live = () => posts.filter((p) => p.status !== 'cancelled');
+const rankOf = (g) => RANK.find((r) => g.some((p) => p.status === r)) || 'scheduled';
+
+/* --- month or list ---------------------------------------------------------- */
 
 function setView(next) {
   view = next;
-  try { localStorage.setItem('schedule-view', next); } catch { /* private mode */ }
-  $('view-calendar').setAttribute('aria-pressed', String(next === 'calendar'));
-  $('view-list').setAttribute('aria-pressed', String(next === 'list'));
-  drawQueue();
+  try { localStorage.setItem('schedule-view', next); } catch (e) { /* private mode */ }
+  confirmPost = null;
+  draw();
 }
-$('view-calendar').addEventListener('click', () => setView('calendar'));
+$('view-month').addEventListener('click', () => setView('month'));
 $('view-list').addEventListener('click', () => setView('list'));
 $('cal-prev').addEventListener('click', () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); drawCalendar(); });
 $('cal-next').addEventListener('click', () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); drawCalendar(); });
 $('cal-today').addEventListener('click', () => {
   calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  selectedDay = dayKey(new Date());
-  drawCalendar();
+  selectDay(todayKey());
 });
 
-/* The same video at the same time to several platforms is one entry. */
-function groupsFor(key) {
-  const groups = new Map();
-  for (const p of posts) {
-    if (p.status === 'cancelled' || dayKey(p.scheduled_for) !== key) continue;
-    const g = `${p.scheduled_for}|${p.caption || ''}`;
-    if (!groups.has(g)) groups.set(g, []);
-    groups.get(g).push(p);
-  }
-  return [...groups.values()].sort((a, b) => new Date(a[0].scheduled_for) - new Date(b[0].scheduled_for));
+function draw() {
+  $('view-month').setAttribute('aria-pressed', String(view === 'month'));
+  $('view-list').setAttribute('aria-pressed', String(view === 'list'));
+  if (!loaded) return;
+  $('month').hidden = view !== 'month';
+  $('posts').hidden = false;
+  if (view === 'month') drawCalendar();
+  else drawPosts();
 }
 
-const clock = (iso) => new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+function selectDay(key) {
+  selectedDay = key;
+  const d = fromKey(key);
+  if (d.getMonth() !== calMonth.getMonth() || d.getFullYear() !== calMonth.getFullYear()) calMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+  confirmPost = null;
+  refocusKey = 'day:' + key;
+  drawCalendar();
+}
 
 function drawCalendar() {
   $('cal-month').textContent = calMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-  const grid = $('cal-grid');
-  grid.textContent = '';
 
   /* Weeks start on Sunday, as a US wall calendar does. */
   const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
   const start = new Date(first.getFullYear(), first.getMonth(), 1 - first.getDay());
+  const dow = $('cal-dow');
+  dow.textContent = '';
   for (let i = 0; i < 7; i += 1) {
     const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
-    const h = document.createElement('div');
-    h.className = 'cal-dow';
-    h.textContent = d.toLocaleDateString(undefined, { weekday: 'short' });
-    grid.append(h);
+    dow.append(el('span', { class: 'quiet', style: { textAlign: 'center', fontWeight: 600 }, text: d.toLocaleDateString(undefined, { weekday: 'short' }) }));
   }
 
-  const today = dayKey(new Date());
+  const grid = $('cal-grid');
+  const keepFocus = document.activeElement && grid.contains(document.activeElement) ? document.activeElement.dataset.k : null;
+  grid.textContent = '';
+  const today = todayKey();
   const last = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0);
   const cells = Math.ceil((first.getDay() + last.getDate()) / 7) * 7;
+  const all = live();
   for (let i = 0; i < cells; i += 1) {
     const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
     const key = dayKey(d);
-    const groups = groupsFor(key);
+    const day = all.filter((p) => dayKey(p.scheduled_for) === key);
+    const groups = groupBy(day, false);
+    const other = d.getMonth() !== calMonth.getMonth();
+    const failed = day.filter((p) => p.status === 'failed').length;
 
-    const cell = document.createElement('button');
-    cell.type = 'button';
-    cell.className = 'cal-cell'
-      + (d.getMonth() !== calMonth.getMonth() ? ' other' : '')
-      + (key === today ? ' today' : '')
-      + (key < today ? ' past' : '');
-    cell.setAttribute('aria-pressed', String(key === selectedDay));
-    const count = groups.reduce((n, g) => n + g.length, 0);
-    cell.setAttribute('aria-label', d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
-      + (count ? `, ${count} post${count === 1 ? '' : 's'}` : ''));
-
-    const num = document.createElement('span');
-    num.className = 'd';
-    num.textContent = String(d.getDate());
-    cell.append(num);
+    const cell = el('button', {
+      type: 'button',
+      class: 'day' + (other ? ' other' : '') + (key < today && !other ? ' past' : '') + (key === today ? ' today' : ''),
+      'aria-pressed': String(key === selectedDay),
+      'aria-label': A.fmtDay(d) + ', ' + A.plural(day.length, 'post') + (failed ? ', ' + failed + ' failed' : ''),
+      'data-k': 'day:' + key,
+      onclick: () => selectDay(key),
+    }, el('span', { style: { fontSize: '12px', fontWeight: 600 }, text: String(d.getDate()) }));
 
     for (const g of groups.slice(0, 3)) {
-      const state = RANK.find((r) => g.some((p) => p.status === r)) || 'scheduled';
-      const chip = document.createElement('span');
-      chip.className = 'chip ' + state;
-      const t = document.createElement('span');
-      t.className = 't';
-      t.textContent = clock(g[0].scheduled_for);
-      const m = document.createElement('span');
-      m.className = 'm';
-      for (const p of g) {
-        const mk = document.createElement('span');
-        mk.className = 'mark';
-        mk.textContent = MARKS[p.platform] || '?';
-        m.append(mk);
-      }
-      chip.append(t, m);
-      cell.append(chip);
+      const state = rankOf(g.posts);
+      const when = A.fmtTime(g.posts[0].scheduled_for);
+      cell.append(el('span', { class: 'ent s-' + state, title: when + ' · ' + A.joinNames(g.posts.map((p) => nameOf(p.platform))) + ' · ' + STATUS[state][0] },
+        el('span', { class: 't', text: when.replace(':00', '') + ' ' }),
+        (state === 'failed' ? '! ' : state === 'posted' ? '✓ ' : '') + g.posts.map((p) => MARKS[p.platform] || '?').join(' ')));
     }
-    if (groups.length > 3) {
-      const more = document.createElement('span');
-      more.className = 'more';
-      more.textContent = `+${groups.length - 3} more`;
-      cell.append(more);
-    }
-
-    cell.addEventListener('click', () => {
-      selectedDay = key;
-      if (d.getMonth() !== calMonth.getMonth()) calMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-      drawCalendar();
-    });
+    if (groups.length > 3) cell.append(el('span', { class: 'quiet', style: { fontSize: '11px' }, text: '+' + (groups.length - 3) + ' more' }));
     grid.append(cell);
   }
-  drawDay();
+
+  const legend = $('legend');
+  if (!legend.childElementCount) {
+    for (const k of ['scheduled', 'working', 'posted', 'failed']) {
+      legend.append(el('span', { class: 'row', style: { gap: '6px' } },
+        el('span', { class: 'swatch ent s-' + k, 'aria-hidden': 'true' }), STATUS[k][0].replace('…', '')));
+    }
+  }
+
+  const title = A.fmtDay(fromKey(selectedDay));
+  $('day-title').textContent = title;
+  const act = $('day-action');
+  act.textContent = '';
+  /* A day still to come can be scheduled straight from here. */
+  if (selectedDay >= today) {
+    act.append(el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: () => openSchedule({ day: selectedDay }) }, 'Schedule a video on ' + title));
+  }
+
+  const want = refocusKey || keepFocus;
+  if (want && want.startsWith('day:')) { const b = grid.querySelector(`[data-k="${want}"]`); if (b) b.focus(); refocusKey = null; }
+  drawPosts();
 }
 
-/* The chosen day, in full, with the same actions as the list. */
-function drawDay() {
-  const box = $('cal-day');
+/* The chosen day's posts (month) or every post (list), as cards. */
+function drawPosts() {
+  const box = $('posts');
+  const keepFocus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.dataset.k : null;
   box.textContent = '';
-  const head = document.createElement('div');
-  head.className = 'day-head';
-  const h = document.createElement('h4');
-  const day = fromKey(selectedDay);
-  h.textContent = day.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-  head.append(h);
+  const list = view === 'month'
+    ? live().filter((p) => dayKey(p.scheduled_for) === selectedDay)
+    : posts.slice();
+  const groups = groupBy(list, true);
 
-  /* A day still to come can be scheduled straight from here. */
-  if (selectedDay >= dayKey(new Date()) && !$('composer').hidden) {
-    head.append(button('Schedule a video this day', 'secondary small', () => {
-      const keep = $('when').value.slice(11) || '09:00';
-      $('when').value = `${selectedDay}T${keep}`;
-      $('composer').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-      toast(`When is set to ${day.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`);
-    }));
+  if (!groups.length) {
+    if (view === 'month') box.append(el('p', { class: 'quiet', style: { margin: 0 }, text: 'Nothing goes out this day.' }));
+    else box.append(A.empty('Nothing scheduled yet.', 'See approved videos', './videos.html?filter=approved'));
   }
-  box.append(head);
+  for (const g of groups) box.append(postCard(g));
 
-  const list = posts.filter((p) => p.status !== 'cancelled' && dayKey(p.scheduled_for) === selectedDay)
-    .sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
-  if (!list.length) {
-    const none = document.createElement('p');
-    none.className = 'none';
-    none.textContent = 'Nothing goes out this day.';
-    box.append(none);
+  const want = refocusKey || keepFocus;
+  refocusKey = null;
+  if (want && !want.startsWith('day:')) { const b = box.querySelector(`[data-k="${CSS.escape(want)}"]`); if (b) b.focus(); }
+}
+
+function postCard(g) {
+  const ps = g.posts;
+  const p0 = ps[0];
+  const v = videoFor(p0);
+  const status = p0.status;
+  const names = A.joinNames(ps.map((p) => nameOf(p.platform)));
+  const src = (v && v.url) || mediaUrl(p0);
+  const cap = p0.caption || '';
+  const title = v ? (v.topic || 'Untitled') : (cap ? (cap.length > 60 ? cap.slice(0, 60) + '…' : cap) : 'Untitled post');
+  const k = g.key;
+
+  const thumb = src
+    ? el('video', { class: 'pthumb', src: src.split('#')[0] + '#t=1', preload: 'metadata', muted: true, playsinline: true, 'aria-hidden': 'true' })
+    : el('span', { class: 'pthumb', 'aria-hidden': 'true' });
+
+  const body = el('div', { class: 'body' },
+    el('div', { class: 'row', style: { gap: '8px' } },
+      el('span', { class: 'ink', style: { fontWeight: 600 }, text: title }),
+      el('span', { class: (STATUS[status] || ['', 'tag'])[1], text: (STATUS[status] || [status])[0] })),
+    el('span', { class: 'quiet', text: A.fmtWhen(p0.scheduled_for) + ' · ' + names }),
+    cap ? el('span', { style: { fontSize: '13px' }, text: cap.length > 140 ? cap.slice(0, 140) + '…' : cap }) : null);
+
+  /* Each platform keeps its own error; name it when there is more than one. */
+  if (status !== 'posted') {
+    const errs = ps.filter((p) => p.error);
+    const distinct = new Set(errs.map((p) => p.error));
+    if (distinct.size === 1 && errs.length === ps.length) body.append(el('span', { class: 'bad-text', text: errs[0].error }));
+    else for (const p of errs) body.append(el('span', { class: 'bad-text', text: nameOf(p.platform) + ': ' + p.error }));
+  }
+
+  const canAct = status === 'scheduled' || status === 'failed';
+  if (canAct && confirmPost && confirmPost.key === k) {
+    const send = confirmPost.kind === 'send';
+    const row = A.confirmRow(
+      send ? 'Post it now to ' + names + '? This can’t be undone.' : 'Cancel this post? It won’t go out.',
+      send ? 'Post now' : 'Cancel post',
+      (e) => (send ? sendNow(ps, e.currentTarget) : cancelPosts(ps, e.currentTarget)),
+      send ? 'Not yet' : 'Keep it',
+      () => { confirmPost = null; refocusKey = k + (send ? ':send' : ':cancel'); drawPosts(); },
+      !send);
+    const btns = row.querySelectorAll('button');
+    btns[0].dataset.k = k + ':yes';
+    btns[1].dataset.k = k + ':no';
+    body.append(row);
+  } else {
+    const acts = el('div', { class: 'row', style: { gap: '4px' } });
+    if (canAct) {
+      acts.append(
+        el('button', { type: 'button', class: 'btn btn-s btn-sm', 'data-k': k + ':send', onclick: () => ask(k, 'send') }, status === 'failed' ? 'Try again now' : 'Post now'),
+        el('button', { type: 'button', class: 'btn-q', 'data-k': k + ':edit', onclick: () => openSchedule({ group: ps }) }, 'Change time or caption'),
+        el('button', { type: 'button', class: 'btn-q', 'data-k': k + ':cancel', onclick: () => ask(k, 'cancel') }, 'Cancel post'));
+    }
+    if (status === 'posted') {
+      for (const p of ps.filter((x) => x.permalink)) {
+        acts.append(el('a', { class: 'link see', href: p.permalink, target: '_blank', rel: 'noopener' }, 'See it on ' + nameOf(p.platform) + ' ↗'));
+      }
+    }
+    if (acts.childElementCount) body.append(acts);
+  }
+
+  return el('div', { class: 'card pcard s-' + status }, thumb, body);
+}
+
+function ask(key, kind) {
+  confirmPost = { key, kind };
+  refocusKey = key + ':no';   // the safe answer, not the irreversible one
+  drawPosts();
+}
+
+function busyRow(btn, text) {
+  const row = btn.parentNode;
+  row.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+  btn.textContent = text;
+}
+
+async function sendNow(ps, btn) {
+  busyRow(btn, 'Posting…');
+  try {
+    await Promise.all(ps.map((p) => A.api('/posts/now', { id: p.id })));
+    toast('Sending now. It usually shows up within a few minutes.');
+  } catch (err) {
+    toast(err.message);
+  }
+  confirmPost = null;
+  await loadData(true);
+}
+
+async function cancelPosts(ps, btn) {
+  busyRow(btn, 'Cancelling…');
+  try {
+    await Promise.all(ps.map((p) => A.api('/posts/cancel', { id: p.id })));
+  } catch (err) {
+    toast(err.message);
+    confirmPost = null;
+    await loadData(true);
     return;
   }
-  const ol = document.createElement('ol');
-  ol.className = 'queue';
-  for (const p of list) ol.append(postItem(p));
-  box.append(ol);
+  confirmPost = null;
+  await loadData(true);
+  /* Only say the video is back under Approved when nothing else of it is still going out. */
+  const v = videoFor(ps[0]);
+  const still = v && A.postsFor(v, posts).some((p) => p.status === 'scheduled' || p.status === 'working' || p.status === 'posted');
+  toast(v && !still ? 'Post cancelled. The video is back under Approved.' : 'Post cancelled.');
 }
 
-function drawQueue() {
-  const queue = $('queue');
-  queue.textContent = '';
-  $('nothing').hidden = posts.length > 0;
-  $('queue-head').hidden = posts.length === 0;
-  $('cal').hidden = view !== 'calendar' || posts.length === 0;
-  queue.hidden = view !== 'list';
-  if (view === 'calendar') { if (posts.length) drawCalendar(); return; }
-  for (const p of posts) queue.append(postItem(p));
+const toast = (text, undo) => A.toast(text, undo);
+
+/* --- drawers -------------------------------------------------------------------
+
+   Two right-side drawers; only one is open at a time. Escape or the scrim
+   closes it, focus moves in on open and goes back where it was on close. */
+
+const drawers = { acct: $('acct-scrim'), sched: $('sched-scrim') };
+let lastFocus = null;
+
+function openDrawer(name) {
+  /* Swapping one drawer for the other keeps where focus goes back to. */
+  if (!openName()) lastFocus = document.activeElement;
+  Object.keys(drawers).forEach((n) => { if (n !== name && !drawers[n].hidden) closeDrawer(n, true); });
+  const scrim = drawers[name];
+  scrim.hidden = false;
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    const first = scrim.querySelector('.side-body button:not(:disabled), .side-body input, .side-body select, .side-body textarea, .side-body a[href]');
+    (first || scrim.querySelector('[data-close]')).focus();
+  }, 30);
+}
+function closeDrawer(name, swapping) {
+  const scrim = drawers[name];
+  if (scrim.hidden) return;
+  scrim.hidden = true;
+  if (name === 'acct' && location.hash === '#accounts') history.replaceState(null, '', location.pathname + location.search);
+  if (swapping) return;
+  document.body.style.overflow = '';
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+const openName = () => Object.keys(drawers).find((n) => !drawers[n].hidden);
+
+Object.keys(drawers).forEach((name) => {
+  const scrim = drawers[name];
+  scrim.addEventListener('click', (e) => { if (e.target === scrim) closeDrawer(name); });
+  scrim.querySelector('[data-close]').addEventListener('click', () => closeDrawer(name));
+});
+document.addEventListener('keydown', (e) => {
+  const name = openName();
+  if (!name) return;
+  if (e.key === 'Escape') { closeDrawer(name); return; }
+  /* Keep Tab inside the open drawer. */
+  if (e.key === 'Tab') {
+    const items = [...drawers[name].querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea, a[href], summary')]
+      .filter((x) => x.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
+/* --- posting accounts ---------------------------------------------------------- */
+
+let mode = null;          // 'social' (Upload-Post), 'meta' (direct), 'none', 'error'; null while checking
+let social = null;
+let meta = null;
+let accountError = '';
+let acctConfirm = false;  // the Meta Disconnect question is showing
+
+async function loadAccounts() {
+  /* Upload-Post first. The direct Meta connection is the fallback, used only
+     when the Worker has no Upload-Post key. */
+  let s;
+  try { s = await A.api('/social/account'); }
+  catch (err) {
+    /* The key is set but Upload-Post did not answer as expected. Say so,
+       rather than falling back to Meta, which would hide the reason. */
+    mode = 'error';
+    accountError = 'Couldn’t reach Upload-Post. ' + err.message;
+    accountsChanged();
+    return;
+  }
+  if (s && s.ready) { mode = 'social'; social = s; meta = null; accountsChanged(); return; }
+  try {
+    meta = await A.api('/meta/account');
+    social = null;
+    mode = meta.ready ? 'meta' : 'none';
+  } catch (err) {
+    mode = 'error';
+    accountError = 'Couldn’t check the connection. Try refreshing the page.';
+  }
+  accountsChanged();
 }
 
-function postItem(p) {
-  const li = document.createElement('li');
-  li.className = 'post';
-
-  const top = document.createElement('div');
-  top.className = 'top';
-  const w = document.createElement('p');
-  w.className = 'when';
-  w.textContent = when(p.scheduled_for);
-  const tag = document.createElement('span');
-  tag.className = 'tag ' + p.status;
-  tag.textContent = p.status === 'working' ? 'Sending…' : p.status;
-  const where = document.createElement('span');
-  where.className = 'tag platform';
-  where.textContent = NAMES[p.platform] || p.platform;
-  top.append(w, where, tag);
-  li.append(top);
-
-  if (p.caption) {
-    const cap = document.createElement('p');
-    cap.className = 'cap';
-    cap.textContent = p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption;
-    li.append(cap);
-  }
-  if (p.error && p.status !== 'posted') {
-    const why = document.createElement('p');
-    why.className = 'why';
-    why.textContent = p.error;
-    li.append(why);
-  }
-
-  const acts = document.createElement('div');
-  acts.className = 'acts';
-  if (p.status === 'scheduled' || p.status === 'failed') {
-    acts.append(button('Send now', 'secondary small', async (b) => {
-      b.disabled = true;
-      try { await call('/posts/now', { id: p.id }); toast('Sending now'); await loadPosts(); }
-      catch (err) { toast(err.message); b.disabled = false; }
-    }));
-    acts.append(button('Cancel', 'secondary small', async (b) => {
-      if (!confirm('Cancel this post?')) return;
-      b.disabled = true;
-      try { await call('/posts/cancel', { id: p.id }); toast('Cancelled'); await loadPosts(); }
-      catch (err) { toast(err.message); b.disabled = false; }
-    }));
-  }
-  if (p.permalink) {
-    const a = document.createElement('a');
-    a.className = 'btn secondary small';
-    a.href = p.permalink;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = `See it on ${NAMES[p.platform] || 'the site'}`;
-    acts.append(a);
-  }
-  if (acts.children.length) li.append(acts);
-  return li;
+function accountsChanged() {
+  drawNotices();
+  if (!drawers.acct.hidden) drawAccounts();
+  if (!drawers.sched.hidden && sched && sched.mode === 'new') drawWhere();
 }
 
-const NAMES = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok' };
+const handleOf = (a) => (a.handle ? (a.handle.startsWith('@') ? a.handle : '@' + a.handle) : (a.name || ''));
 
-/* --- connecting through Upload-Post --------------------------------------- */
+/* Can a post go to this platform now, and if not, the few words why. */
+function avail(k) {
+  if (mode === 'social') {
+    const a = social.accounts[k];
+    if (!a) return { ok: false, why: 'not connected' };
+    if (a.reconnect) return { ok: false, why: 'sign in again', handle: handleOf(a) };
+    if (k === 'facebook' && (social.facebook_pages || []).length > 1 && !social.facebook_page_id) return { ok: false, why: 'choose a Page', handle: handleOf(a) };
+    return { ok: true, handle: handleOf(a) };
+  }
+  if (mode === 'meta' && meta.connected) {
+    /* YouTube and TikTok only go through Upload-Post. */
+    if (k === 'facebook') return { ok: true, handle: meta.page.page_name || '' };
+    if (k === 'instagram') return meta.page.ig_user_id ? { ok: true, handle: meta.page.ig_username ? '@' + meta.page.ig_username : '' } : { ok: false, why: 'not linked' };
+  }
+  return { ok: false, why: 'not connected' };
+}
+const stale = () => (mode === 'social' ? PLATFORMS.filter((k) => social.accounts[k] && social.accounts[k].reconnect) : []);
 
-let socialMode = false;
+/* Above the calendar: only what stops posts going out. */
+function drawNotices() {
+  const box = $('notices');
+  box.textContent = '';
+  if (mode === 'none') {
+    box.append(el('div', { class: 'card pad callout', text: 'Posting isn’t set up yet. Ask whoever runs the app to connect Upload-Post.' }));
+  } else if (mode === 'error') {
+    box.append(el('div', { class: 'card pad callout bad row' },
+      el('span', { class: 'ink grow', text: accountError }),
+      el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: loadAccounts }, 'Try again')));
+  }
+  for (const k of stale()) {
+    box.append(el('div', { class: 'card pad callout bad row' },
+      el('span', { class: 'ink grow', text: nameOf(k) + ' needs you to sign in again. Posts to it will fail until you do.' }),
+      el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: (e) => socialConnect(e.currentTarget, nameOf(k)) }, 'Sign in to ' + nameOf(k))));
+  }
+  box.hidden = !box.childElementCount;
+}
 
-function drawSocial(acc) {
-  socialMode = true;
-  buttonsEl.textContent = '';
-  const linked = Object.keys(NAMES).filter((k) => acc.accounts[k]);
-  const stale = linked.filter((k) => acc.accounts[k].reconnect);
-  const dot = document.createElement('span');
-  dot.className = 'dot ' + (linked.length ? 'on' : 'off');
-  nameEl.textContent = '';
-  nameEl.append(dot, document.createTextNode(linked.length
-    ? linked.map((k) => NAMES[k]).join(', ') + ' connected'
-    : 'Nothing connected yet'));
+function acctCard(name, state, sub, extra, actions) {
+  const tag = { connected: ['Connected', 'tag ok'], reconnect: ['Sign in again', 'tag bad'], unlinked: ['Not linked', 'tag warn'], off: ['Not connected', 'tag'] }[state];
+  return el('div', { class: 'card', style: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+    el('div', { class: 'row', style: { gap: '10px' } },
+      el('span', { class: 'ink grow', style: { fontWeight: 600 }, text: name }),
+      el('span', { class: tag[1], text: tag[0] })),
+    sub ? el('span', { class: 'quiet', text: sub }) : null,
+    extra || null,
+    actions && actions.length ? el('div', { class: 'row', style: { gap: '4px' } }, actions) : null);
+}
 
-  const missing = Object.keys(NAMES).filter((k) => !acc.accounts[k]);
-  subEl.className = 'sub' + (stale.length ? ' bad' : '');
-  subEl.textContent = stale.length
-    ? `${stale.map((k) => NAMES[k]).join(' and ')} needs signing in again — use Connect accounts.`
-    : missing.length
-      ? `Not yet: ${missing.map((k) => NAMES[k]).join(', ')}. Connect accounts opens a page where you sign in to each one on its own site.`
-      : 'All four are connected.';
+/* Which Facebook Page posts go to, when the account manages more than one. */
+function pagePicker(pages, chosenId, describe) {
+  const sel = el('select', { class: 'field', id: 'page-pick', style: { minHeight: '36px', maxWidth: '100%' } });
+  if (!chosenId) sel.append(el('option', { value: '' }, 'Choose…'));
+  for (const p of pages) sel.append(el('option', { value: p.page_id, selected: p.page_id === chosenId }, describe(p)));
+  sel.addEventListener('change', async () => {
+    if (!sel.value) return;
+    sel.disabled = true;
+    try {
+      await A.api(mode === 'social' ? '/social/facebook-page' : '/meta/pick', { page_id: sel.value });
+      toast('Page chosen');
+      await loadAccounts();
+    } catch (err) { toast(err.message); sel.disabled = false; }
+  });
+  return el('label', { class: 'row', style: { gap: '8px' }, for: 'page-pick' },
+    el('span', { class: 'quiet', text: 'Post to this Page' }), sel);
+}
 
-  buttonsEl.append(button('Connect accounts', linked.length ? 'secondary' : '', socialConnect));
+function drawAccounts() {
+  const body = $('acct-body');
+  const keepFocus = document.activeElement && body.contains(document.activeElement) ? document.activeElement.dataset.k : null;
+  body.textContent = '';
+  body.append(el('span', { class: 'quiet', text: 'You sign in on each platform’s own page, so this app never sees your passwords.' }));
 
-  /* Facebook needs to know which Page, when the account manages more than one. */
-  const pages = acc.facebook_pages || [];
-  $('choose').hidden = pages.length < 2;
-  if (pages.length >= 2) {
-    const sel = $('page-pick');
-    sel.textContent = '';
-    if (!acc.facebook_page_id) {
-      const none = document.createElement('option');
-      none.value = '';
-      none.textContent = 'Choose…';
-      sel.append(none);
+  if (!mode) {
+    body.append(el('span', { class: 'pulse', text: 'Checking the accounts…' }));
+  } else if (mode === 'none') {
+    body.append(el('div', { class: 'card pad callout', text: 'Posting isn’t set up yet. Ask whoever runs the app to connect Upload-Post.' }));
+  } else if (mode === 'error') {
+    body.append(el('span', { class: 'bad-text', text: accountError }),
+      el('button', { type: 'button', class: 'btn btn-s btn-sm', style: { alignSelf: 'flex-start' }, onclick: loadAccounts }, 'Try again'));
+  } else if (mode === 'social') {
+    for (const k of PLATFORMS) {
+      const a = social.accounts[k];
+      const state = !a ? 'off' : a.reconnect ? 'reconnect' : 'connected';
+      const sub = state === 'connected' ? (handleOf(a) || 'Connected')
+        : state === 'reconnect' ? (handleOf(a) ? handleOf(a) + ' · ' : '') + 'the sign-in ran out'
+          : k === 'tiktok' ? 'Not connected yet. TikTok needs a paid Upload-Post plan.' : 'Not connected yet';
+      const pages = social.facebook_pages || [];
+      const extra = k === 'facebook' && a && pages.length > 1 ? pagePicker(pages, social.facebook_page_id, (p) => p.page_name || p.page_id) : null;
+      const actions = state === 'connected' ? [] : [
+        el('button', { type: 'button', class: 'btn btn-p btn-sm', 'data-k': 'connect:' + k, onclick: (e) => socialConnect(e.currentTarget, nameOf(k)) }, state === 'reconnect' ? 'Sign in again' : 'Connect')];
+      body.append(acctCard(nameOf(k), state, sub, extra, actions));
     }
-    for (const p of pages) {
-      const o = document.createElement('option');
-      o.value = p.page_id;
-      o.textContent = p.page_name || p.page_id;
-      o.selected = p.page_id === acc.facebook_page_id;
-      sel.append(o);
+    /* Upload-Post has no way for the Worker to drop one account; that is done
+       on its own page, the same one Connect opens. */
+    body.append(el('div', { class: 'row', style: { gap: '4px' } },
+      el('span', { class: 'quiet grow', text: 'To disconnect an account or switch to another, use Upload-Post’s page.' }),
+      el('button', { type: 'button', class: 'btn-q', 'data-k': 'manage', onclick: (e) => socialConnect(e.currentTarget, 'Upload-Post') }, 'Open Upload-Post’s page ↗')));
+  } else if (mode === 'meta') {
+    const pages = meta.pages || [];
+    const picker = pages.length > 1 ? pagePicker(pages, meta.connected ? (pages.find((p) => p.selected) || {}).page_id : null,
+      (p) => p.page_name + (p.ig_username ? ' (and @' + p.ig_username + ')' : ' (no Instagram)')) : null;
+    if (meta.connected) {
+      const p = meta.page;
+      const fbActions = acctConfirm
+        ? [A.confirmRow('Disconnect? Scheduled posts to Facebook and Instagram will fail.', 'Disconnect', metaDisconnect, 'Keep',
+          () => { acctConfirm = false; refocusKey = 'disconnect'; drawAccounts(); }, true)]
+        : [el('button', { type: 'button', class: 'btn-q', 'data-k': 'connect:facebook', onclick: (e) => metaConnect(e.currentTarget) }, 'Connect again'),
+          el('button', { type: 'button', class: 'btn-q', 'data-k': 'disconnect', onclick: () => { acctConfirm = true; refocusKey = 'keep'; drawAccounts(); } }, 'Disconnect')];
+      if (acctConfirm) fbActions[0].querySelectorAll('button')[1].dataset.k = 'keep';
+      body.append(acctCard('Facebook', 'connected', p.page_name || 'Facebook Page', picker, fbActions));
+      body.append(p.ig_user_id
+        ? acctCard('Instagram', 'connected', p.ig_username ? '@' + p.ig_username : 'Connected through the Page', null, [])
+        : acctCard('Instagram', 'unlinked', 'No Instagram account is linked to this Page, so only Facebook posts can go out. Link them in the Business Portfolio, then connect again.', null, []));
+    } else {
+      body.append(acctCard('Facebook', 'off',
+        pages.length > 1 ? 'More than one Page came through. Choose the one posts go to.' : 'Connect the Page you post to. You sign in as yourself on Facebook.',
+        picker, [el('button', { type: 'button', class: 'btn btn-p btn-sm', 'data-k': 'connect:facebook', onclick: (e) => metaConnect(e.currentTarget) }, 'Connect')]));
+      body.append(acctCard('Instagram', 'off', 'Comes with the Facebook Page it’s linked to.', null, []));
     }
+    body.append(acctCard('YouTube', 'off', 'Only available through Upload-Post.', null, []));
+    body.append(acctCard('TikTok', 'off', 'Only available through Upload-Post.', null, []));
   }
+  body.append(el('span', { class: 'quiet', text: IMAGES_NOTE }));
+
+  const want = refocusKey || keepFocus;
+  refocusKey = null;
+  if (want) { const b = body.querySelector(`[data-k="${want}"]`); if (b) b.focus(); }
 }
 
-/* Same popup rule as below: open the tab on the click, point it once the
-   Worker hands back the link. Coming back lands on this page again. */
-async function socialConnect(btn) {
+$('open-accounts').addEventListener('click', openAccounts);
+function openAccounts() { acctConfirm = false; drawAccounts(); openDrawer('acct'); }
+window.addEventListener('hashchange', () => { if (location.hash === '#accounts') openAccounts(); });
+
+/* The new tab is opened on the click itself and pointed at the sign-in page
+   once the Worker hands back the link: opening it after the await is what
+   browsers treat as a popup and block. */
+async function socialConnect(btn, what) {
   const tab = window.open('', '_blank');
   btn.disabled = true;
   try {
-    const { url } = await call('/social/connect');
-    if (tab) { tab.location = url; watchSocial(); }
-    else { window.location.href = url; }
+    const { url } = await A.api('/social/connect');
+    if (tab) { tab.location = url; toast('Opened ' + what + ' sign-in in a new tab. This page updates when you’re done.'); watchSocial(); }
+    else window.location.href = url;
   } catch (err) {
     if (tab) tab.close();
     toast(err.message);
@@ -1009,100 +676,379 @@ async function socialConnect(btn) {
   }
 }
 
-/* While the other tab is open, notice new accounts as they are added. */
-function watchSocial(tries = 0, before = null) {
+/* While the other tab is open, notice accounts as they are added or signed
+   in again: every 4 seconds for 4 minutes. */
+let socialWatch = null;
+const fingerprint = (s) => PLATFORMS.map((k) => (s.accounts[k] ? (s.accounts[k].reconnect ? 'r' : 'c') : '-')).join('');
+function watchSocial() {
+  clearTimeout(socialWatch);
+  let tries = 0;
+  let before = social ? fingerprint(social) : null;
+  const tick = async () => {
+    tries += 1;
+    let s = null;
+    try { s = await A.api('/social/account'); } catch (e) { /* try again */ }
+    if (s && s.ready) {
+      const now = fingerprint(s);
+      if (before !== null && now !== before) {
+        social = s; mode = 'social';
+        accountsChanged();
+        toast('Accounts updated');
+      }
+      before = now;
+    }
+    if (tries < 60) socialWatch = setTimeout(tick, 4000);
+  };
+  socialWatch = setTimeout(tick, 4000);
+}
+
+async function metaConnect(btn) {
+  const tab = window.open('', '_blank');
+  btn.disabled = true;
+  try {
+    const { url } = await A.api('/meta/start');
+    if (tab) { tab.location = url; toast('Opened Facebook sign-in in a new tab. This page updates when you’re done.'); watchMeta(0); }
+    else window.location.href = url;
+  } catch (err) {
+    if (tab) tab.close();
+    toast(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* While Facebook is being approved, check back every 3 seconds for two minutes. */
+function watchMeta(tries) {
   setTimeout(async () => {
     let acc = null;
-    try { acc = await call('/social/account'); } catch { /* try again */ }
-    const now = acc ? Object.keys(NAMES).filter((k) => acc.accounts[k]).join() : null;
-    if (acc && before !== null && now !== before) { await load(); toast('Accounts updated'); }
-    if (tries < 60) watchSocial(tries + 1, now ?? before);
-  }, 4000);
-}
-
-function fillWhere(acc) {
-  for (const k of Object.keys(NAMES)) {
-    const box = document.querySelector(`#where input[value="${k}"]`);
-    const a = acc.accounts[k];
-    box.closest('label').hidden = false;
-    box.disabled = !a;
-    if (!a) box.checked = false;
-    const handle = $({ instagram: 'ig-handle', facebook: 'fb-handle', youtube: 'yt-handle', tiktok: 'tt-handle' }[k]);
-    handle.className = 'handle' + (a ? '' : ' off');
-    handle.textContent = a ? (a.handle ? (a.handle.startsWith('@') ? a.handle : '@' + a.handle) : a.name) : 'not connected';
-  }
-  if (acc.accounts.facebook && (acc.facebook_pages || []).length > 1 && !acc.facebook_page_id) {
-    const fb = document.querySelector('#where input[value="facebook"]');
-    fb.disabled = true;
-    fb.checked = false;
-    $('fb-handle').className = 'handle off';
-    $('fb-handle').textContent = 'choose a Page above';
-  }
-  showTitle();
-}
-
-async function load() {
-  /* Upload-Post first. The direct Meta connection is the fallback, used only
-     when the Worker has no Upload-Post key. */
-  let social = null;
-  try { social = await call('/social/account'); }
-  catch (err) {
-    /* The key is set but Upload-Post did not answer as expected. Say so,
-       rather than falling back to the Meta screen, which hides the reason. */
-    buttonsEl.textContent = '';
-    nameEl.textContent = 'Couldn’t reach Upload-Post';
-    subEl.className = 'sub bad';
-    subEl.textContent = err.message;
-    buttonsEl.append(button('Try again', 'secondary', () => load()));
-    return;
-  }
-
-  if (social?.ready) {
-    $('social-setup').hidden = true;
-    $('setup').hidden = true;
-    drawSocial(social);
-    const any = Object.values(social.accounts).some(Boolean);
-    $('composer').hidden = !any;
-    $('images-note').hidden = !any;
-    if (any) {
-      fillWhere(social);
-      $('when').value = $('when').value || defaultWhen();
-      await Promise.all([loadVideos(), loadPosts()]);
+    try { acc = await A.api('/meta/account'); } catch (e) { /* try again */ }
+    /* Several Pages means a choice to make, which is also worth stopping for. */
+    if (acc && (acc.connected || (acc.pages || []).length > 1)) {
+      await loadAccounts();
+      toast(acc.connected ? 'Connected' : 'Choose a Page');
+      return;
     }
-    return;
-  }
+    if (tries < 40) watchMeta(tries + 1);
+  }, 3000);
+}
 
+async function metaDisconnect(e) {
+  busyRow(e.currentTarget, 'Disconnecting…');
   try {
-    const acc = await call('/meta/account');
-    draw(acc);
-    /* With neither set up, Upload-Post is the one to set up. */
-    if (!acc.ready) { $('setup').hidden = true; $('social-setup').hidden = false; }
-    /* The composer is only any use once there is somewhere to post to. */
-    $('composer').hidden = !acc.connected;
-    $('images-note').hidden = !acc.connected;
-    if (acc.connected) {
-      const ig = document.querySelector('#where input[value="instagram"]');
-      ig.disabled = !acc.page.ig_user_id;
-      if (ig.disabled) ig.checked = false;
-      $('ig-handle').textContent = acc.page.ig_username ? '@' + acc.page.ig_username : (ig.disabled ? 'not linked' : '');
-      $('fb-handle').textContent = acc.page.page_name || '';
-      $('when').value = defaultWhen();
-      await Promise.all([loadVideos(), loadPosts()]);
-    }
-    return;
-  } catch {
-    nameEl.textContent = 'Couldn’t check the connection';
-    subEl.className = 'sub bad';
-    subEl.textContent = 'Try refreshing the page.';
+    await A.api('/meta/disconnect');
+    acctConfirm = false;
+    toast('Disconnected');
+    await loadAccounts();
+  } catch (err) {
+    toast(err.message);
+    acctConfirm = false;
+    drawAccounts();
   }
 }
 
-$('view-calendar').setAttribute('aria-pressed', String(view === 'calendar'));
-$('view-list').setAttribute('aria-pressed', String(view === 'list'));
+/* --- scheduling a video, or changing a post --------------------------------------
 
-load();
+   One drawer for both. New: pick a video, where, when, the YouTube title and
+   the caption, then /posts/create. Changing: the post's time and caption
+   only, through /posts/edit, so it keeps its place and its platforms. */
 
-if (window.AikoTheme) AikoTheme.mount(document.getElementById('theme-toggle'));
+let sched = null;
+const scripts = {};
+
+/* An hour from now, as the date and time boxes want it. */
+function inAnHour() {
+  const t = new Date(Date.now() + 3600000);
+  return { date: dayKey(t), time: timeOf(t) };
+}
+
+function openSchedule(opts) {
+  const group = opts.group || null;
+  const p0 = group ? group[0] : null;
+  let date, time;
+  if (group) {
+    /* A failed post's time has usually gone by; start from an hour from now then. */
+    const t = new Date(p0.scheduled_for);
+    const at = t.getTime() > Date.now() ? t : new Date(Date.now() + 3600000);
+    date = dayKey(at); time = timeOf(at);
+  } else {
+    const soon = inAnHour();
+    if (opts.day && opts.day > soon.date) { date = opts.day; time = '09:00'; }
+    else { date = soon.date; time = soon.time; }
+  }
+  sched = {
+    mode: group ? 'edit' : 'new',
+    group,
+    video: group ? videoFor(p0) : (opts.video || null),
+    plats: null,             // filled from what's available, until the viewer changes it
+    platsTouched: false,
+    ytTyped: false,
+  };
+  $('sched-title').textContent = group ? 'Change time or caption' : 'Schedule a video';
+  buildSchedule(date, time, group ? (p0.caption || '') : '');
+  openDrawer('sched');
+  if (sched.video) loadScript(sched.video);
+}
+
+function buildSchedule(date, time, caption) {
+  const body = $('sched-body');
+  body.textContent = '';
+  const isNew = sched.mode === 'new';
+
+  if (isNew) {
+    body.append(el('span', { class: 'lbl', id: 'pick-label', text: 'Which video' }));
+    const picks = el('div', { class: 'picks', role: 'group', 'aria-labelledby': 'pick-label', id: 'picks' });
+    const ready = videos.filter((v) => v.url && A.videoState(v, posts) === 'approved');
+    const other = videos.filter((v) => v.url && !['approved', 'making'].includes(A.videoState(v, posts))).slice(0, 40);
+    for (const v of ready) picks.append(pickButton(v));
+    if (other.length) {
+      picks.append(el('span', { class: 'eyebrow', style: { marginTop: ready.length ? '8px' : 0 }, text: 'Other finished videos' }));
+      for (const v of other) picks.append(pickButton(v));
+    }
+    if (!ready.length && !other.length) {
+      picks.append(el('span', { class: 'quiet', text: 'No finished videos yet. They show up here once they’re made.' }));
+    } else if (!ready.length) {
+      picks.prepend(el('span', { class: 'quiet', text: 'Nothing is approved yet. You can still schedule another finished video.' }));
+    }
+    body.append(picks);
+
+    body.append(el('span', { class: 'lbl', id: 'where-label', text: 'Where' }));
+    body.append(el('div', { id: 'where', role: 'group', 'aria-labelledby': 'where-label', class: 'row', style: { gap: '8px' } }));
+    body.append(el('div', { id: 'where-note', class: 'row', hidden: true }));
+  } else {
+    const v = sched.video;
+    const ps = sched.group;
+    const src = (v && v.url) || mediaUrl(ps[0]);
+    body.append(el('div', { class: 'row', style: { gap: '16px', flexWrap: 'nowrap' } },
+      src ? el('video', { class: 'pthumb', style: { width: '48px', height: '86px' }, src: src.split('#')[0] + '#t=1', preload: 'metadata', muted: true, playsinline: true, 'aria-hidden': 'true' }) : null,
+      el('div', { style: { display: 'flex', flexDirection: 'column', minWidth: 0 } },
+        el('h3', { text: v ? (v.topic || 'Untitled') : 'This post' }),
+        el('span', { class: 'quiet', text: 'Goes to ' + A.joinNames(ps.map((p) => nameOf(p.platform))) }))));
+  }
+
+  const today = todayKey();
+  body.append(el('span', { class: 'lbl', id: 'when-label', text: 'When' }),
+    el('div', { class: 'row', role: 'group', 'aria-labelledby': 'when-label', style: { gap: '8px' } },
+      el('input', { type: 'date', class: 'field', id: 'when-date', 'aria-label': 'Date', min: today, value: date, style: { width: 'auto' } }),
+      el('input', { type: 'time', class: 'field', id: 'when-time', 'aria-label': 'Time', value: time, style: { width: 'auto' } })));
+
+  if (isNew) {
+    const yt = el('input', { class: 'field', id: 'yt-title', maxlength: '100', value: sched.video ? (sched.video.topic || '').slice(0, 100) : '' });
+    const ytCount = el('span', { class: 'quiet count', id: 'yt-count', 'aria-live': 'off', text: yt.value.length + ' / 100' });
+    yt.addEventListener('input', () => { sched.ytTyped = !!yt.value; ytCount.textContent = yt.value.length + ' / 100'; });
+    body.append(el('div', { id: 'yt-wrap', style: { display: 'flex', flexDirection: 'column', gap: '4px' }, hidden: true },
+      el('span', { class: 'row', style: { justifyContent: 'space-between' } }, el('label', { class: 'lbl', for: 'yt-title', text: 'YouTube title' }), ytCount),
+      yt));
+  }
+
+  const cap = el('textarea', { class: 'field', id: 'caption', rows: '4', maxlength: '2200', placeholder: 'What it says underneath the video.' });
+  cap.value = caption;
+  const capCount = el('span', { class: 'quiet count', text: cap.value.length + ' / 2200' });
+  cap.addEventListener('input', () => { capCount.textContent = cap.value.length + ' / 2200'; });
+  body.append(el('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+    el('span', { class: 'row', style: { justifyContent: 'space-between' } }, el('label', { class: 'lbl', for: 'caption', text: 'Caption' }), capCount),
+    cap));
+
+  body.append(el('details', { id: 'script', hidden: !sched.video },
+    el('summary', { class: 'quiet', style: { cursor: 'pointer', minHeight: '32px' } }, 'What it says (to lift lines from)'),
+    el('div', { id: 'script-lines' })));
+
+  body.append(el('p', { id: 'sched-error', role: 'alert', class: 'bad-text', style: { margin: 0, fontSize: '14px' } }));
+
+  body.append(el('div', { class: 'row' },
+    el('button', { type: 'button', class: 'btn-q', onclick: () => closeDrawer('sched') }, 'Not now'),
+    el('span', { class: 'grow' }),
+    el('button', { type: 'button', class: 'btn btn-p', id: 'sched-go', onclick: isNew ? submitNew : submitEdit }, isNew ? 'Schedule it' : 'Save changes')));
+
+  if (isNew) {
+    body.append(el('span', { class: 'quiet', text: IMAGES_NOTE }));
+    drawWhere();
+  }
+}
+
+function pickButton(v) {
+  const s = A.videoState(v, posts);
+  return el('button', {
+    type: 'button', class: 'card row pick', 'aria-pressed': String(!!sched.video && sched.video.id === v.id), 'data-id': v.id,
+    onclick: () => pickVideo(v),
+  },
+  el('video', { class: 'pthumb', src: v.url.split('#')[0] + '#t=1', preload: 'metadata', muted: true, playsinline: true, 'aria-hidden': 'true' }),
+  el('span', { class: 'ink grow', style: { fontWeight: 600, minWidth: 0, overflowWrap: 'anywhere' }, text: v.topic || 'Untitled' }),
+  el('span', { class: 'quiet', style: { whiteSpace: 'nowrap' }, text: [v.duration ? A.clock(v.duration) : '', A.STATE_LABEL[s] || ''].filter(Boolean).join(' · ') }));
+}
+
+function pickVideo(v) {
+  sched.video = v;
+  document.querySelectorAll('#picks .pick').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === v.id)));
+  const yt = $('yt-title');
+  if (yt && !sched.ytTyped) { yt.value = (v.topic || '').slice(0, 100); $('yt-count').textContent = yt.value.length + ' / 100'; }
+  $('sched-error').textContent = '';
+  loadScript(v);
+}
+
+/* The script it was made from, to lift lines into the caption. */
+async function loadScript(v) {
+  const box = $('script');
+  const lines = $('script-lines');
+  if (!box) return;
+  box.hidden = false;
+  if (scripts[v.id] === undefined) {
+    lines.textContent = '';
+    lines.append(el('span', { class: 'pulse', text: 'Loading the script…' }));
+    try { scripts[v.id] = (await A.api('/videos/script', { id: v.id })).lines || null; }
+    catch (e) { scripts[v.id] = null; }
+  }
+  if (!sched || !sched.video || sched.video.id !== v.id || !$('script-lines')) return;
+  const box2 = $('script-lines');
+  box2.textContent = '';
+  const got = scripts[v.id];
+  if (got && got.length) {
+    box2.append(el('ol', { class: 'ink', style: { margin: '6px 0 0', paddingLeft: '20px', fontSize: '14px' } }, got.map((l) => el('li', { text: l }))));
+  } else {
+    box2.append(el('span', { class: 'quiet', text: 'No script was kept for this one.' }));
+  }
+}
+
+/* The platform chips, redrawn whenever the accounts change. */
+function drawWhere() {
+  const box = $('where');
+  if (!box) return;
+  const ok = PLATFORMS.filter((k) => avail(k).ok);
+  if (!sched.platsTouched || !sched.plats) sched.plats = new Set(ok);
+  else for (const k of [...sched.plats]) if (!ok.includes(k)) sched.plats.delete(k);
+
+  box.textContent = '';
+  for (const k of PLATFORMS) {
+    const a = avail(k);
+    const on = a.ok && sched.plats.has(k);
+    box.append(el('button', {
+      type: 'button', class: 'chip', 'aria-pressed': String(on), disabled: !a.ok,
+      title: a.ok ? (a.handle ? 'Posts as ' + a.handle : null) : 'Connect it under Posting accounts',
+      onclick: () => {
+        sched.platsTouched = true;
+        if (sched.plats.has(k)) sched.plats.delete(k); else sched.plats.add(k);
+        drawWhere();
+        const again = $('where').querySelectorAll('button')[PLATFORMS.indexOf(k)];
+        if (again) again.focus();
+      },
+    }, nameOf(k) + (a.ok ? '' : ' · ' + a.why)));
+  }
+
+  const note = $('where-note');
+  note.textContent = '';
+  note.hidden = !!ok.length || !mode;
+  if (!ok.length && mode) {
+    note.append(el('span', { class: 'quiet grow', text: mode === 'none' ? 'Posting isn’t set up yet. Ask whoever runs the app to connect Upload-Post.' : 'Nothing is connected to post to yet.' }));
+    if (mode !== 'none') note.append(el('button', { type: 'button', class: 'btn btn-s btn-sm', onclick: openAccounts }, 'Open Posting accounts'));
+  }
+
+  /* The YouTube title only matters when YouTube is ticked. */
+  const yt = $('yt-wrap');
+  if (yt) yt.hidden = !sched.plats.has('youtube');
+}
+
+function readWhen() {
+  const d = $('when-date').value;
+  const t = $('when-time').value;
+  if (!d || !t) return { error: 'Choose when it goes out.' };
+  const at = new Date(`${d}T${t}`);
+  if (Number.isNaN(at.getTime())) return { error: 'Choose when it goes out.' };
+  /* A minute's grace, the same as the Worker gives. */
+  if (at.getTime() < Date.now() - 60000) return { error: 'That time has already gone by.' };
+  return { at };
+}
+
+async function submitNew(e) {
+  const err = $('sched-error');
+  err.textContent = '';
+  const v = sched.video;
+  if (!v) { err.textContent = 'Pick a video first.'; return; }
+  const when = readWhen();
+  if (when.error) { err.textContent = when.error; return; }
+  const platforms = PLATFORMS.filter((k) => sched.plats.has(k) && avail(k).ok);
+  if (!platforms.length) { err.textContent = 'Choose at least one place to post it.'; return; }
+  const title = $('yt-title').value.trim();
+  if (platforms.includes('youtube') && !title) { err.textContent = 'YouTube needs a title.'; $('yt-title').focus(); return; }
+
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Scheduling…';
+  try {
+    await A.api('/posts/create', {
+      kind: 'reel',
+      media: [{ url: v.url, kind: 'video' }],
+      caption: $('caption').value,
+      scheduled_for: when.at.toISOString(),
+      render_id: v.id,
+      platforms,
+      title: platforms.includes('youtube') ? title : undefined,
+    });
+  } catch (x) {
+    err.textContent = x.message;
+    btn.disabled = false;
+    btn.textContent = 'Schedule it';
+    return;
+  }
+  closeDrawer('sched');
+  toast(platforms.length > 1 ? 'Scheduled for ' + platforms.length + ' places' : 'Scheduled');
+  calMonth = new Date(when.at.getFullYear(), when.at.getMonth(), 1);
+  selectedDay = dayKey(when.at);
+  confirmPost = null;
+  await loadData(true);
+}
+
+async function submitEdit(e) {
+  const err = $('sched-error');
+  err.textContent = '';
+  const when = readWhen();
+  if (when.error) { err.textContent = when.error; return; }
+  const ps = sched.group;
+  const caption = $('caption').value;
+  const before = { at: ps[0].scheduled_for, caption: ps[0].caption || '' };
+
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    await Promise.all(ps.map((p) => A.api('/posts/edit', { id: p.id, caption, scheduled_for: when.at.toISOString() })));
+  } catch (x) {
+    err.textContent = x.message;
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+    await loadData(true);   // some may have saved; show what is true now
+    return;
+  }
+  closeDrawer('sched');
+  /* Undo puts the old time and caption back, while the old time is still to come. */
+  const undo = new Date(before.at).getTime() > Date.now() + 60000 ? async () => {
+    try {
+      await Promise.all(ps.map((p) => A.api('/posts/edit', { id: p.id, caption: before.caption, scheduled_for: before.at })));
+      toast('Put back');
+    } catch (x) { toast(x.message); }
+    calMonth = new Date(new Date(before.at).getFullYear(), new Date(before.at).getMonth(), 1);
+    selectedDay = dayKey(before.at);
+    await loadData(true);
+  } : null;
+  toast('Saved. It goes out ' + A.fmtWhen(when.at) + '.', undo);
+  calMonth = new Date(when.at.getFullYear(), when.at.getMonth(), 1);
+  selectedDay = dayKey(when.at);
+  confirmPost = null;
+  await loadData(true);
+}
+
+/* --- start ------------------------------------------------------------------------ */
+
+draw();
+if (location.hash === '#accounts') openAccounts();
+
+Promise.all([loadData(), loadAccounts()]).then(() => {
+  /* ?video=<id>: Videos and Create link here to schedule one video. */
+  const want = params.get('video');
+  if (!want) return;
+  const u = new URL(location.href);
+  u.searchParams.delete('video');
+  history.replaceState(null, '', u.pathname + u.search + u.hash);
+  openSchedule({ video: videos.find((v) => v.id === want) || null });
+});
 </script>
 </body>
 </html>

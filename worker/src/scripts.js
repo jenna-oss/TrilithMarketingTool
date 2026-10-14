@@ -70,9 +70,11 @@ real estate. One person, talking straight to camera, no narration and no b-roll:
 
 ${bits}
 
-The first line is already decided and you must use it exactly as it is, as line 1:
+${(brief.opening_line || brief.hook)
+    ? `The first line is already decided and you must use it exactly as it is, as line 1:
 
-"${brief.opening_line || brief.hook}"
+"${brief.opening_line || brief.hook}"`
+    : 'Write the first line yourself. It is the one people decide to stay on, so make it a short, concrete opener that names the money.'}
 
 HOW THIS CHANNEL TALKS
 
@@ -136,7 +138,7 @@ async function write(env, brief, email) {
     p_slot: brief.slot,
     p_topic: brief.topic,
     p_angle: brief.angle,
-    p_hook: opening,
+    p_hook: opening || lines[0],
     p_lines: lines,
     p_words: words,
     p_flags: flags,
@@ -173,11 +175,20 @@ export async function handleScripts(path, request, env, headers, ctx, user) {
       opening_line: str(body.opening_line, 400),
       product: str(body.product, 80),
       audience: str(body.audience, 120),
-      evidence: str(body.evidence, 1200),
+      /* A script started from Film myself has no plan behind it, only what
+       * was typed and attached, so it is allowed more to go on. */
+      evidence: str(body.evidence, body.session_id ? 1200 : 4000),
     };
-    if (!brief.session_id || !brief.slot) return json({ error: 'a script belongs to a planned slot' }, 400, headers);
-    if (!brief.topic) return json({ error: 'that slot has no topic to write about' }, 400, headers);
-    if (!brief.opening_line && !brief.hook) return json({ error: 'that slot has no opening line' }, 400, headers);
+    /* From a planned idea it belongs to that slot, and its opening line was
+     * agreed with the plan. From Film myself it is its own one-video plan,
+     * and the writer writes the first line too. */
+    if (!brief.session_id || !brief.slot) {
+      if (body.session_id) return json({ error: 'a script from a plan needs its slot' }, 400, headers);
+      brief.session_id = 'film-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      brief.slot = 1;
+    }
+    if (!brief.topic) return json({ error: 'Say what the video is about first.' }, 400, headers);
+    if (body.session_id && !brief.opening_line && !brief.hook) return json({ error: 'that slot has no opening line' }, 400, headers);
 
     try {
       return json(await write(env, brief, user?.email), 200, headers);

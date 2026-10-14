@@ -28,6 +28,7 @@ import { dispatchWorkflow } from './github.js';
 import { rpc } from './db.js';
 import { requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
+import { handleLibrary } from './library.js';
 
 /* Only the published pages may call this. The key lives here, so an open
  * endpoint would let anyone spend it. */
@@ -179,6 +180,15 @@ export default {
       }
     }
 
+    /* Clip edits, the Library's files and recent plans. */
+    if (path.startsWith('/clips/') || path === '/kb/list' || path === '/kb/delete' || path === '/plan/list') {
+      try { return await handleLibrary(path, request, env, headers); }
+      catch (err) {
+        console.error('library route failed:', err?.message);
+        return json({ error: 'Something went wrong with that. Try again.' }, 502, headers);
+      }
+    }
+
     /* Fetch a stored plan by id, so a session can be resumed in another browser
      * or on another machine. Read-only, and it returns nothing for an id that
      * does not exist rather than saying which — the ids are the only thing
@@ -223,8 +233,11 @@ export default {
           /* 'render' or 'clip'. A clip came out of a take rather than a plan,
            * which the Edit page cannot work with yet. */
           kind: r.kind || 'render',
+          /* An edited clip replaces its file at the same path, so its URL
+           * carries when it last changed or the browser shows the old cut. */
           url: `${base}/storage/v1/object/public/videos/`
-            + String(r.storage_path).split('/').map(encodeURIComponent).join('/'),
+            + String(r.storage_path).split('/').map(encodeURIComponent).join('/')
+            + (r.kind === 'clip' && r.rendered_at ? `?v=${Date.parse(r.rendered_at)}` : ''),
         }));
         return json({ videos }, 200, headers);
       } catch {
@@ -246,9 +259,11 @@ export default {
         return json({ error: 'id must be a video id' }, 400, headers);
       }
 
+      /* 'review' takes a decision back: an undone reject, or a video moved
+       * back to be edited. */
       const status = body.status;
-      if (status !== 'to_post' && status !== 'rejected') {
-        return json({ error: 'status must be to_post or rejected' }, 400, headers);
+      if (status !== 'to_post' && status !== 'rejected' && status !== 'review') {
+        return json({ error: 'status must be to_post, rejected or review' }, 400, headers);
       }
 
       try {

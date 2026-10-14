@@ -16,10 +16,16 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync, statSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
+import { keptSegments, wordsFor, openingSentence } from './clip-edit.mjs';
 
-const [, , footageId, takeFile] = process.argv;
-if (!footageId || !takeFile) {
-  console.error('usage: footage-cut.mjs <footage-id> <take-file>');
+/* `--edit <clip-id> <take-file>` re-cuts one clip that was edited in the app:
+ * a new start and end, sections cut out of the middle, and words the
+ * transcript got wrong. Everything else is the same cut, caption and store. */
+const editing = process.argv[2] === '--edit';
+const [footageId, takeFile] = editing ? [null, process.argv[4]] : process.argv.slice(2);
+const editClipId = editing ? process.argv[3] : null;
+if ((!footageId && !editClipId) || !takeFile) {
+  console.error('usage: footage-cut.mjs <footage-id> <take-file>\n       footage-cut.mjs --edit <clip-id> <take-file>');
   process.exit(2);
 }
 
@@ -75,11 +81,89 @@ async function upload(path, file) {
       authorization: `Bearer ${key}`,
       'content-type': 'video/mp4',
       'x-upsert': 'true',
+      /* An edited clip replaces the file at the same path; a long cache would
+       * keep showing the old cut. */
+      'cache-control': 'max-age=60',
     },
     body,
   });
   if (!res.ok) throw new Error(`storing the clip answered ${res.status}: ${(await res.text()).slice(0, 200)}`);
   return `${base}/storage/v1/object/public/videos/${path}`;
+}
+
+const vf = 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30';
+
+/* Cut the kept segments out of the take and join them into one 9:16 file. */
+function cutSegments(segments, outFile) {
+  if (segments.length === 1) {
+    const [a, b] = segments[0];
+    run('ffmpeg', [
+      '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
+      '-ss', String(a), '-i', takeFile, '-t', String(b - a),
+      '-vf', vf, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20',
+      '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', outFile,
+    ]);
+    return;
+  }
+  const parts = segments.map(([a, b], i) =>
+    `[0:v]trim=start=${a}:end=${b},setpts=PTS-STARTPTS,${vf}[v${i}];`
+    + `[0:a]atrim=start=${a}:end=${b},asetpts=PTS-STARTPTS[a${i}];`).join('');
+  const joins = segments.map((_, i) => `[v${i}][a${i}]`).join('');
+  run('ffmpeg', [
+    '-nostdin', '-hide_banner', '-loglevel', 'error', '-y', '-i', takeFile,
+    '-filter_complex', `${parts}${joins}concat=n=${segments.length}:v=1:a=1[v][a]`,
+    '-map', '[v]', '-map', '[a]',
+    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20',
+    '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', outFile,
+  ]);
+}
+
+function captionAndRender(slug, dir, hook, seconds, words) {
+  writeFileSync(join(dir, 'captions.json'), JSON.stringify({ words: withBeats(words) }));
+  const out = join(ROOT, 'out', `${slug}.mp4`);
+  mkdirSync(join(ROOT, 'out'), { recursive: true });
+  console.log(`captioning ${slug}`);
+  run('npx', [
+    'remotion', 'render', 'Clip', out,
+    '--props', JSON.stringify({ slug, hook: hook || '', seconds: Number(seconds.toFixed(2)), emphasis: emphasisIn(words) }),
+    '--log', 'error',
+  ]);
+  return out;
+}
+
+if (editing) {
+  const clip = await rpc('kb_clip_read', { p_id: editClipId });
+  if (!clip || !clip.edit) throw new Error('no edit waiting on that clip');
+  const take = await rpc('kb_footage_read', { p_id: clip.footage_id });
+  const edit = clip.edit;
+  const slug = `clip-${clip.id.slice(0, 8)}`;
+  const dir = join(PUBLIC, slug);
+  try {
+    await rpc('kb_clip_edit_state', { p_id: clip.id, p_status: 'running', p_error: null });
+    mkdirSync(dir, { recursive: true });
+    const segments = keptSegments(Number(edit.start_s), Number(edit.end_s), (edit.cuts || []).map((c) => ({ from: Number(c.from), to: Number(c.to) })));
+    if (!segments.length) throw new Error('nothing is left once the cut-out sections are removed');
+    const seconds = segments.reduce((n, [a, b]) => n + (b - a), 0);
+    console.log(`re-cutting ${slug}: ${segments.length} segment(s), ${seconds.toFixed(1)}s`);
+    cutSegments(segments, join(dir, 'clip.mp4'));
+    const words = wordsFor(Array.isArray(take?.words) ? take.words : [], segments, edit.fixes || []);
+    /* The hook is the sentence it opens on; a new start, or a fixed word in
+     * it, changes that sentence. */
+    const sameStart = Number(edit.start_s) === Number(clip.start_s) && !(edit.fixes || []).length;
+    const hook = sameStart ? clip.hook : (openingSentence(words) || clip.hook);
+    const out = captionAndRender(slug, dir, hook, seconds, words);
+    const url = await upload(`clips/${clip.id}.mp4`, out);
+    await rpc('kb_clip_edit_done', { p_id: clip.id, p_words: words, p_url: url, p_bytes: statSync(out).size, p_hook: hook });
+    console.log(`  done: ${url}`);
+  } catch (err) {
+    const why = String(err?.message || err).slice(0, 400);
+    console.error(`  ${slug} edit failed:`, why);
+    await rpc('kb_clip_edit_state', { p_id: clip.id, p_status: 'failed', p_error: why }).catch(() => {});
+    process.exit(1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  process.exit(0);
 }
 
 const clips = (await rpc('kb_clips', { p_footage: footageId, p_limit: 100 })) || [];
