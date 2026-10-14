@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-14T03:14:40.617Z",
+  "fetchedAt": "2026-10-14T03:29:19.095Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -512,6 +512,16 @@
           "postedAt": "2026-10-11",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d388cb0ad5ae06207e0e89d820e4d52a.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d388cb0ad5ae06207e0e89d820e4d52a.mp4"
+        },
+        {
+          "id": "6033e146-9266-4c1e-8c34-8371f67ec31e",
+          "hook": "There is a difference between regulating an industry and quietly pricing it out of existence.",
+          "hookSource": "title",
+          "category": "Explainer",
+          "views": "1677",
+          "postedAt": "2026-10-08",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/a3cc5f15a59bb1f0ded21ec7b7ad6e31.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/a3cc5f15a59bb1f0ded21ec7b7ad6e31.mp4"
         }
       ]
     },

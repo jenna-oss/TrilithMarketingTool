@@ -1,7 +1,14 @@
 {
-  "fetchedAt": "2026-09-11T16:54:30.509Z",
+  "fetchedAt": "2026-10-14T03:30:59.287Z",
   "note": "Best-performing ORGANIC post per row. Creators come from the screened roster in education-creators.json; lenders are harvested from the same nine brand ids the creative wall uses. Paid ads are excluded from both halves.",
   "rows": [
+    {
+      "kind": "creator",
+      "name": "Emeline SIRON - Experte investissement immobilier",
+      "note": "Montants basés sur le prix moyen du m2 dans ces vil…",
+      "views": 240894,
+      "viewsLabel": "240.9K"
+    },
     {
       "kind": "creator",
       "name": "Erick Brice",
@@ -11,17 +18,10 @@
     },
     {
       "kind": "creator",
-      "name": "Theoni Rapo",
-      "note": "If the house that you like on Zillow is still on th…",
-      "views": 211040,
-      "viewsLabel": "211K"
-    },
-    {
-      "kind": "creator",
-      "name": "Scott Betley",
-      "note": "Y'all guess what happened?",
-      "views": 118851,
-      "viewsLabel": "118.9K"
+      "name": "Jeremy Werden",
+      "note": "I live in Chicago and I invest in markets all over…",
+      "views": 83245,
+      "viewsLabel": "83.2K"
     },
     {
       "kind": "creator",
@@ -46,17 +46,38 @@
     },
     {
       "kind": "creator",
-      "name": "Emeline SIRON - Experte investissement immobilier",
-      "note": "Ce que j’aurais aimé qu’on me dise :",
-      "views": 24332,
-      "viewsLabel": "24.3K"
+      "name": "Theoni Rapo",
+      "note": "If you can make it through this whole entire video,…",
+      "views": 33208,
+      "viewsLabel": "33.2K"
     },
     {
       "kind": "creator",
       "name": "Jack Henderson",
-      "note": "We just finished building it, and we made a sneaky,…",
-      "views": 11008,
-      "viewsLabel": "11K"
+      "note": "I had a lunch with a private wealth client the othe…",
+      "views": 27383,
+      "viewsLabel": "27.4K"
+    },
+    {
+      "kind": "lender",
+      "name": "Renovo Financial",
+      "note": "best post",
+      "views": 18087,
+      "viewsLabel": "18.1K"
+    },
+    {
+      "kind": "lender",
+      "name": "Visio Lending",
+      "note": "best post",
+      "views": 12148,
+      "viewsLabel": "12.1K"
+    },
+    {
+      "kind": "lender",
+      "name": "Anchor Loans",
+      "note": "best post",
+      "views": 5998,
+      "viewsLabel": "6K"
     },
     {
       "kind": "lender",
@@ -66,34 +87,5 @@
       "viewsLabel": "5.7K"
     }
   ],
-  "failures": [
-    {
-      "lender": "Visio Lending",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    },
-    {
-      "lender": "Anchor Loans",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    },
-    {
-      "lender": "New Silver",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    },
-    {
-      "lender": "RCN Capital",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    },
-    {
-      "lender": "LendingOne",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    },
-    {
-      "lender": "Renovo Financial",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    },
-    {
-      "lender": "Temple View Capital",
-      "why": "402 {\"error\":{\"code\":\"out_of_credits\",\"message\":\"Out of credits — your Spyglass plan's monthly credits are exhausted.\"}}"
-    }
-  ]
+  "failures": []
 }
