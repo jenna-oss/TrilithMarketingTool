@@ -20,7 +20,7 @@
  * but only down to its title, channel and description, and it says so.
  *
  * Only a signed-in person on the app's list reaches any of this: index.js
- * gates every route but /auth/*.
+ * gates every route.
  * ------------------------------------------------------------------------ */
 
 import { rpc } from './db.js';

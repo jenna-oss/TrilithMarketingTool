@@ -56,6 +56,31 @@ let upProfile = PROFILE();
 let upSend = null;
 let upStatus = [];
 
+/* Clerk: a real RS256 key, so the Worker's signature check runs for real. */
+const { subtle } = globalThis.crypto;
+const pair = await subtle.generateKey(
+  { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+  true, ['sign', 'verify']);
+const JWK = { ...(await subtle.exportKey('jwk', pair.publicKey)), kid: 'k1', alg: 'RS256', use: 'sig' };
+const b64u = (buf) => Buffer.from(buf).toString('base64url');
+async function mint(claims = {}, key = pair.privateKey, kid = 'k1') {
+  const now = Math.floor(Date.now() / 1000);
+  const body = { sub: 'user_1', azp: 'http://localhost:8788', iat: now, nbf: now - 1, exp: now + 60, ...claims };
+  const unsigned = b64u(JSON.stringify({ alg: 'RS256', kid, typ: 'JWT' })) + '.' + b64u(JSON.stringify(body));
+  const sig = await subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(unsigned));
+  return unsigned + '.' + b64u(sig);
+}
+const TOKEN = await mint();
+const clerkUser = {
+  id: 'user_1', primary_email_address_id: 'e2',
+  email_addresses: [
+    { id: 'e1', email_address: 'old@x.io', verification: { status: 'verified' } },
+    { id: 'e2', email_address: 'Me@x.io', verification: { status: 'verified' } },
+    { id: 'e3', email_address: 'typed@x.io', verification: { status: 'unverified' } },
+  ],
+};
+let listed = ['me@x.io'];
+
 const jsonRes = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
 
 /* One content block, in the event sequence the SDK's stream reader expects. */
@@ -148,15 +173,16 @@ globalThis.fetch = async (url, init = {}) => {
   if (u.includes('/storage/v1/object/upload/sign/')) {
     return jsonRes({ url: '/object/upload/sign/kb-footage/abc.mp4?token=SIGNED-TOKEN-123' });
   }
-  if (u.endsWith('/auth/v1/user')) return jsonRes({ email: 'me@x.io' });
+  if (u === 'https://api.clerk.com/v1/jwks') return jsonRes({ keys: [JWK] });
+  if (u.startsWith('https://api.clerk.com/v1/users/')) return jsonRes(clerkUser);
   const fn = (u.match(/\/rpc\/([a-z_]+)/) || [])[1];
-  if (fn === 'kb_app_user_allowed') return jsonRes(true);
+  if (fn === 'kb_app_user_allowed') return jsonRes(listed.includes(JSON.parse(init.body).p_email));
   return jsonRes(fn in rpcAnswer ? rpcAnswer[fn] : null);
 };
 
 const env = {
   SUPABASE_URL: 'https://db.supabase.co', SUPABASE_ANON_KEY: 'anon',
-  ANTHROPIC_API_KEY: 'sk-test', GITHUB_TOKEN: 'tok', VOYAGE_API_KEY: '',
+  ANTHROPIC_API_KEY: 'sk-test', CLERK_SECRET_KEY: 'sk_test_clerk', GITHUB_TOKEN: 'tok', VOYAGE_API_KEY: '',
 };
 /* The token key is 32 bytes, base64, as the real one must be. */
 const metaEnv = {
@@ -172,7 +198,7 @@ let pending = [];
 const ctx = { waitUntil(p) { pending.push(p); } };
 const settle = async () => { const all = pending; pending = []; await Promise.allSettled(all); };
 
-const post = (path, payload, token = 'signed-in', e = env) => worker.fetch(new Request('https://w.example' + path, {
+const post = (path, payload, token = TOKEN, e = env) => worker.fetch(new Request('https://w.example' + path, {
   method: 'POST',
   headers: { 'content-type': 'application/json', origin: 'http://localhost:8788', ...(token ? { authorization: 'Bearer ' + token } : {}) },
   body: JSON.stringify(payload || {}),
@@ -187,6 +213,7 @@ const check = (name, ok, extra) => {
 };
 const reset = () => {
   calls = []; rpcAnswer = {}; pending = [];
+  listed = ['me@x.io'];
   claudeReply = { type: 'text', text: 'Here are some ideas.' };
   supaJob = { status: 'active' };
   githubOk = true;
@@ -213,12 +240,53 @@ for (const path of ['/ideas', '/videos', '/links', '/links/read', '/recordings/l
   check(`${path} without a session -> 401`, res.status === 401, res.status);
 }
 
+let res, j;
+/* Each test below signs as a different Clerk user, so the Worker's per-user
+ * cache doesn't carry one answer into the next. */
+reset();
+res = await post('/scripts/list', {});
+check('a Clerk session on the list gets in', res.status === 200, res.status);
+
+const other = (await subtle.generateKey(
+  { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+  true, ['sign'])).privateKey;
+for (const [name, tok] of [
+  ['signed by another key', await mint({ sub: 'user_2' }, other)],
+  ['an unknown key id', await mint({ sub: 'user_3' }, pair.privateKey, 'k9')],
+  ['expired', await mint({ sub: 'user_4', exp: Math.floor(Date.now() / 1000) - 60 })],
+  ['made for another site', await mint({ sub: 'user_5', azp: 'https://evil.example' })],
+  ['not a token', 'signed-in'],
+]) {
+  reset();
+  res = await post('/scripts/list', {}, tok);
+  check(`a token ${name} -> 401`, res.status === 401, res.status);
+}
+
+reset();
+listed = ['someone@else.io'];
+res = await post('/scripts/list', {}, await mint({ sub: 'user_6' }));
+j = await res.json();
+check('a Clerk user not on the list -> 403 and back to sign in', res.status === 403 && j.signin === true, res.status);
+
+reset();
+listed = ['typed@x.io'];
+res = await post('/scripts/list', {}, await mint({ sub: 'user_7' }));
+check('an unverified address on the list does not count', res.status === 403, res.status);
+
+reset();
+listed = ['old@x.io'];
+res = await post('/scripts/list', {}, await mint({ sub: 'user_8' }));
+check('a verified address that is not the primary one counts', res.status === 200, res.status);
+
+res = await post('/scripts/list', {}, await mint({ sub: 'user_9' }), { ...env, CLERK_SECRET_KEY: '' });
+check('no Clerk secret -> 502, not an open door', res.status === 502, res.status);
+
 /* --- the polled read must not carry the article -------------------------- */
 
 reset();
 rpcAnswer.kb_link_status = { id: LINK, url: 'https://example.com/a', kind: 'article', status: 'ready', title: 'A long read', site: 'example.com', words: 40000, partial: false };
-let res = await post('/links/read', { id: LINK });
-let j = await res.json();
+res = await post('/links/read', { id: LINK });
+j = await res.json();
 check('links/read asks for the row without the body',
   rpcs('kb_link_status').length === 1 && rpcs('kb_link_read').length === 0,
   `status:${rpcs('kb_link_status').length} full:${rpcs('kb_link_read').length}`);
@@ -230,7 +298,7 @@ check('...and never hands the page the text', res.status === 200 && j.link.title
 reset();
 rpcAnswer.kb_link_status = { id: LINK, url: 'https://www.youtube.com/watch?v=abc12345678', kind: 'video', status: 'reading', job_id: 'job-1' };
 rpcAnswer.kb_link_read = { ...rpcAnswer.kb_link_status, body: 'the description' };
-res = await post('/links/read', { id: LINK }, 'signed-in', { ...env, SUPADATA_API_KEY: '' });
+res = await post('/links/read', { id: LINK }, TOKEN, { ...env, SUPADATA_API_KEY: '' });
 check('a job with no transcript key does not reach for the body', rpcs('kb_link_read').length === 0);
 
 /* The other half of that: when the job has finished, the poll is what stores
@@ -248,7 +316,7 @@ rpcAnswer.kb_link_status = JOB_ROW;
 rpcAnswer.kb_link_read = { ...JOB_ROW, body: 'the description, kept as the fallback' };
 rpcAnswer.kb_upload_document = { id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', changed: true };
 supaJob = { status: 'completed', content: new Array(300).fill('spoken').join(' ') };
-res = await post('/links/read', { id: LINK }, 'signed-in', withSupa);
+res = await post('/links/read', { id: LINK }, TOKEN, withSupa);
 let stored = rpcs('kb_link_ready')[0]?.body;
 check('a finished job is collected by the poll and stored as a transcript',
   stored?.p_partial === false && stored.p_words === 300
@@ -260,7 +328,7 @@ rpcAnswer.kb_link_status = JOB_ROW;
 rpcAnswer.kb_link_read = { ...JOB_ROW, body: new Array(60).fill('described').join(' ') };
 rpcAnswer.kb_upload_document = { id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', changed: true };
 supaJob = { status: 'failed', error: 'could not process' };
-res = await post('/links/read', { id: LINK }, 'signed-in', withSupa);
+res = await post('/links/read', { id: LINK }, TOKEN, withSupa);
 stored = rpcs('kb_link_ready')[0]?.body;
 check('a failed job falls back to the description it saved, flagged partial',
   stored?.p_partial === true && stored.p_words === 60,
@@ -316,7 +384,7 @@ form.append('file', new File([new Uint8Array(new Array(5000).fill(7))], 'notes.p
 form.append('name', 'A pdf');
 res = await worker.fetch(new Request('https://w.example/recordings', {
   method: 'POST',
-  headers: { origin: 'http://localhost:8788', authorization: 'Bearer signed-in' },
+  headers: { origin: 'http://localhost:8788', authorization: 'Bearer ' + TOKEN },
   body: form,
 }), { ...env, ELEVENLABS_API_KEY: 'el' }, ctx);
 check('a recording that is not audio -> 415, nothing stored',
@@ -331,14 +399,14 @@ check('an unknown route -> 404', res.status === 404, res.status);
 /* --- connecting Facebook and Instagram ------------------------------------- */
 
 reset();
-res = await post('/meta/start', {}, 'signed-in', env);   // no keys set
+res = await post('/meta/start', {}, TOKEN, env);   // no keys set
 j = await res.json();
 check('connecting with no Meta keys -> 503 saying which to set',
   res.status === 503 && /META_APP_SECRET/.test(j.hint || ''), JSON.stringify(j));
 
 reset();
 rpcAnswer.kb_ig_ticket_new = '00000000-aaaa-4aaa-8aaa-000000000001';
-res = await post('/meta/start', {}, 'signed-in', metaEnv);
+res = await post('/meta/start', {}, TOKEN, metaEnv);
 j = await res.json();
 let authorize = new URL(j.url || 'https://x.invalid');
 check('connecting hands back Facebook own page, not a form here',
@@ -354,7 +422,7 @@ check('...with the one-time ticket as state, and our callback as the redirect',
 
 reset();
 rpcAnswer.kb_ig_ticket_new = '00000000-aaaa-4aaa-8aaa-000000000001';
-res = await post('/meta/start', {}, 'signed-in', { ...metaEnv, META_LOGIN_CONFIG_ID: '42' });
+res = await post('/meta/start', {}, TOKEN, { ...metaEnv, META_LOGIN_CONFIG_ID: '42' });
 authorize = new URL((await res.json()).url || 'https://x.invalid');
 check('with a Login for Business configuration it sends that, not a scope list',
   authorize.searchParams.get('config_id') === '42' && !authorize.searchParams.has('scope'), authorize.search);
@@ -411,14 +479,14 @@ check('the Worker can open it again with its own key',
 
 reset();
 rpcAnswer.kb_meta_account = [{ page_id: '555', page_name: 'The Buy Box', ig_user_id: '178414', ig_username: 'thebuyboxre', selected: true }];
-res = await post('/meta/account', {}, 'signed-in', metaEnv);
+res = await post('/meta/account', {}, TOKEN, metaEnv);
 j = await res.json();
 check('the page is told which Page is connected, and never the token',
   j.connected === true && j.page?.ig_username === 'thebuyboxre' && !JSON.stringify(j).includes('cipher'),
   JSON.stringify(j));
 
 reset();
-res = await post('/meta/pick', { page_id: 'not-a-page' }, 'signed-in', metaEnv);
+res = await post('/meta/pick', { page_id: 'not-a-page' }, TOKEN, metaEnv);
 check('choosing a Page that is not an id -> 400', res.status === 400, res.status);
 
 /* --- scheduling ------------------------------------------------------------ */
@@ -684,20 +752,20 @@ const upEnv = { ...env, UPLOAD_POST_API_KEY: 'up-key', POST_WAIT_TRIES: 2, POST_
 const upCalls = () => calls.filter((c) => c.url.startsWith('https://api.upload-post.com/'));
 
 reset();
-res = await post('/social/account', {}, 'signed-in', env);
+res = await post('/social/account', {}, TOKEN, env);
 j = await res.json();
 check('with no Upload-Post key the page is told it is not set up, and nothing is called',
   res.status === 200 && j.ready === false && upCalls().length === 0, JSON.stringify(j));
 
 reset();
-res = await post('/social/connect', {}, 'signed-in', env);
+res = await post('/social/connect', {}, TOKEN, env);
 j = await res.json();
 check('connecting with no Upload-Post key -> 503 saying which to set',
   res.status === 503 && /UPLOAD_POST_API_KEY/.test(j.hint || ''), JSON.stringify(j));
 
 reset();
 upProfile = null;   // not made yet
-res = await post('/social/connect', {}, 'signed-in', upEnv);
+res = await post('/social/connect', {}, TOKEN, upEnv);
 j = await res.json();
 const createdProfile = upCalls().find((c) => c.url.endsWith('/api/uploadposts/users') && c.body?.username);
 const jwt = upCalls().find((c) => c.url.endsWith('/generate-jwt'));
@@ -712,7 +780,7 @@ check('...and the API key goes in the header, never to the page',
   jwt?.headers?.authorization === 'Apikey up-key' && !JSON.stringify(j).includes('up-key'));
 
 reset();
-res = await post('/social/account', {}, 'signed-in', upEnv);
+res = await post('/social/account', {}, TOKEN, upEnv);
 j = await res.json();
 check('the page is told which accounts are connected, by handle',
   j.ready === true && j.accounts.youtube?.handle === '@thebuyboxre' && j.accounts.tiktok === null
@@ -721,12 +789,12 @@ check('...and with two Facebook Pages and none chosen, that one has to be chosen
   j.facebook_pages.length === 2 && j.facebook_page_id === null, JSON.stringify(j.facebook_pages));
 
 reset();
-res = await post('/social/facebook-page', { page_id: '999' }, 'signed-in', upEnv);
+res = await post('/social/facebook-page', { page_id: '999' }, TOKEN, upEnv);
 check('choosing a Page Upload-Post does not have -> 404, nothing saved',
   res.status === 404 && rpcs('kb_social_set').length === 0, res.status);
 
 reset();
-res = await post('/social/facebook-page', { page_id: '555' }, 'signed-in', upEnv);
+res = await post('/social/facebook-page', { page_id: '555' }, TOKEN, upEnv);
 check('choosing one of the connected Pages saves it',
   res.status === 200 && rpcs('kb_social_set')[0]?.body.p_value === '555', res.status);
 

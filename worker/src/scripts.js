@@ -14,7 +14,7 @@
  * difference lives.
  *
  * Only a signed-in person on the app's list reaches any of this: index.js
- * gates every route but /auth/*.
+ * gates every route.
  * ------------------------------------------------------------------------ */
 
 import Anthropic from '@anthropic-ai/sdk';

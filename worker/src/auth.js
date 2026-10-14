@@ -1,27 +1,35 @@
 /* ---------------------------------------------------------------------------
  * Sign-in for the whole app.
  *
- * Accounts are Supabase Auth email-and-password accounts, reached only through
- * these routes. The anon key never goes to the browser, because several of the
- * database's open write functions assume nobody but this Worker holds it.
+ * Accounts are Clerk accounts: single sign-on (Google, Microsoft, whatever is
+ * switched on in the Clerk dashboard) or an email and password. The pages sign
+ * in with Clerk directly and send its short-lived session token with every
+ * call; this file checks that token against Clerk's signing keys and asks
+ * Clerk for the person's email.
  *
- * Supabase Auth in this project is shared with other AIKO tools, whose people
- * have accounts here too, so "has an account" is not the same as "may use this
- * app". Who may is kb.app_users, checked at sign-in and again on every
- * request: taking someone off the list locks them out within a minute, and the
- * other tools are untouched.
+ * "Has a Clerk account" is still not the same as "may use this app". Who may
+ * is kb.app_users, checked on every request: taking someone off the list locks
+ * them out within a minute.
+ *
+ * CLERK_SECRET_KEY is the only Clerk secret. It reads the signing keys and the
+ * user's email from Clerk's Backend API; the browser never sees it.
  * ------------------------------------------------------------------------ */
 
 import { rpc } from './db.js';
 
+const CLERK_API = 'https://api.clerk.com/v1';
 const USER_CACHE_MS = 60000;
+const KEYS_CACHE_MS = 3600000;
 const MAX_CACHE = 500;
-const MIN_PASSWORD = 8;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/* Clocks drift; Clerk's own SDK allows the same. */
+const SKEW_S = 5;
 
-/* access token -> { email, allowed, until }. Per isolate, so it only saves
- * repeat checks within a burst of requests; the source of truth is Supabase. */
+/* Clerk user id -> { email, allowed, until }. Per isolate, so it only saves
+ * repeat lookups within a burst of requests; the source of truth is Clerk and
+ * kb.app_users. */
 const userCache = new Map();
+/* kid -> CryptoKey, refetched when an unknown kid turns up or after an hour. */
+let keys = { byKid: new Map(), until: 0 };
 
 const cleanEmail = (v) => String(v ?? '').trim().toLowerCase().slice(0, 254);
 
@@ -30,20 +38,61 @@ const bearer = (request) => {
   return h.startsWith('Bearer ') ? h.slice(7).trim() : '';
 };
 
-async function gotrue(env, path, { method = 'POST', body, token } = {}) {
-  const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/, '')}/auth/v1/${path}`, {
-    method,
-    headers: {
-      apikey: env.SUPABASE_ANON_KEY,
-      authorization: `Bearer ${token || env.SUPABASE_ANON_KEY}`,
-      'content-type': 'application/json',
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
+async function clerk(env, path) {
+  if (!env.CLERK_SECRET_KEY) throw new Error('CLERK_SECRET_KEY is not set');
+  const res = await fetch(`${CLERK_API}/${path}`, {
+    headers: { authorization: `Bearer ${env.CLERK_SECRET_KEY}` },
     signal: AbortSignal.timeout(12000),
   });
-  let data = null;
-  try { data = await res.json(); } catch { /* an empty body */ }
-  return { ok: res.ok, status: res.status, data: data || {} };
+  if (!res.ok) throw new Error(`clerk ${path.split('/')[0]} ${res.status}`);
+  return res.json();
+}
+
+async function signingKey(env, kid) {
+  if (keys.until < Date.now() || !keys.byKid.has(kid)) {
+    const { keys: jwks = [] } = await clerk(env, 'jwks');
+    const byKid = new Map();
+    for (const jwk of jwks) {
+      if (jwk.kty !== 'RSA' || !jwk.kid) continue;
+      byKid.set(jwk.kid, await crypto.subtle.importKey(
+        'jwk', { kty: 'RSA', n: jwk.n, e: jwk.e, alg: 'RS256', ext: true },
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify'],
+      ));
+    }
+    keys = { byKid, until: Date.now() + KEYS_CACHE_MS };
+  }
+  return keys.byKid.get(kid) || null;
+}
+
+const b64url = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+const part = (s) => JSON.parse(new TextDecoder().decode(b64url(s)));
+
+/* The token's claims if Clerk signed it, it is in date, and it was made for
+ * one of this app's pages; null otherwise. Network trouble reaching Clerk
+ * throws, so it reads as "try again" rather than "sign in again". */
+async function verify(env, token, isAllowedOrigin) {
+  const [h, p, sig] = token.split('.');
+  if (!h || !p || !sig) return null;
+  let header, claims;
+  try { header = part(h); claims = part(p); } catch { return null; }
+  if (header.alg !== 'RS256' || !header.kid) return null;
+
+  const key = await signingKey(env, header.kid);
+  if (!key) return null;
+  let good = false;
+  try {
+    good = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64url(sig), new TextEncoder().encode(`${h}.${p}`));
+  } catch { return null; }
+  if (!good) return null;
+
+  const now = Math.floor(Date.now() / 1000);
+  if (!(Number(claims.exp) > now - SKEW_S)) return null;
+  if (Number(claims.nbf) > now + SKEW_S) return null;
+  /* azp is the page origin the token was minted for. A token taken from some
+   * other site on the same Clerk instance is not good here. */
+  if (claims.azp && !isAllowedOrigin(claims.azp)) return null;
+  if (!claims.sub) return null;
+  return claims;
 }
 
 async function isListed(env, email) {
@@ -52,104 +101,21 @@ async function isListed(env, email) {
   catch { return false; }
 }
 
-/* What the page keeps: enough to call the Worker and to refresh. */
-const toSession = (d) => ({
-  access_token: d.access_token,
-  refresh_token: d.refresh_token,
-  expires_at: Math.floor(Date.now() / 1000) + (Number(d.expires_in) || 3600),
-  email: cleanEmail(d.user?.email),
-});
-
-/* Email links must come back to this app's sign-in page, never to somewhere a
- * caller chose. Supabase checks its own redirect list as well; this is the
- * first gate. */
-function redirectFor(value, isAllowedOrigin) {
-  try {
-    const u = new URL(String(value));
-    if (isAllowedOrigin(u.origin) && /\/signin\.html$/.test(u.pathname)) return u.origin + u.pathname;
-  } catch { /* not a URL */ }
-  return null;
+/* A person's verified addresses, primary first. Only verified ones count, so
+ * nobody gets in by typing someone else's address into a new account. */
+function verifiedEmails(user) {
+  const all = (user.email_addresses || [])
+    .filter((e) => e?.verification?.status === 'verified')
+    .sort((a, b) => (b.id === user.primary_email_address_id) - (a.id === user.primary_email_address_id));
+  return all.map((e) => cleanEmail(e.email_address)).filter(Boolean);
 }
-
-const withRedirect = (path, redirect) => (redirect ? `${path}?redirect_to=${encodeURIComponent(redirect)}` : path);
 
 const NOT_LISTED = 'This email isn’t on the list for this app. Ask to be added.';
 
-/* The /auth/* routes, the only ones open without a session. */
-export async function handleAuth(path, request, env, headers, isAllowedOrigin) {
-  let body = {};
-  try { body = await request.json(); } catch { /* some routes take no body */ }
-  const email = cleanEmail(body.email);
-  const reply = (obj, status) => new Response(JSON.stringify(obj), {
-    status, headers: { ...headers, 'content-type': 'application/json' },
-  });
-
-  if (path === '/auth/signin') {
-    if (!EMAIL.test(email) || !body.password) return reply({ error: 'Enter your email and password.' }, 400);
-    const r = await gotrue(env, 'token?grant_type=password', { body: { email, password: String(body.password) } });
-    if (!r.ok) {
-      const code = r.data.error_code || r.data.code || '';
-      if (code === 'email_not_confirmed') {
-        return reply({ error: 'Confirm your email first: open the link we sent you.' }, 401);
-      }
-      return reply({ error: 'That email and password don’t match.' }, 401);
-    }
-    /* Checked after the password, so the list can't be probed without one. */
-    if (!(await isListed(env, email))) return reply({ error: NOT_LISTED }, 403);
-    return reply({ session: toSession(r.data) }, 200);
-  }
-
-  /* There is no /auth/signup, by the user's choice: accounts are created in
-   * the Supabase dashboard for people on the list, and this app only signs
-   * them in. A POST to it gets the "unknown sign-in route" 404 below. */
-
-  if (path === '/auth/refresh') {
-    const token = String(body.refresh_token || '');
-    if (!token) return reply({ error: 'Sign in again.' }, 401);
-    const r = await gotrue(env, 'token?grant_type=refresh_token', { body: { refresh_token: token } });
-    if (!r.ok) return reply({ error: 'Sign in again.' }, 401);
-    const s = toSession(r.data);
-    if (!(await isListed(env, s.email))) return reply({ error: NOT_LISTED }, 403);
-    return reply({ session: s }, 200);
-  }
-
-  if (path === '/auth/recover') {
-    /* The same answer either way, so this can't reveal who has an account, and
-     * only people on the list get an email. */
-    if (EMAIL.test(email) && (await isListed(env, email))) {
-      await gotrue(env, withRedirect('recover', redirectFor(body.redirect_to, isAllowedOrigin)), { body: { email } });
-    }
-    return reply({ ok: true }, 200);
-  }
-
-  if (path === '/auth/password') {
-    const token = bearer(request);
-    const password = String(body.password || '');
-    if (!token) return reply({ error: 'Open the reset link from your email again.' }, 401);
-    if (password.length < MIN_PASSWORD) {
-      return reply({ error: `Use at least ${MIN_PASSWORD} characters for the password.` }, 400);
-    }
-    const r = await gotrue(env, 'user', { method: 'PUT', token, body: { password } });
-    if (!r.ok) return reply({ error: 'That link has expired. Ask for a new one.' }, 401);
-    return reply({ ok: true }, 200);
-  }
-
-  if (path === '/auth/signout') {
-    const token = bearer(request);
-    if (token) {
-      userCache.delete(token);
-      try { await gotrue(env, 'logout', { token }); } catch { /* signed out on the page regardless */ }
-    }
-    return reply({ ok: true }, 200);
-  }
-
-  return reply({ error: 'unknown sign-in route' }, 404);
-}
-
-/* Every other route. Returns { user } for a signed-in person on the list, or
+/* Every route. Returns { user } for a signed-in person on the list, or
  * { response } to send instead. `signin: true` tells the page to go and sign
  * in rather than show the error. */
-export async function requireUser(request, env, headers) {
+export async function requireUser(request, env, headers, isAllowedOrigin) {
   const deny = (error, status) => ({
     response: new Response(JSON.stringify({ error, signin: true }), {
       status, headers: { ...headers, 'content-type': 'application/json' },
@@ -159,18 +125,21 @@ export async function requireUser(request, env, headers) {
   const token = bearer(request);
   if (!token) return deny('Sign in to use this.', 401);
 
+  const claims = await verify(env, token, isAllowedOrigin);
+  if (!claims) return deny('Your session has ended. Sign in again.', 401);
+
   const now = Date.now();
-  let hit = userCache.get(token);
+  let hit = userCache.get(claims.sub);
   if (!hit || hit.until < now) {
-    const r = await gotrue(env, 'user', { method: 'GET', token });
-    if (!r.ok) {
-      userCache.delete(token);
-      return deny('Your session has ended. Sign in again.', 401);
+    const emails = verifiedEmails(await clerk(env, `users/${encodeURIComponent(claims.sub)}`));
+    let email = emails[0] || '';
+    let allowed = false;
+    for (const e of emails) {
+      if (await isListed(env, e)) { email = e; allowed = true; break; }
     }
-    const email = cleanEmail(r.data.email);
-    hit = { email, allowed: await isListed(env, email), until: now + USER_CACHE_MS };
+    hit = { email, allowed, until: now + USER_CACHE_MS };
     if (userCache.size >= MAX_CACHE) userCache.delete(userCache.keys().next().value);
-    userCache.set(token, hit);
+    userCache.set(claims.sub, hit);
   }
   if (!hit.allowed) return deny(NOT_LISTED, 403);
   return { user: { email: hit.email } };

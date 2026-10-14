@@ -26,7 +26,7 @@ import { handlePosts, publishDue } from './posts.js';
 import { handleFootage } from './footage.js';
 import { dispatchWorkflow } from './github.js';
 import { rpc } from './db.js';
-import { handleAuth, requireUser } from './auth.js';
+import { requireUser } from './auth.js';
 import { checkScript, MAX_LINES, MAX_LINE_CHARS } from './script-check.js';
 
 /* Only the published pages may call this. The key lives here, so an open
@@ -90,18 +90,16 @@ export default {
       return json({ error: 'POST a JSON body to /ideas or /kb/upload.' }, 405, headers);
     }
 
-    /* Sign-in routes are the only ones open without a session. */
-    if (path.startsWith('/auth/')) {
-      try { return await handleAuth(path, request, env, headers, isAllowed); }
-      catch { return json({ error: 'Couldn’t reach the sign-in service. Try again.' }, 502, headers); }
-    }
-
-    /* Everything else needs a signed-in session whose email is on this app's
-     * list (kb.app_users): chat, plans, renders, edits, uploads and the video
-     * library. The pages are public files; this is the lock. */
+    /* Every route needs a Clerk session whose email is on this app's list
+     * (kb.app_users): chat, plans, renders, edits, uploads and the video
+     * library. Signing in itself happens between the page and Clerk. The
+     * pages are public files; this is the lock. */
     let gate;
-    try { gate = await requireUser(request, env, headers); }
-    catch { return json({ error: 'Couldn’t check your sign-in. Try again.' }, 502, headers); }
+    try { gate = await requireUser(request, env, headers, isAllowed); }
+    catch (err) {
+      console.error('sign-in check failed:', err?.message);
+      return json({ error: 'Couldn’t check your sign-in. Try again.' }, 502, headers);
+    }
     if (gate.response) return gate.response;
 
     if (path === '/ideas') return handleIdeas(request, env, headers, ctx);

@@ -74,10 +74,15 @@ crons = ["*/5 * * * *"]
 # single permission Actions: Read and write. Without it, edit requests return
 # 503 and nothing else changes.
 #
-# Every route except /auth/* needs a signed-in session whose email is in
-# kb.app_users (see src/auth.js). The origin allowlist in index.js stops
-# browsers and nothing else, so sign-in is the lock. KB_UPLOAD_TOKEN is no
-# longer used: uploads are behind sign-in like everything else.
+# Every route needs a Clerk session whose email is in kb.app_users (see
+# src/auth.js). The origin allowlist in index.js stops browsers and nothing
+# else, so sign-in is the lock. CLERK_SECRET_KEY (sk_live_... or sk_test_...,
+# from the Clerk dashboard under API keys) lets the Worker check those sessions:
+#
+#   npx wrangler secret put CLERK_SECRET_KEY
+#
+# Without it every route answers 502. The matching publishable key (pk_...) is
+# not a secret and lives in assets/clerk.js.
 #
 # VOYAGE_API_KEY is optional. Without it the knowledge-base tools still answer,
 # using keyword search alone, and every result they return is marked degraded so

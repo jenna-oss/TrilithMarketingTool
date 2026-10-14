@@ -38,34 +38,12 @@
     font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
     display:flex; flex-direction:column;
   }
-  main { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:3rem 1.25rem; }
-  .card {
-    width:100%; max-width:380px; background:var(--card); border:1px solid var(--rule);
-    border-radius:6px; padding:1.5rem 1.5rem 1.25rem;
-  }
-  h1 { margin:0 0 .25rem; font-size:1.25rem; color:var(--ink); }
-  .sub { margin:0 0 1.25rem; font-size:.875rem; color:var(--ink-quiet); }
-  label { display:block; font-size:.8125rem; font-weight:600; color:var(--ink); margin:.875rem 0 .3125rem; }
-  input {
-    width:100%; font:inherit; font-size:.9375rem; color:var(--ink); background:var(--ground);
-    border:1px solid var(--rule-strong); border-radius:4px; padding:.5rem .625rem;
-  }
-  input:focus { outline:2px solid var(--accent); outline-offset:1px; }
-  button.primary {
-    width:100%; margin-top:1.25rem; font:inherit; font-size:.9375rem; font-weight:600;
-    background:var(--emerald); color:#F4F2E7; border:none; border-radius:4px; padding:.625rem 1rem; cursor:pointer;
-  }
-  button.primary:disabled { opacity:.55; cursor:not-allowed; }
-  .links { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; margin-top:1rem; font-size:.8125rem; }
-  .links button {
-    background:none; border:none; padding:0; font:inherit; color:var(--accent);
-    cursor:pointer; text-decoration:underline; text-underline-offset:2px;
-  }
-  .links .hint { color:var(--ink-quiet); }
-  .msg { margin:1rem 0 0; font-size:.8125rem; border-radius:4px; padding:.5rem .625rem; }
+  main { flex:1; display:flex; flex-direction:column; align-items:center; padding:3rem 1rem; }
+  #clerk { width:100%; display:flex; justify-content:center; }
+  .msg { max-width:400px; width:100%; margin:0 0 1rem; font-size:.8125rem; border-radius:4px; padding:.5rem .625rem; }
   .msg.bad { background:var(--card-sunk); color:var(--clay); }
   .msg.ok { background:var(--card-sunk); color:var(--ink-body); }
-  .msg[hidden], form[hidden] { display:none; }
+  .msg[hidden] { display:none; }
 </style>
 </head>
 <body>
@@ -85,79 +63,23 @@
 </header>
 
 <main>
-  <div class="card">
-    <h1 id="title">Sign in</h1>
-    <p class="sub" id="sub">For people on this app’s list.</p>
-
-    <!-- No sign-up here: accounts are created in Supabase, for people on the
-         list. This page only signs them in and resets passwords. -->
-    <form id="f-signin" novalidate>
-      <label for="si-email">Email</label>
-      <input id="si-email" type="email" autocomplete="username" required>
-      <label for="si-password">Password</label>
-      <input id="si-password" type="password" autocomplete="current-password" required>
-      <button class="primary" type="submit">Sign in</button>
-      <div class="links">
-        <span class="hint">No account? Ask to be added.</span>
-        <button type="button" data-go="forgot">Forgot password?</button>
-      </div>
-    </form>
-
-    <form id="f-forgot" novalidate hidden>
-      <label for="fp-email">Email</label>
-      <input id="fp-email" type="email" autocomplete="username" required>
-      <button class="primary" type="submit">Send a reset link</button>
-      <div class="links"><button type="button" data-go="signin">Back to sign in</button></div>
-    </form>
-
-    <form id="f-reset" novalidate hidden>
-      <label for="rp-password">New password</label>
-      <input id="rp-password" type="password" autocomplete="new-password" minlength="8" required>
-      <label for="rp-confirm">New password again</label>
-      <input id="rp-confirm" type="password" autocomplete="new-password" minlength="8" required>
-      <button class="primary" type="submit">Save password</button>
-    </form>
-
-    <p class="msg" id="msg" role="status" hidden></p>
-  </div>
+  <p class="msg" id="msg" role="status" hidden></p>
+  <!-- Clerk draws the sign-in box here: single sign-on and email and
+       password, with its own forgotten-password flow. -->
+  <div id="clerk"></div>
 </main>
 
+<script src="./assets/clerk.js"></script>
 <script>
-/* Sign-in talks only to the Worker's /auth routes; the Worker holds the
-   database key. The session it hands back is kept where assets/auth.js on
-   every other page looks for it. */
-const WORKER = 'https://trilith-ask.jenna-cbd.workers.dev';
-const KEY = 'aiko-session';
-const MIN_PASSWORD = 8;
-
-const forms = {
-  signin: document.getElementById('f-signin'),
-  forgot: document.getElementById('f-forgot'),
-  reset: document.getElementById('f-reset'),
-};
-const titles = {
-  signin: ['Sign in', 'For people on this app’s list.'],
-  forgot: ['Reset your password', 'We’ll email you a link.'],
-  reset: ['Choose a new password', `At least ${MIN_PASSWORD} characters.`],
-};
+/* Signing in happens between this page and Clerk. Every other page then sends
+   Clerk's session token to the Worker, which checks it and this app's list
+   (kb.app_users) on every call. */
 const msg = document.getElementById('msg');
-
 function say(text, tone) {
   msg.textContent = text || '';
   msg.className = 'msg ' + (tone || 'ok');
   msg.hidden = !text;
 }
-
-function show(which, keepMessage) {
-  Object.entries(forms).forEach(([k, f]) => { f.hidden = k !== which; });
-  document.getElementById('title').textContent = titles[which][0];
-  document.getElementById('sub').textContent = titles[which][1];
-  if (!keepMessage) say('');
-  const first = forms[which].querySelector('input');
-  if (first) first.focus();
-}
-
-document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => show(b.dataset.go)));
 
 /* Where to go after signing in: back to the page that sent you here. Only a
    page of this site, so the link can't be used to send someone elsewhere. */
@@ -167,106 +89,39 @@ function nextPage() {
   return /^[a-z0-9-]+\.html(\?[^#]*)?$/i.test(next) ? './' + next : './';
 }
 
-function keep(session) {
-  try { localStorage.setItem(KEY, JSON.stringify(session)); } catch { /* private mode */ }
-  location.replace(nextPage());
+/* Clerk's box in this page's colours, light or dark. */
+function appearance() {
+  const css = getComputedStyle(document.documentElement);
+  const v = (name) => css.getPropertyValue(name).trim();
+  return {
+    variables: {
+      colorPrimary: '#2C785E',
+      colorBackground: v('--card'),
+      colorText: v('--ink'),
+      colorTextSecondary: v('--ink-quiet'),
+      colorInputBackground: v('--ground'),
+      colorInputText: v('--ink'),
+      colorDanger: v('--clay'),
+      fontFamily: v('--sans'),
+      borderRadius: '6px',
+    },
+  };
 }
 
-/* The email is in the token Supabase put in the link; the Worker checks the
-   token itself on every call, so reading it here only labels the session. */
-function emailFromToken(token) {
-  try {
-    let part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    while (part.length % 4) part += '=';
-    return String(JSON.parse(atob(part)).email || '').toLowerCase();
-  } catch { return ''; }
-}
+const why = params.get('why');
+if (why === 'expired') say('Your session ended. Sign in again.', 'ok');
+if (why === 'not-listed') say('That email isn’t on the list for this app. Ask to be added.', 'bad');
 
-async function call(path, body, token) {
-  const headers = { 'content-type': 'application/json' };
-  if (token) headers.authorization = 'Bearer ' + token;
-  try {
-    const res = await fetch(WORKER + path, { method: 'POST', headers, body: JSON.stringify(body || {}) });
-    const data = await res.json().catch(() => ({}));
-    return { ok: res.ok, status: res.status, data };
-  } catch {
-    return { ok: false, status: 0, data: { error: 'Couldn’t reach the server. Try again.' } };
-  }
-}
-
-function busy(form, on) {
-  form.querySelector('button.primary').disabled = on;
-}
-
-forms.signin.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('si-email').value.trim();
-  const password = document.getElementById('si-password').value;
-  if (!email || !password) { say('Enter your email and password.', 'bad'); return; }
-  busy(forms.signin, true);
-  const r = await call('/auth/signin', { email, password });
-  busy(forms.signin, false);
-  if (r.ok && r.data.session) { keep(r.data.session); return; }
-  say(r.data.error || 'Couldn’t sign in.', 'bad');
-});
-
-forms.forgot.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('fp-email').value.trim();
-  if (!email) { say('Enter your email.', 'bad'); return; }
-  busy(forms.forgot, true);
-  await call('/auth/recover', { email, redirect_to: location.origin + location.pathname });
-  busy(forms.forgot, false);
-  say('If that email is on this app’s list, a reset link is on its way.', 'ok');
-});
-
-/* A link from a Supabase email lands here with the session in the URL
-   fragment, to reset a password (or from any other sign-in link). */
-let recovery = null;
-forms.reset.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const password = document.getElementById('rp-password').value;
-  if (password.length < MIN_PASSWORD) { say(`Use at least ${MIN_PASSWORD} characters for the password.`, 'bad'); return; }
-  if (password !== document.getElementById('rp-confirm').value) { say('The two passwords don’t match.', 'bad'); return; }
-  busy(forms.reset, true);
-  const r = await call('/auth/password', { password }, recovery.access_token);
-  busy(forms.reset, false);
-  if (r.ok) { keep(recovery); return; }
-  say(r.data.error || 'Couldn’t save the password.', 'bad');
-});
-
-(function start() {
-  const hash = new URLSearchParams(location.hash.slice(1));
-  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-
-  if (hash.get('error_description')) {
-    show('signin');
-    say(hash.get('error_description').replace(/\+/g, ' ') + '. Ask for a new link.', 'bad');
-    return;
-  }
-
-  const access = hash.get('access_token');
-  if (access) {
-    const session = {
-      access_token: access,
-      refresh_token: hash.get('refresh_token') || '',
-      expires_at: Math.floor(Date.now() / 1000) + (Number(hash.get('expires_in')) || 3600),
-      email: emailFromToken(access),
-    };
-    if (hash.get('type') === 'recovery') {
-      recovery = session;
-      show('reset');
-      return;
-    }
-    keep(session);
-    return;
-  }
-
-  const why = params.get('why');
-  show('signin');
-  if (why === 'expired') say('Your session ended. Sign in again.', 'ok');
-  if (why === 'not-listed') say('That email isn’t on the list for this app. Ask to be added.', 'bad');
-})();
+AikoClerk.ready.then((clerk) => {
+  const next = new URL(nextPage(), location.href).href;
+  /* Already signed in, and not just bounced off the list: carry on. */
+  if (clerk.user && why !== 'not-listed') { location.replace(next); return; }
+  clerk.mountSignIn(document.getElementById('clerk'), {
+    forceRedirectUrl: next,
+    signUpForceRedirectUrl: next,
+    appearance: appearance(),
+  });
+}, (err) => say(err.message, 'bad'));
 </script>
 </body>
 </html>
