@@ -93,6 +93,14 @@ async function media(brandId) {
       mode: 'structured',
       userRequest: 'best performing organic posts by views',
       limit: FETCH_PER_LENDER,
+      /* Required since mid-September 2026: the route 400s with "filters:
+       * expected object, received undefined" without it. Organic channels
+       * only, ranked by views — what userRequest already asks for in words. */
+      filters: {
+        channel: ['INSTAGRAM', 'TIKTOK'],
+        sortBy: 'MOST_VIEWS',
+        limit: FETCH_PER_LENDER,
+      },
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
