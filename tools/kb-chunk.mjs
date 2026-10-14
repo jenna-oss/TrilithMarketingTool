@@ -175,11 +175,56 @@ export function parsePlainTranscript(text) {
   return cues;
 }
 
+/* A single cue larger than a chunk is split at sentence ends, or at word
+ * boundaries when there are none (auto-captions are often unpunctuated).
+ * Without this, a transcript with no speaker labels and no timestamps arrives
+ * as one cue, and the cap below — checked only between cues — never fires: an
+ * uploaded YouTube transcript went in as one 2,374-token chunk. Timestamps are
+ * not invented for the pieces: the first keeps the cue's start, the last its
+ * end, and the ones between carry neither. */
+function splitCue(cue, maxTokens) {
+  if (estimateTokens(cue.text) <= maxTokens) return [cue];
+
+  const maxChars = maxTokens * 4;
+  const sentences = cue.text.match(/[^.!?]+(?:[.!?]+["')\]]*\s*|$)/g) || [cue.text];
+  const units = sentences.flatMap((s) => {
+    if (s.length <= maxChars) return [s];
+    const words = s.split(/(\s+)/);
+    const parts = [];
+    let cur = '';
+    for (const w of words) {
+      if (cur.length + w.length > maxChars && cur.trim()) { parts.push(cur); cur = ''; }
+      cur += w;
+    }
+    if (cur.trim()) parts.push(cur);
+    return parts;
+  });
+
+  /* Pieces aim for the middle of the band rather than its ceiling, so the
+   * grouping below still has room to stop at a natural seam. */
+  const target = Math.floor(maxChars / 2);
+  const pieces = [];
+  let cur = '';
+  for (const u of units) {
+    if (cur && cur.length + u.length > target) { pieces.push(cur.trim()); cur = ''; }
+    cur += u;
+  }
+  if (cur.trim()) pieces.push(cur.trim());
+
+  return pieces.map((text, i) => ({
+    speaker: cue.speaker,
+    text,
+    start: i === 0 ? cue.start : null,
+    end: i === pieces.length - 1 ? cue.end : null,
+  }));
+}
+
 /* Group cues into chunks inside the spec's 300-800 token band, preferring to
  * break where the conversation already breaks: a speaker change, or a pause
  * long enough to be a change of subject. A chunk that ends mid-thought is the
  * failure mode section 14 is about. */
-export function chunkTranscript(cues, { minTokens = 300, maxTokens = 800, pauseSeconds = 2.5 } = {}) {
+export function chunkTranscript(rawCues, { minTokens = 300, maxTokens = 800, pauseSeconds = 2.5 } = {}) {
+  const cues = rawCues.flatMap((c) => splitCue(c, maxTokens));
   const chunks = [];
   let cur = [];
 
@@ -225,7 +270,9 @@ export function chunkTranscript(cues, { minTokens = 300, maxTokens = 800, pauseS
 
     if (cur.length && tokens >= minTokens && (speakerChanged || longPause)) emit();
     else if (cur.length && tokens >= minTokens / 3 && strongSeam) emit();
-    else if (cur.length && tokens >= maxTokens) emit();
+    /* Checked against the size it would become, not the size it is, so adding
+     * one more cue cannot carry a chunk past the cap. */
+    else if (cur.length && tokens + estimateTokens(cue.text) > maxTokens) emit();
 
     cur.push(cue);
   }
