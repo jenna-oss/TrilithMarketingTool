@@ -861,7 +861,8 @@
         if (f.planSent) return { label: 'See progress', go: function () { go('making'); } };
         var n = (f.plan && f.plan.slots || []).length;
         if (planComplete()) return { label: 'Make ' + A.plural(n, 'video'), note: 'About 30 minutes · up to 12 a day', go: makeVideos };
-        return { label: 'Make videos', disabled: true, note: !f.chat.some(function (m) { return m.who === 'ideas'; }) ? 'Send Aiko a topic first' : 'Pick the ideas you want and tell Aiko to go ahead' };
+        return { label: 'Make videos', disabled: true, note: !f.chat.some(function (m) { return m.who === 'y'; }) ? 'Send Aiko a topic first'
+          : 'Tell Aiko which ideas to make. Once it locks them in, you can make them' };
       case 'making': return { hidden: true, note: 'You can leave this page. Videos shows them when they’re ready.' };
       case 'script':
         if (!script) return { label: writing ? 'Writing…' : composer.busy() ? 'Reading your files…' : 'Write the script', disabled: writing || composer.busy() || !composer.canSend(), note: 'About 20 seconds', go: writeScript };
