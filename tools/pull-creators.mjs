@@ -104,6 +104,14 @@ async function creatorMedia(brandId) {
       mode: 'structured',
       userRequest: 'most recent organic video posts',
       limit: FETCH_PER_CREATOR,
+      /* Required since mid-September 2026: the route 400s with "filters:
+       * expected object, received undefined" without it. Organic channels
+       * only, newest first — what userRequest already asks for in words. */
+      filters: {
+        channel: ['INSTAGRAM', 'TIKTOK'],
+        sortBy: 'MOST_RECENT',
+        limit: FETCH_PER_CREATOR,
+      },
     }),
   });
   const list = Array.isArray(body) ? body : (body?.creatives ?? body?.media ?? body?.rows);
