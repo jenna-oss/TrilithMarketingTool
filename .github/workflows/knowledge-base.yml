@@ -84,6 +84,17 @@ jobs:
           KB_MIRROR_LIMIT: '16'
         run: node tools/kb-mirror-published.mjs
 
+      # The channel's own videos, so repetition detection sees what has been
+      # made and not only what is on the website. No model call: topic, angle
+      # and hook come straight from the planning slot.
+      - name: Mirror rendered videos
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+        run: node tools/kb-mirror-videos.mjs
+
       # Builds the hook library from adspy.hook_patterns. Off by default and a
       # one-off in practice: it skips patterns already adapted, so a second run
       # only picks up whatever the weekly Spyglass refresh added. Lives here

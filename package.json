@@ -15,6 +15,7 @@
     "kb:ingest": "node tools/kb-ingest.mjs",
     "kb:process": "node tools/kb-process.mjs",
     "kb:mirror": "node tools/kb-mirror-published.mjs",
+    "kb:mirror-videos": "node tools/kb-mirror-videos.mjs",
     "kb:summarise": "node tools/kb-summarise.mjs",
     "kb:seed-hooks": "node tools/kb-seed-hooks.mjs",
     "test": "node tests/worker.test.mjs"
