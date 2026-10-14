@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-14T03:29:19.095Z",
+  "fetchedAt": "2026-10-14T03:38:42.213Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -512,16 +512,6 @@
           "postedAt": "2026-10-11",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d388cb0ad5ae06207e0e89d820e4d52a.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d388cb0ad5ae06207e0e89d820e4d52a.mp4"
-        },
-        {
-          "id": "6033e146-9266-4c1e-8c34-8371f67ec31e",
-          "hook": "There is a difference between regulating an industry and quietly pricing it out of existence.",
-          "hookSource": "title",
-          "category": "Explainer",
-          "views": "1677",
-          "postedAt": "2026-10-08",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/a3cc5f15a59bb1f0ded21ec7b7ad6e31.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/a3cc5f15a59bb1f0ded21ec7b7ad6e31.mp4"
         }
       ]
     },
@@ -564,6 +554,16 @@
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/13f1534cb501fd7eae4b8c26d6804e8a.mp4"
         },
         {
+          "id": "4b5c3549-fa1a-47a8-a855-18e54aa6204f",
+          "hook": "You want to know something absolutely fucking wild?",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "42636",
+          "postedAt": "2026-10-12",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/a821a4bbe76624b8d79d9c1709913be7.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/a821a4bbe76624b8d79d9c1709913be7.mp4"
+        },
+        {
           "id": "c4b06e86-44f6-4dd0-98ea-2866ce3309dd",
           "hook": "Trying to time the market is just going to cost you more.",
           "hookSource": "title",
@@ -572,16 +572,6 @@
           "postedAt": "2026-10-11",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2ed1db695c78d61edd55d7a996f15a26.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2ed1db695c78d61edd55d7a996f15a26.mp4"
-        },
-        {
-          "id": "169e9cef-3748-4fd9-b34f-9222a67e681f",
-          "hook": "I had a lunch with a private wealth client the other day who's almost 70.",
-          "hookSource": "hook",
-          "category": "Commentary",
-          "views": "27383",
-          "postedAt": "2026-10-10",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c589f32524dc6490bfbd20274ff84a1b.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c589f32524dc6490bfbd20274ff84a1b.mp4"
         }
       ]
     },
@@ -789,6 +779,55 @@
           "postedAt": "2026-08-19",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2ae15dc0f9f7f73b9a890eba1a48772b.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2ae15dc0f9f7f73b9a890eba1a48772b.mp4"
+        }
+      ]
+    },
+    {
+      "slug": "wealth-wisdom-daily",
+      "spyglassId": "98ea01c1-bccf-4e9b-84b7-26cba5bc10e2",
+      "name": "Wealth | Wisdom | Daily",
+      "handle": "@thewealthydesk",
+      "avatarUrl": "https://cdn.generalcontext.com/adspy/brands/ig_thewealthydesk.jpg",
+      "platform": "Instagram",
+      "profileUrl": "https://instagram.com/thewealthydesk",
+      "followers": "96.1K",
+      "angle": "Motivational, story-driven short-form content that reframes rental ownership as escape from the paycheck treadmill, using everyday-worker narratives (nurses, renters) to make a first and then multiple cash-flowing rentals feel attainable.",
+      "productLines": [
+        "portfolio"
+      ],
+      "audience": "investor",
+      "addedBy": "auto",
+      "addedOn": "2026-10-14",
+      "videos": [
+        {
+          "id": "bfa06aed-80cd-4b21-bb78-2bd411818ab5",
+          "hook": "Your first rental feels like freedom, and that's the part that confuses people.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "1440",
+          "postedAt": "2026-01-27",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/f399303e54157c39c60c31a64858d7a4.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/f399303e54157c39c60c31a64858d7a4.mp4"
+        },
+        {
+          "id": "8d96cd45-8618-44da-944b-d0135d46f805",
+          "hook": "Right now, you pay rent to someone else.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "1852",
+          "postedAt": "2026-01-05",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/15b33a37d9d4fe69d6b5caf570e7e800.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/15b33a37d9d4fe69d6b5caf570e7e800.mp4"
+        },
+        {
+          "id": "de8ed6bc-80cd-48d8-9fe8-a02c57c2ce8e",
+          "hook": "I'm a nurse. I work 12 hour shifts. I have no extra time, but I own five houses that pay me while I sleep.",
+          "hookSource": "hook",
+          "category": "Text Overlay",
+          "views": "2120",
+          "postedAt": "2026-01-04",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/19541a566e91c6878c4af7978b16117a.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/19541a566e91c6878c4af7978b16117a.mp4"
         }
       ]
     }

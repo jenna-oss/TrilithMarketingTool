@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-14T03:30:59.287Z",
+  "fetchedAt": "2026-10-14T03:40:21.397Z",
   "note": "Best-performing ORGANIC post per row. Creators come from the screened roster in education-creators.json; lenders are harvested from the same nine brand ids the creative wall uses. Paid ads are excluded from both halves.",
   "rows": [
     {
@@ -38,6 +38,13 @@
       "viewsLabel": "53.2K"
     },
     {
+      "kind": "creator",
+      "name": "Jack Henderson",
+      "note": "You want to know something absolutely fucking wild?",
+      "views": 42636,
+      "viewsLabel": "42.6K"
+    },
+    {
       "kind": "lender",
       "name": "Lima One",
       "note": "best post",
@@ -50,13 +57,6 @@
       "note": "If you can make it through this whole entire video,…",
       "views": 33208,
       "viewsLabel": "33.2K"
-    },
-    {
-      "kind": "creator",
-      "name": "Jack Henderson",
-      "note": "I had a lunch with a private wealth client the othe…",
-      "views": 27383,
-      "viewsLabel": "27.4K"
     },
     {
       "kind": "lender",
