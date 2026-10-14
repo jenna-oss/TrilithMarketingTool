@@ -33,7 +33,7 @@ import urllib.error
 from pathlib import Path
 
 from dotenv import load_dotenv
-from numeric_tts import spoken_text
+from numeric_tts import has_pronunciation, spoken_text
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -122,9 +122,13 @@ def drop_pauses(src, dst, cuts):
 
 
 def punched(spoken_line, words):
-    """The spoken line with its emphasis words capitalised."""
+    """The spoken line with its emphasis words capitalised. Words on the
+    pronunciation list are left as they are: in capitals the voice reads a
+    respelling letter by letter."""
     out = spoken_line
     for word in words or []:
+        if has_pronunciation(str(word)):
+            continue
         key = spoken_text(str(word)).strip(" .,;:!?\"'()-").strip()
         if not key:
             continue

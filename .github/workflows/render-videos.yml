@@ -591,6 +591,9 @@ jobs:
           find video/remotion/out -name '*.mp4' -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion -maxdepth 1 -name 'voiceover_*.py' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
           find video/remotion/src -maxdepth 1 -name '*.tsx' -newer /tmp/render-start -exec cp {} artifact/ \; 2>/dev/null || true
+          # A pronunciation fix the edit made. The pronunciations job checks it
+          # and commits it, so every later video says the word right too.
+          git diff --quiet -- video/remotion/pronunciations.json || cp video/remotion/pronunciations.json artifact/pronunciations.json
           # Everything needed to edit this video later. The store job keeps it
           # in the private video-sources bucket.
           bash video/pack-source.sh video/remotion "$PWD/artifact/source.tar.gz" || true
@@ -886,3 +889,57 @@ jobs:
             echo "::error::Could not close edit $EDIT_ID, so the Output page may keep showing it as editing. To clear it, run this in the Supabase SQL editor: select public.kb_video_edit_finish('$EDIT_ID', 'failed', 'the edit stopped before it finished');"
             exit 1
           fi
+
+  # A pronunciation fix made in an edit goes into the shared list in the repo,
+  # so the word is said right in every video after it, not just this one.
+  # A job of its own, on a clean runner with no agent, because it is the only
+  # one that can write to the repo: the edit agent took a request typed into
+  # the app, so its copy of the list arrives as data and pronunciations-merge.py
+  # takes only entries shaped like a word and how to say it.
+  pronunciations:
+    name: Keep pronunciation fixes
+    needs: [plan, render]
+    if: ${{ !cancelled() && inputs.edit_id != '' && needs.render.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: video-*
+          path: /tmp/runs
+
+      - name: Commit and push
+        run: |
+          shopt -s nullglob
+          lists=(/tmp/runs/*/pronunciations.json)
+          if [ ${#lists[@]} -eq 0 ]; then
+            echo "This edit changed no pronunciations."
+            exit 0
+          fi
+          python3 video/pronunciations-merge.py video/remotion/pronunciations.json "${lists[@]}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add video/remotion/pronunciations.json
+          if git diff --staged --quiet; then
+            echo "Nothing new to keep."
+            exit 0
+          fi
+          git commit -m "Pronunciation fix from edit ${{ inputs.edit_id }}"
+          # Another commit may land while the edit runs. Rebase onto it and retry,
+          # as the daily ad pull does.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            git pull --rebase --autostash origin main || {
+              echo "::error::Rebase failed; the fix was used in this edit but not kept."
+              exit 1
+            }
+          done
+          echo "::error::Could not push after 3 attempts; the fix was used in this edit but not kept."
+          exit 1
