@@ -74,7 +74,10 @@ const user = `Here are ${hooks.length} hooks. Group them into patterns.\n\n${hoo
   .map((h, i) => `${i + 1}. [${h.creator}] ${h.quote}`)
   .join('\n')}`;
 
-const out = await claudeJson({ system: SYSTEM, user, maxTokens: 8192 });
+/* 8192 ran out on 2026-10-13 with 42 hooks: the grouping is one call over
+ * every hook, so the reply grows with the harvest. A longer reply also needs
+ * longer than the default two-minute timeout. */
+const out = await claudeJson({ system: SYSTEM, user, maxTokens: 20000, timeoutMs: 600000 });
 
 /* Trust nothing about attribution or wording. See hook-verify.mjs — anything
  * that does not match a harvested hook exactly, from the creator who actually

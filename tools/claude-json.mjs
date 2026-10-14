@@ -79,7 +79,7 @@ function extractJson(text) {
   }
 }
 
-export async function claudeJson({ system, user, maxTokens = 8192 }) {
+export async function claudeJson({ system, user, maxTokens = 8192, timeoutMs = TIMEOUT_MS }) {
   const key = String(process.env.ANTHROPIC_API_KEY ?? '').trim();
   if (!key) throw new MissingKey();
 
@@ -96,7 +96,7 @@ export async function claudeJson({ system, user, maxTokens = 8192 }) {
       system,
       messages: [{ role: 'user', content: user }],
     }),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!res.ok) {
