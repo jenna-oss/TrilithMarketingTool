@@ -25,12 +25,16 @@ const json = (obj, status, headers) => new Response(JSON.stringify(obj), {
   status, headers: { ...headers, 'content-type': 'application/json' },
 });
 
+/* Forgiving of how the key was pasted: a stray space or newline, or the
+ * "Apikey " prefix copied along with it from Upload-Post's examples. */
+const apiKey = (env) => String(env.UPLOAD_POST_API_KEY || '').trim().replace(/^apikey\s+/i, '');
+
 export const uploadPostReady = (env) => Boolean(env.UPLOAD_POST_API_KEY);
 
 async function call(env, path, { method = 'GET', body, form } = {}) {
   const init = {
     method,
-    headers: { authorization: `Apikey ${env.UPLOAD_POST_API_KEY}` },
+    headers: { authorization: `Apikey ${apiKey(env)}` },
     signal: AbortSignal.timeout(60000),
   };
   if (form) init.body = form;

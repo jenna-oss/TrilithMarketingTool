@@ -83,6 +83,7 @@
     background:var(--card-sunk); padding:var(--s3); margin:0 0 var(--s4);
     font-size:.8125rem;
   }
+  .setup a { color:var(--accent); }
   .setup h3 { margin:0 0 var(--s1); font-size:.8125rem; color:var(--ink); }
   .setup ol { margin:0; padding-left:1.25rem; display:grid; gap:.3125rem; }
   .setup code {
@@ -167,6 +168,83 @@
   .where legend { font-size:.8125rem; font-weight:600; color:var(--ink); margin:0 0 .3125rem; padding:0; }
   .where label { font-size:.875rem; color:var(--ink-body); display:flex; gap:.375rem; align-items:center; }
   .where .handle { font-size:.75rem; color:var(--ink-quiet); font-family:var(--mono); }
+
+  /* Going out: a month calendar by default, the plain list a click away. */
+  .queue-bar { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center; justify-content:space-between; margin:var(--s5) 0 var(--s2); }
+  .queue-bar h3 { margin:0; }
+  .views { display:inline-flex; border:1px solid var(--rule-strong); border-radius:4px; overflow:hidden; }
+  .views button {
+    font:inherit; font-size:.75rem; font-weight:600; color:var(--ink-body); background:transparent;
+    border:0; padding:.3125rem .75rem; cursor:pointer;
+  }
+  .views button + button { border-left:1px solid var(--rule-strong); }
+  .views button[aria-pressed="true"] { background:var(--accent); color:var(--card); }
+  .views button:focus-visible, .cal-step:focus-visible, .cal-cell:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  .cal { background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:var(--s3); }
+  .cal-top { display:flex; align-items:center; gap:var(--s1); margin:0 0 var(--s2); }
+  .cal-top h4 { margin:0; font-size:1rem; color:var(--ink); min-width:9.5rem; text-align:center; }
+  .cal-top .btn { margin-left:auto; }
+  .cal-step {
+    font:inherit; font-size:1.125rem; line-height:1; color:var(--ink-body); background:transparent;
+    border:1px solid var(--rule-strong); border-radius:4px; width:2rem; height:2rem; cursor:pointer;
+  }
+  .cal-step:hover { background:var(--card-sunk); }
+  .cal-grid { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:2px; }
+  .cal-dow {
+    font-size:.625rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-quiet); text-align:center; padding:.25rem 0;
+  }
+  .cal-cell {
+    font:inherit; text-align:left; color:var(--ink-body); background:var(--ground);
+    border:1px solid transparent; border-radius:4px; min-height:5.75rem; padding:.3125rem;
+    display:flex; flex-direction:column; gap:.1875rem; cursor:pointer; min-width:0;
+  }
+  .cal-cell:hover { border-color:var(--rule-strong); }
+  .cal-cell.other { opacity:.45; }
+  .cal-cell.past .d { color:var(--ink-quiet); }
+  .cal-cell[aria-pressed="true"] { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+  .cal-cell .d { font-size:.75rem; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .cal-cell.today .d {
+    background:var(--accent); color:var(--card); border-radius:999px; padding:0 .375rem; align-self:flex-start;
+  }
+  .chip {
+    display:flex; align-items:center; gap:.25rem; min-width:0;
+    font-size:.6875rem; line-height:1.25; color:var(--ink); background:var(--card);
+    border:1px solid var(--rule); border-left:3px solid var(--accent); border-radius:3px; padding:.125rem .25rem;
+  }
+  .chip .t { font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .chip { flex-wrap:wrap; }
+  .chip .m { display:flex; flex-wrap:wrap; gap:1px; min-width:0; }
+  .mark {
+    font-family:var(--mono); font-size:.5625rem; font-weight:700; letter-spacing:0;
+    color:var(--ink-body); background:var(--card-sunk); border-radius:2px; padding:0 .1875rem;
+  }
+  .chip.working { border-left-style:dashed; border-left-color:var(--ink-body); }
+  .chip.posted { border-left-color:var(--rule-strong); color:var(--ink-quiet); }
+  .chip.failed { border-left-color:var(--clay); }
+  .more { font-size:.625rem; color:var(--ink-quiet); }
+  .cal-key { display:flex; flex-wrap:wrap; gap:var(--s3); font-size:.6875rem; color:var(--ink-quiet); margin:var(--s2) 0 0; }
+  .cal-key span { display:inline-flex; align-items:center; gap:.3125rem; }
+  .k { width:.75rem; height:.625rem; border-radius:2px; background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--accent); }
+  .k.working { border-left-style:dashed; border-left-color:var(--ink-body); }
+  .k.posted { border-left-color:var(--rule-strong); }
+  .k.failed { border-left-color:var(--clay); }
+
+  .cal-day { border-top:1px solid var(--rule); margin-top:var(--s3); padding-top:var(--s3); }
+  .cal-day .day-head { display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center; justify-content:space-between; margin:0 0 var(--s2); }
+  .cal-day h4 { margin:0; font-size:.9375rem; color:var(--ink); }
+  .cal-day .none { margin:0; font-size:.8125rem; color:var(--ink-quiet); }
+  .cal-day .queue .post { background:var(--ground); }
+
+  /* A phone has no room for times: a cell keeps its marks only. */
+  @media (max-width:560px) {
+    .cal { padding:var(--s2); }
+    .cal-cell { min-height:3.75rem; padding:.1875rem; }
+    .chip { padding:.0625rem .125rem; border-left-width:2px; }
+    .chip .t { display:none; }
+    .cal-top h4 { min-width:0; flex:1; }
+  }
 
   .toast {
     position:fixed; left:50%; bottom:1.5rem; transform:translateX(-50%);
@@ -283,7 +361,31 @@
     </div>
   </section>
 
-  <h3 id="queue-head" hidden>Going out</h3>
+  <div class="queue-bar" id="queue-head" hidden>
+    <h3>Going out</h3>
+    <div class="views" role="group" aria-label="Show as">
+      <button type="button" id="view-calendar" aria-pressed="true">Calendar</button>
+      <button type="button" id="view-list" aria-pressed="false">List</button>
+    </div>
+  </div>
+
+  <section class="cal" id="cal" hidden aria-label="Calendar of posts">
+    <div class="cal-top">
+      <button type="button" class="cal-step" id="cal-prev" aria-label="Previous month">‹</button>
+      <h4 id="cal-month"></h4>
+      <button type="button" class="cal-step" id="cal-next" aria-label="Next month">›</button>
+      <button type="button" class="btn secondary small" id="cal-today">Today</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-key" aria-hidden="true">
+      <span><i class="k scheduled"></i>Scheduled</span>
+      <span><i class="k working"></i>Sending</span>
+      <span><i class="k posted"></i>Posted</span>
+      <span><i class="k failed"></i>Failed</span>
+    </div>
+    <div class="cal-day" id="cal-day"></div>
+  </section>
+
   <ol class="queue" id="queue"></ol>
   <div class="soon" id="nothing" hidden>
     <p>Nothing scheduled yet. Pick a video above, write the caption, choose a time.</p>
@@ -579,6 +681,8 @@ $('add').addEventListener('click', async (e) => {
     $('caption').value = '';
     $('count').textContent = '0 / 2200';
     toast(platforms.length > 1 ? `Scheduled for ${platforms.length} places` : 'Scheduled');
+    selectedDay = dayKey(new Date(at));
+    calMonth = new Date(new Date(at).getFullYear(), new Date(at).getMonth(), 1);
     await loadPosts();
   } catch (err) {
     note.style.color = 'var(--clay)';
@@ -607,70 +711,235 @@ function schedulePoll() {
   pollTimer = setTimeout(loadPosts, 20000);
 }
 
+/* --- calendar or list ---------------------------------------------------- */
+
+let view = 'calendar';
+try { view = localStorage.getItem('schedule-view') === 'list' ? 'list' : 'calendar'; } catch { /* private mode */ }
+
+/* Days are the viewer's own, not UTC: a 9pm post belongs to tonight. */
+const dayKey = (d) => {
+  const t = new Date(d);
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+};
+const fromKey = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let selectedDay = dayKey(new Date());
+
+const MARKS = { instagram: 'IG', facebook: 'FB', youtube: 'YT', tiktok: 'TT' };
+/* What a group of posts shows as: the state that most needs attention. */
+const RANK = ['failed', 'working', 'scheduled', 'posted'];
+
+function setView(next) {
+  view = next;
+  try { localStorage.setItem('schedule-view', next); } catch { /* private mode */ }
+  $('view-calendar').setAttribute('aria-pressed', String(next === 'calendar'));
+  $('view-list').setAttribute('aria-pressed', String(next === 'list'));
+  drawQueue();
+}
+$('view-calendar').addEventListener('click', () => setView('calendar'));
+$('view-list').addEventListener('click', () => setView('list'));
+$('cal-prev').addEventListener('click', () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); drawCalendar(); });
+$('cal-next').addEventListener('click', () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); drawCalendar(); });
+$('cal-today').addEventListener('click', () => {
+  calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  selectedDay = dayKey(new Date());
+  drawCalendar();
+});
+
+/* The same video at the same time to several platforms is one entry. */
+function groupsFor(key) {
+  const groups = new Map();
+  for (const p of posts) {
+    if (p.status === 'cancelled' || dayKey(p.scheduled_for) !== key) continue;
+    const g = `${p.scheduled_for}|${p.caption || ''}`;
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push(p);
+  }
+  return [...groups.values()].sort((a, b) => new Date(a[0].scheduled_for) - new Date(b[0].scheduled_for));
+}
+
+const clock = (iso) => new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
+function drawCalendar() {
+  $('cal-month').textContent = calMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const grid = $('cal-grid');
+  grid.textContent = '';
+
+  /* Weeks start on Sunday, as a US wall calendar does. */
+  const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
+  const start = new Date(first.getFullYear(), first.getMonth(), 1 - first.getDay());
+  for (let i = 0; i < 7; i += 1) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const h = document.createElement('div');
+    h.className = 'cal-dow';
+    h.textContent = d.toLocaleDateString(undefined, { weekday: 'short' });
+    grid.append(h);
+  }
+
+  const today = dayKey(new Date());
+  const last = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0);
+  const cells = Math.ceil((first.getDay() + last.getDate()) / 7) * 7;
+  for (let i = 0; i < cells; i += 1) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const key = dayKey(d);
+    const groups = groupsFor(key);
+
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'cal-cell'
+      + (d.getMonth() !== calMonth.getMonth() ? ' other' : '')
+      + (key === today ? ' today' : '')
+      + (key < today ? ' past' : '');
+    cell.setAttribute('aria-pressed', String(key === selectedDay));
+    const count = groups.reduce((n, g) => n + g.length, 0);
+    cell.setAttribute('aria-label', d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
+      + (count ? `, ${count} post${count === 1 ? '' : 's'}` : ''));
+
+    const num = document.createElement('span');
+    num.className = 'd';
+    num.textContent = String(d.getDate());
+    cell.append(num);
+
+    for (const g of groups.slice(0, 3)) {
+      const state = RANK.find((r) => g.some((p) => p.status === r)) || 'scheduled';
+      const chip = document.createElement('span');
+      chip.className = 'chip ' + state;
+      const t = document.createElement('span');
+      t.className = 't';
+      t.textContent = clock(g[0].scheduled_for);
+      const m = document.createElement('span');
+      m.className = 'm';
+      for (const p of g) {
+        const mk = document.createElement('span');
+        mk.className = 'mark';
+        mk.textContent = MARKS[p.platform] || '?';
+        m.append(mk);
+      }
+      chip.append(t, m);
+      cell.append(chip);
+    }
+    if (groups.length > 3) {
+      const more = document.createElement('span');
+      more.className = 'more';
+      more.textContent = `+${groups.length - 3} more`;
+      cell.append(more);
+    }
+
+    cell.addEventListener('click', () => {
+      selectedDay = key;
+      if (d.getMonth() !== calMonth.getMonth()) calMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+      drawCalendar();
+    });
+    grid.append(cell);
+  }
+  drawDay();
+}
+
+/* The chosen day, in full, with the same actions as the list. */
+function drawDay() {
+  const box = $('cal-day');
+  box.textContent = '';
+  const head = document.createElement('div');
+  head.className = 'day-head';
+  const h = document.createElement('h4');
+  const day = fromKey(selectedDay);
+  h.textContent = day.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  head.append(h);
+
+  /* A day still to come can be scheduled straight from here. */
+  if (selectedDay >= dayKey(new Date()) && !$('composer').hidden) {
+    head.append(button('Schedule a video this day', 'secondary small', () => {
+      const keep = $('when').value.slice(11) || '09:00';
+      $('when').value = `${selectedDay}T${keep}`;
+      $('composer').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      toast(`When is set to ${day.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`);
+    }));
+  }
+  box.append(head);
+
+  const list = posts.filter((p) => p.status !== 'cancelled' && dayKey(p.scheduled_for) === selectedDay)
+    .sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+  if (!list.length) {
+    const none = document.createElement('p');
+    none.className = 'none';
+    none.textContent = 'Nothing goes out this day.';
+    box.append(none);
+    return;
+  }
+  const ol = document.createElement('ol');
+  ol.className = 'queue';
+  for (const p of list) ol.append(postItem(p));
+  box.append(ol);
+}
+
 function drawQueue() {
   const queue = $('queue');
   queue.textContent = '';
   $('nothing').hidden = posts.length > 0;
   $('queue-head').hidden = posts.length === 0;
+  $('cal').hidden = view !== 'calendar' || posts.length === 0;
+  queue.hidden = view !== 'list';
+  if (view === 'calendar') { if (posts.length) drawCalendar(); return; }
+  for (const p of posts) queue.append(postItem(p));
+}
 
-  for (const p of posts) {
-    const li = document.createElement('li');
-    li.className = 'post';
+function postItem(p) {
+  const li = document.createElement('li');
+  li.className = 'post';
 
-    const top = document.createElement('div');
-    top.className = 'top';
-    const w = document.createElement('p');
-    w.className = 'when';
-    w.textContent = when(p.scheduled_for);
-    const tag = document.createElement('span');
-    tag.className = 'tag ' + p.status;
-    tag.textContent = p.status === 'working' ? 'Sending…' : p.status;
-    const where = document.createElement('span');
-    where.className = 'tag platform';
-    where.textContent = NAMES[p.platform] || p.platform;
-    top.append(w, where, tag);
-    li.append(top);
+  const top = document.createElement('div');
+  top.className = 'top';
+  const w = document.createElement('p');
+  w.className = 'when';
+  w.textContent = when(p.scheduled_for);
+  const tag = document.createElement('span');
+  tag.className = 'tag ' + p.status;
+  tag.textContent = p.status === 'working' ? 'Sending…' : p.status;
+  const where = document.createElement('span');
+  where.className = 'tag platform';
+  where.textContent = NAMES[p.platform] || p.platform;
+  top.append(w, where, tag);
+  li.append(top);
 
-    if (p.caption) {
-      const cap = document.createElement('p');
-      cap.className = 'cap';
-      cap.textContent = p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption;
-      li.append(cap);
-    }
-    if (p.error && p.status !== 'posted') {
-      const why = document.createElement('p');
-      why.className = 'why';
-      why.textContent = p.error;
-      li.append(why);
-    }
-
-    const acts = document.createElement('div');
-    acts.className = 'acts';
-    if (p.status === 'scheduled' || p.status === 'failed') {
-      acts.append(button('Send now', 'secondary small', async (b) => {
-        b.disabled = true;
-        try { await call('/posts/now', { id: p.id }); toast('Sending now'); await loadPosts(); }
-        catch (err) { toast(err.message); b.disabled = false; }
-      }));
-      acts.append(button('Cancel', 'secondary small', async (b) => {
-        if (!confirm('Cancel this post?')) return;
-        b.disabled = true;
-        try { await call('/posts/cancel', { id: p.id }); toast('Cancelled'); await loadPosts(); }
-        catch (err) { toast(err.message); b.disabled = false; }
-      }));
-    }
-    if (p.permalink) {
-      const a = document.createElement('a');
-      a.className = 'btn secondary small';
-      a.href = p.permalink;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.textContent = `See it on ${NAMES[p.platform] || 'the site'}`;
-      acts.append(a);
-    }
-    if (acts.children.length) li.append(acts);
-    queue.append(li);
+  if (p.caption) {
+    const cap = document.createElement('p');
+    cap.className = 'cap';
+    cap.textContent = p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption;
+    li.append(cap);
   }
+  if (p.error && p.status !== 'posted') {
+    const why = document.createElement('p');
+    why.className = 'why';
+    why.textContent = p.error;
+    li.append(why);
+  }
+
+  const acts = document.createElement('div');
+  acts.className = 'acts';
+  if (p.status === 'scheduled' || p.status === 'failed') {
+    acts.append(button('Send now', 'secondary small', async (b) => {
+      b.disabled = true;
+      try { await call('/posts/now', { id: p.id }); toast('Sending now'); await loadPosts(); }
+      catch (err) { toast(err.message); b.disabled = false; }
+    }));
+    acts.append(button('Cancel', 'secondary small', async (b) => {
+      if (!confirm('Cancel this post?')) return;
+      b.disabled = true;
+      try { await call('/posts/cancel', { id: p.id }); toast('Cancelled'); await loadPosts(); }
+      catch (err) { toast(err.message); b.disabled = false; }
+    }));
+  }
+  if (p.permalink) {
+    const a = document.createElement('a');
+    a.className = 'btn secondary small';
+    a.href = p.permalink;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = `See it on ${NAMES[p.platform] || 'the site'}`;
+    acts.append(a);
+  }
+  if (acts.children.length) li.append(acts);
+  return li;
 }
 
 const NAMES = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok' };
@@ -776,7 +1045,17 @@ async function load() {
   /* Upload-Post first. The direct Meta connection is the fallback, used only
      when the Worker has no Upload-Post key. */
   let social = null;
-  try { social = await call('/social/account'); } catch { social = null; }
+  try { social = await call('/social/account'); }
+  catch (err) {
+    /* The key is set but Upload-Post did not answer as expected. Say so,
+       rather than falling back to the Meta screen, which hides the reason. */
+    buttonsEl.textContent = '';
+    nameEl.textContent = 'Couldn’t reach Upload-Post';
+    subEl.className = 'sub bad';
+    subEl.textContent = err.message;
+    buttonsEl.append(button('Try again', 'secondary', () => load()));
+    return;
+  }
 
   if (social?.ready) {
     $('social-setup').hidden = true;
@@ -817,6 +1096,9 @@ async function load() {
     subEl.textContent = 'Try refreshing the page.';
   }
 }
+
+$('view-calendar').setAttribute('aria-pressed', String(view === 'calendar'));
+$('view-list').setAttribute('aria-pressed', String(view === 'list'));
 
 load();
 
