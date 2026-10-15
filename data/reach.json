@@ -1,14 +1,7 @@
 {
-  "fetchedAt": "2026-10-14T17:49:40.587Z",
+  "fetchedAt": "2026-10-15T17:39:26.187Z",
   "note": "Best-performing ORGANIC post per row. Creators come from the screened roster in education-creators.json; lenders are harvested from the same nine brand ids the creative wall uses. Paid ads are excluded from both halves.",
   "rows": [
-    {
-      "kind": "creator",
-      "name": "Emeline SIRON - Experte investissement immobilier",
-      "note": "Montants basés sur le prix moyen du m2 dans ces vil…",
-      "views": 240894,
-      "viewsLabel": "240.9K"
-    },
     {
       "kind": "creator",
       "name": "Erick Brice",
@@ -46,17 +39,17 @@
     },
     {
       "kind": "creator",
-      "name": "Jack Henderson",
-      "note": "I had a lunch with a private wealth client the othe…",
-      "views": 27383,
-      "viewsLabel": "27.4K"
-    },
-    {
-      "kind": "creator",
       "name": "Scott Betley",
       "note": "If you're hoping to buy a home in the coming years,…",
       "views": 21682,
       "viewsLabel": "21.7K"
+    },
+    {
+      "kind": "creator",
+      "name": "Avery Carl",
+      "note": "Seven months ago, this housing analyst predicted a…",
+      "views": 20058,
+      "viewsLabel": "20.1K"
     },
     {
       "kind": "lender",
@@ -64,6 +57,13 @@
       "note": "best post",
       "views": 18087,
       "viewsLabel": "18.1K"
+    },
+    {
+      "kind": "creator",
+      "name": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
+      "note": "Whenever me and my boy need to make $5,000, this is…",
+      "views": 16668,
+      "viewsLabel": "16.7K"
     },
     {
       "kind": "lender",

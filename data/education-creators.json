@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-14T17:48:09.009Z",
+  "fetchedAt": "2026-10-15T17:37:26.411Z",
   "note": "Refreshed daily by .github/workflows/daily-creator-pull.yml. Videos are organic posts from the Spyglass corpus, screened for residential real estate relevance before publishing.",
   "creators": [
     {
@@ -288,16 +288,6 @@
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2dd33732e248b2a6270a968d06d98cae.mp4"
         },
         {
-          "id": "62c46bb0-1592-445b-9cbc-8b837564de67",
-          "hook": "Every abandoned house has a story. This one broke my heart",
-          "hookSource": "title",
-          "category": "Storytime",
-          "views": "2847",
-          "postedAt": "2026-10-13",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d66823e0222c3841c4493db76a1f47ec.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d66823e0222c3841c4493db76a1f47ec.mp4"
-        },
-        {
           "id": "0c553d54-61ce-4534-b732-9d93e59310c0",
           "hook": "Property under $10K isn’t on Zillow. It’s sitting in your county’s offices",
           "hookSource": "title",
@@ -316,6 +306,16 @@
           "postedAt": "2026-10-12",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2eefb827db77d5bf44864c118498f3bc.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2eefb827db77d5bf44864c118498f3bc.mp4"
+        },
+        {
+          "id": "fdd5f07d-beb2-443b-bf5d-1ddac7843af9",
+          "hook": "Best ways to make money in real estate.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "4719",
+          "postedAt": "2026-10-12",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/69f830026612596f7b75bd2578be0a0e.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/69f830026612596f7b75bd2578be0a0e.mp4"
         }
       ]
     },
@@ -435,44 +435,44 @@
       "addedOn": "2026-09-09",
       "videos": [
         {
-          "id": "a2e501a1-38ae-4be7-b97a-9fb576b6228a",
-          "hook": "My lending, how can I figure this out?",
-          "hookSource": "hook",
-          "category": "Commentary",
-          "views": "1067",
-          "postedAt": "2026-09-30",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/a4c3bcd4a2005e0f375cf24ba75c1cfb.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/a4c3bcd4a2005e0f375cf24ba75c1cfb.mp4"
-        },
-        {
-          "id": "27445a9d-1e59-4a99-8af9-382abd8f17f0",
-          "hook": "Interest rates have gone up and they're about to go up again.",
+          "id": "528a744c-0293-47bb-aa2d-5163166fe40c",
+          "hook": "They start with personal and then they sort of go, why trust or why a company?",
           "hookSource": "hook",
           "category": "Explainer",
-          "views": "6563",
-          "postedAt": "2026-09-30",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8df4b08ce20da511ec4ad069b13d7908.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8df4b08ce20da511ec4ad069b13d7908.mp4"
+          "views": "2064",
+          "postedAt": "2026-10-14",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/0a7b5495d62d075d53e5604b23b79bc8.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/0a7b5495d62d075d53e5604b23b79bc8.mp4"
         },
         {
-          "id": "9f70dc6b-4d85-4f92-8c8e-7af255c30905",
-          "hook": "When you have spare money in smaller amounts, around 20 to 50K, would you save it towards your next deposit or try to do a cosmetic reno to manufacture some equity?",
+          "id": "d7f1f25a-6ed5-4c91-ad8d-f2793d48d526",
+          "hook": "I'm convinced at this point the market has lost its plot.",
           "hookSource": "hook",
           "category": "Commentary",
-          "views": "1695",
-          "postedAt": "2026-09-30",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/445a050914406a488cafe90ee78f1856.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/445a050914406a488cafe90ee78f1856.mp4"
+          "views": "16488",
+          "postedAt": "2026-10-14",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/b36493fea585a746142ed897562cc060.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/b36493fea585a746142ed897562cc060.mp4"
         },
         {
-          "id": "5b008b86-87c8-42c6-ae41-4b3e3d52fb5e",
-          "hook": "The big announcement is at 2:30pm today. If the RBA announces a hike this is what your repayments could look like.",
+          "id": "52669db5-53c8-4a74-ae81-b544ae13945b",
+          "hook": "These numbers show just how unaffordable buying a home in Australia’s capital cities has become",
           "hookSource": "title",
           "category": "Explainer",
-          "views": "7434",
-          "postedAt": "2026-09-29",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/218675d8da3b0089aa16becfaf6f76a7.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/218675d8da3b0089aa16becfaf6f76a7.mp4"
+          "views": "6538",
+          "postedAt": "2026-10-13",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/54e69b6988294f3bec18db0ce99b0294.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/54e69b6988294f3bec18db0ce99b0294.mp4"
+        },
+        {
+          "id": "14a1712e-3d5c-4650-bc53-e9317d889021",
+          "hook": "Rents are about to rise by 30 % and it's going to be wild",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "5376",
+          "postedAt": "2026-10-12",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c47ac4cafbb33f4236e9e84429caf8ab.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c47ac4cafbb33f4236e9e84429caf8ab.mp4"
         }
       ]
     },
@@ -494,11 +494,31 @@
       "addedOn": "2026-09-09",
       "videos": [
         {
+          "id": "b665f1b8-b7d0-4e82-bbdf-db30f8ce8db4",
+          "hook": "Just when you think this government cannot make housing any worse, they go out of their way to prove you are wrong.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "7372",
+          "postedAt": "2026-10-14",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/112b5e8acd2c21d16b04cc9a9625d67c.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/112b5e8acd2c21d16b04cc9a9625d67c.mp4"
+        },
+        {
+          "id": "fcfd267c-b1ea-4aca-9cc3-ce53ac6f5719",
+          "hook": "Nobody bombed our cities, no earthquake flattened our suburbs, we did this to ourselves and the rest of the world is starting to notice.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "3031",
+          "postedAt": "2026-10-14",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/18bcb827df72215d85ae772f25adad33.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/18bcb827df72215d85ae772f25adad33.mp4"
+        },
+        {
           "id": "f694b1f1-4beb-4d27-a49f-339e84f4800d",
           "hook": "Now, in some parts of the country, it now takes longer to rezone land for new housing than it took us to win World War II.",
           "hookSource": "hook",
           "category": "Commentary",
-          "views": "1954",
+          "views": "3445",
           "postedAt": "2026-10-12",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/deda417dfea198cab078fad371672683.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/deda417dfea198cab078fad371672683.mp4"
@@ -508,7 +528,7 @@
           "hook": "For the first time, a government is actively trying to sink the housing market, which is the biggest investment most Aussies will ever make in their lives.",
           "hookSource": "hook",
           "category": "Explainer",
-          "views": "5057",
+          "views": "5363",
           "postedAt": "2026-10-11",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/d388cb0ad5ae06207e0e89d820e4d52a.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/d388cb0ad5ae06207e0e89d820e4d52a.mp4"
@@ -534,44 +554,44 @@
       "addedOn": "2026-09-09",
       "videos": [
         {
+          "id": "f3b6197d-88bd-49be-b92c-51a12d66ae23",
+          "hook": "- The Central Coast.",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "15325",
+          "postedAt": "2026-10-14",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/8fdb7812e8a8544c0cf883bd0f0513a1.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/8fdb7812e8a8544c0cf883bd0f0513a1.mp4"
+        },
+        {
+          "id": "a0930e4c-a52e-4fe4-8fc3-3ca5a5f26f4b",
+          "hook": "If we had a crystal ball, mate, what are you thinking in five years' time?",
+          "hookSource": "hook",
+          "category": "Commentary",
+          "views": "12942",
+          "postedAt": "2026-10-13",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e46a390fcd85d02b5940ef9b2ddf8725.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e46a390fcd85d02b5940ef9b2ddf8725.mp4"
+        },
+        {
+          "id": "1dd8d340-2dd2-4cda-9415-ffca7959f8d5",
+          "hook": "You want to grow a massive empire.",
+          "hookSource": "hook",
+          "category": "Explainer",
+          "views": "5781",
+          "postedAt": "2026-10-12",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/29b28826d897e191d88310b66ca2c1e0.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/29b28826d897e191d88310b66ca2c1e0.mp4"
+        },
+        {
           "id": "03785940-08a2-4787-aebb-a2ed3225986b",
           "hook": "When it comes to a property that can take advantage of all of the new tax concessions, like the capital gains tax discount, like negative gearing, and get massive depreciation benefits, they don't get much better than this property right here.",
           "hookSource": "hook",
           "category": "Explainer",
-          "views": "9543",
+          "views": "15706",
           "postedAt": "2026-10-12",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/20a1e7d06c320da1bae4642f3f239b46.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/20a1e7d06c320da1bae4642f3f239b46.mp4"
-        },
-        {
-          "id": "4b018c05-7788-4a40-8b54-a9080179ceae",
-          "hook": "Here's something people don't understand.",
-          "hookSource": "hook",
-          "category": "Explainer",
-          "views": "5416",
-          "postedAt": "2026-10-12",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/13f1534cb501fd7eae4b8c26d6804e8a.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/13f1534cb501fd7eae4b8c26d6804e8a.mp4"
-        },
-        {
-          "id": "c4b06e86-44f6-4dd0-98ea-2866ce3309dd",
-          "hook": "Trying to time the market is just going to cost you more.",
-          "hookSource": "title",
-          "category": "Explainer",
-          "views": "3895",
-          "postedAt": "2026-10-11",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/2ed1db695c78d61edd55d7a996f15a26.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/2ed1db695c78d61edd55d7a996f15a26.mp4"
-        },
-        {
-          "id": "169e9cef-3748-4fd9-b34f-9222a67e681f",
-          "hook": "I had a lunch with a private wealth client the other day who's almost 70.",
-          "hookSource": "hook",
-          "category": "Commentary",
-          "views": "27383",
-          "postedAt": "2026-10-10",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/c589f32524dc6490bfbd20274ff84a1b.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/c589f32524dc6490bfbd20274ff84a1b.mp4"
         }
       ]
     },
@@ -594,44 +614,24 @@
       "addedOn": "2026-09-09",
       "videos": [
         {
-          "id": "f12ffd17-9c9f-4090-a0ea-229712591103",
-          "hook": "Alors tu choisis quoi ??",
+          "id": "d226ec0e-e047-47fa-987b-6f7f07605273",
+          "hook": "Tu rajouterais quoi ?",
           "hookSource": "title",
           "category": "Text Overlay",
-          "views": "72628",
-          "postedAt": "2026-09-30",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/802b0761938a9f41f072e7445480864b.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/802b0761938a9f41f072e7445480864b.mp4"
+          "views": "15259",
+          "postedAt": "2026-10-10",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e33f4b813db938723dfe9f743e424b19.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e33f4b813db938723dfe9f743e424b19.mp4"
         },
         {
-          "id": "94d7a1d4-242f-4baf-a121-3f2ce5331d7c",
-          "hook": "Le taux, ce n’est pas le plus important.",
-          "hookSource": "title",
-          "category": "Explainer",
-          "views": "122303",
-          "postedAt": "2026-09-29",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/fe260c03180da70eb94a39acf10c78e9.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/fe260c03180da70eb94a39acf10c78e9.mp4"
-        },
-        {
-          "id": "efba9f42-a1c8-43bb-b8da-dd6d95c5d2e9",
-          "hook": "That's what I love.",
-          "hookSource": "hook",
-          "category": "Before and After",
-          "views": "5046",
-          "postedAt": "2026-09-28",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/e6736fc2de8d08e7b527623b7129bedc.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/e6736fc2de8d08e7b527623b7129bedc.mp4"
-        },
-        {
-          "id": "b828f125-81cb-4301-9927-52d5569a106b",
-          "hook": "Montants basés sur le prix moyen du m2 dans ces villes.",
+          "id": "7612d826-a1de-4c0d-b1f8-e629345d80eb",
+          "hook": "Sur la base d’un crédit immo à 3,5%.",
           "hookSource": "title",
           "category": "Text Overlay",
-          "views": "240894",
-          "postedAt": "2026-09-27",
-          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/1658690bc8bdee7d7151433dd1337fa6.webp",
-          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/1658690bc8bdee7d7151433dd1337fa6.mp4"
+          "views": "16344",
+          "postedAt": "2026-10-09",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/0ce7590963fccf82e1fea41c47adb773.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/0ce7590963fccf82e1fea41c47adb773.mp4"
         }
       ]
     },
@@ -808,6 +808,16 @@
           "postedAt": "2026-01-05",
           "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/15b33a37d9d4fe69d6b5caf570e7e800.webp",
           "mediaUrl": "https://cdn.generalcontext.com/adspy/media/15b33a37d9d4fe69d6b5caf570e7e800.mp4"
+        },
+        {
+          "id": "de8ed6bc-80cd-48d8-9fe8-a02c57c2ce8e",
+          "hook": "I'm a nurse. I work 12 hour shifts. I have no extra time, but I own five houses that pay me while I sleep.",
+          "hookSource": "hook",
+          "category": "Text Overlay",
+          "views": "2120",
+          "postedAt": "2026-01-04",
+          "thumbnailUrl": "https://cdn.generalcontext.com/adspy/thumbnails/19541a566e91c6878c4af7978b16117a.webp",
+          "mediaUrl": "https://cdn.generalcontext.com/adspy/media/19541a566e91c6878c4af7978b16117a.mp4"
         }
       ]
     }

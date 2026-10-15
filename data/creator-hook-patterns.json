@@ -1,39 +1,39 @@
 {
-  "fetchedAt": "2026-10-14T17:49:33.292Z",
+  "fetchedAt": "2026-10-15T17:39:17.445Z",
   "note": "Rebuilt on every run of .github/workflows/daily-creator-pull.yml from the hooks harvested that day. Spyglass HOOK/USP aggregation returns empty for these creators because it is tuned to paid campaigns, so the patterns are read off the organic hooks themselves. Every quote is verified against a harvested hook before it is written.",
   "patterns": [
     {
-      "slug": "announced-correction",
-      "label": "announces a correction without giving it",
-      "description": "Declares that a widely held belief is wrong, or that a familiar term is misused, but withholds the actual correction — an information gap opened in a single sentence.",
+      "slug": "question-to-someone-offscreen",
+      "label": "opens as a question to someone else",
+      "description": "The first line is directed at an interview guest or deal partner, not the camera, so the viewer arrives as an eavesdropper on a real exchange. The answer is withheld by definition.",
       "creatorCount": 4,
       "examples": [
         {
-          "creator": "Jack Henderson",
-          "quote": "Here's something people don't understand.",
-          "views": "5416"
+          "creator": "Michael Llanas",
+          "quote": "I really want to deep dive into owner financing because I know that's what you specialize in",
+          "views": "1110"
         },
         {
-          "creator": "Wealth | Wisdom | Daily",
-          "quote": "Your first rental feels like freedom, and that's the part that confuses people.",
-          "views": "1440"
+          "creator": "Jack Henderson",
+          "quote": "If we had a crystal ball, mate, what are you thinking in five years' time?",
+          "views": "12942"
+        },
+        {
+          "creator": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
+          "quote": "You had a closed deal today?",
+          "views": "6178"
         },
         {
           "creator": "Sean Pan",
-          "quote": "Real estate investors love throwing around terms like cash on cash return.",
-          "views": "5.8K"
-        },
-        {
-          "creator": "Jerry Norton",
-          "quote": "Although wholesaling as a strategy may be simple to understand, it isn't easy to execute.",
-          "views": "2259"
+          "quote": "Does it matter if you intend to have like housemates and stuff like that?",
+          "views": "8.6K"
         }
       ]
     },
     {
-      "slug": "viewer-current-situation",
-      "label": "states where the viewer is right now",
-      "description": "Opens by describing the viewer's present circumstances in second person as plain fact, which lands as a personal address and implies the video is about to change that situation.",
+      "slug": "you-are-already-here",
+      "label": "states the viewer's current situation",
+      "description": "A short second-person sentence that describes where the viewer already stands or what they already want, with no preamble. It reads like the video knows them, so leaving feels like leaving a conversation about themselves.",
       "creatorCount": 3,
       "examples": [
         {
@@ -47,16 +47,16 @@
           "views": "39.7K"
         },
         {
-          "creator": "Scott Betley",
-          "quote": "How much are y 'all paying for rent right now?",
-          "views": "6555"
+          "creator": "Jack Henderson",
+          "quote": "You want to grow a massive empire.",
+          "views": "5781"
         }
       ]
     },
     {
-      "slug": "number-first-result",
-      "label": "leads with the dollar outcome",
-      "description": "Puts a concrete figure or achieved result in the first clause and defers the method, so the number does the stopping and the unanswered 'how' does the holding.",
+      "slug": "exact-dollar-figure-first",
+      "label": "leads with a precise dollar amount",
+      "description": "Puts a specific, oddly exact number in the first clause and withholds the outcome attached to it. The precision signals real receipts rather than theory, and the unfinished half of the sentence pulls forward.",
       "creatorCount": 3,
       "examples": [
         {
@@ -65,44 +65,113 @@
           "views": "59.8K"
         },
         {
-          "creator": "Jeremy Werden",
-          "quote": "Five years ago, we turned this into North Carolina's number one Airbnb.",
-          "views": "7483"
-        },
-        {
           "creator": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
           "quote": "Whenever me and my boy need to make $5,000, this is what we do.",
           "views": "16668"
+        },
+        {
+          "creator": "Scott Betley",
+          "quote": "Have you ever wondered how much money you actually need to make to buy a $259 ,000 home in Harford County, Maryland?",
+          "views": "4771"
         }
       ]
     },
     {
-      "slug": "mid-conversation-entry",
-      "label": "drops you into a conversation already running",
-      "description": "Starts on a fragment that clearly belongs to the middle of something — a transition, an aside, a reply — so the viewer feels they walked in late and scrolls back rather than away.",
+      "slug": "forecast-with-a-number",
+      "label": "leads with a dramatic numbered prediction",
+      "description": "Opens on a claim about the near future carrying a hard percentage, either the creator's own or one attributed to someone else. The number makes it falsifiable and the stakes make it unfinishable.",
       "creatorCount": 3,
       "examples": [
         {
-          "creator": "Jerry Norton",
-          "quote": "Okay, so the next thing I need to talk about some earnest money, man,",
-          "views": "6628"
+          "creator": "Ravi Sharma",
+          "quote": "Rents are about to rise by 30 % and it's going to be wild",
+          "views": "5376"
         },
         {
-          "creator": "Michael Llanas",
-          "quote": "I have a question now",
-          "views": "2483"
+          "creator": "Avery Carl",
+          "quote": "Seven months ago, this housing analyst predicted a crash worse than 2008, with home prices eventually falling as much as 50%.",
+          "views": "20058"
         },
         {
-          "creator": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
-          "quote": "You had a closed deal today?",
-          "views": "6178"
+          "creator": "Scott Kuru",
+          "quote": "Now, in some parts of the country, it now takes longer to rezone land for new housing than it took us to win World War II.",
+          "views": "3445"
         }
       ]
     },
     {
-      "slug": "flat-prohibition",
-      "label": "a blunt order not to do something",
-      "description": "Opens with a flat negative command before any context, so the viewer has to keep watching to find out why the rule exists and whether they are already breaking it.",
+      "slug": "bare-label-no-sentence",
+      "label": "a fragment instead of a sentence",
+      "description": "Drops a noun phrase with no verb and no framing, so the line functions as a caption the viewer must watch to decode. The incompleteness is the entire mechanism.",
+      "creatorCount": 3,
+      "examples": [
+        {
+          "creator": "Jack Henderson",
+          "quote": "- The Central Coast.",
+          "views": "15325"
+        },
+        {
+          "creator": "Logan Fullmer",
+          "quote": "Best ways to make money in real estate.",
+          "views": "4719"
+        },
+        {
+          "creator": "Michael Llanas",
+          "quote": "The calling listings that have been on the market for a long time.",
+          "views": "1002"
+        }
+      ]
+    },
+    {
+      "slug": "superlative-payoff-promise",
+      "label": "promises the best thing you'll see",
+      "description": "Front-loads a superlative claim about the value of what follows, often conditioned on watching all of it. It trades specificity for scale, betting the size of the promise holds attention.",
+      "creatorCount": 3,
+      "examples": [
+        {
+          "creator": "Theoni Rapo",
+          "quote": "If you can make it through this whole entire video, you will be smarter than any other person that's buying real estate for the rest of 2026.",
+          "views": "33208"
+        },
+        {
+          "creator": "Scott Betley",
+          "quote": "If you're hoping to buy a home in the coming years, this is hands down one of the best strategies you can use to put yourself in an incredible financial position when you buy a home.",
+          "views": "21682"
+        },
+        {
+          "creator": "Jack Henderson",
+          "quote": "When it comes to a property that can take advantage of all of the new tax concessions, like the capital gains tax discount, like negative gearing, and get massive depreciation benefits, they don't get much better than this property right here.",
+          "views": "15706"
+        }
+      ]
+    },
+    {
+      "slug": "says-what-you-think-first",
+      "label": "repeats the belief before breaking it",
+      "description": "Voices the audience's own excuse, assumption or comfortable feeling in their words, then signals it is about to be corrected. Agreement first makes the contradiction land instead of bounce.",
+      "creatorCount": 3,
+      "examples": [
+        {
+          "creator": "Sean Pan",
+          "quote": "Real estate investors love throwing around terms like cash on cash return.",
+          "views": "5.8K"
+        },
+        {
+          "creator": "Fernando Gonzalez",
+          "quote": "Ay, es que necesito ser rico para comenzar a invertir en bienes raíces.",
+          "views": "2710"
+        },
+        {
+          "creator": "Wealth | Wisdom | Daily",
+          "quote": "Your first rental feels like freedom, and that's the part that confuses people.",
+          "views": "1440"
+        }
+      ]
+    },
+    {
+      "slug": "flat-prohibition-opening",
+      "label": "tells you not to do something",
+      "description": "Opens with a blunt negative command or denial before any context, so the viewer stays to find out what rule they are apparently breaking. The absolutism itself is the hook.",
       "creatorCount": 2,
       "examples": [
         {
@@ -118,154 +187,105 @@
       ]
     },
     {
-      "slug": "watch-and-youll-gain",
-      "label": "promises a payoff for finishing",
-      "description": "Frames the video itself as the deal: stay to the end, or belong to this group, and you get a stated advantage. The reward is named before any content is given.",
+      "slug": "result-with-a-clock-on-it",
+      "label": "big result plus the timeline",
+      "description": "States an achieved outcome and bolts a time frame or age onto it, turning a brag into an implicit promise of a repeatable sequence. The viewer stays for the span between start and result.",
       "creatorCount": 2,
       "examples": [
         {
-          "creator": "Theoni Rapo",
-          "quote": "If you can make it through this whole entire video, you will be smarter than any other person that's buying real estate for the rest of 2026.",
-          "views": "33208"
-        },
-        {
-          "creator": "Scott Betley",
-          "quote": "If you're hoping to buy a home in the coming years, this is hands down one of the best strategies you can use to put yourself in an incredible financial position when you buy a home.",
-          "views": "21682"
-        }
-      ]
-    },
-    {
-      "slug": "someone-elses-question",
-      "label": "opens on a question from someone else",
-      "description": "The first line is a question put to the creator rather than by the creator, which casts the video as an answer owed to a real person and borrows the asker's curiosity.",
-      "creatorCount": 2,
-      "examples": [
-        {
-          "creator": "Ravi Sharma",
-          "quote": "When you have spare money in smaller amounts, around 20 to 50K, would you save it towards your next deposit or try to do a cosmetic reno to manufacture some equity?",
-          "views": "1695"
+          "creator": "Jeremy Werden",
+          "quote": "Five years ago, we turned this into North Carolina's number one Airbnb.",
+          "views": "7483"
         },
         {
           "creator": "Sean Pan",
-          "quote": "Does it matter if you intend to have like housemates and stuff like that?",
-          "views": "8.6K"
+          "quote": "We built a $4.7 million rental portfolio that let me leave my corporate job and travel the world by the time I was 29 years old.",
+          "views": "5.4K"
         }
       ]
     },
     {
-      "slug": "the-question-they-googled",
-      "label": "asks the question they already typed",
-      "description": "Opens with the exact beginner question the target viewer has searched for, sometimes narrowed to an oddly specific price and place, which signals the video is a direct answer to their query.",
+      "slug": "plain-biography-as-credential",
+      "label": "stacks ordinary facts about yourself",
+      "description": "Opens with flat autobiographical details rather than a claim, letting relatability or unexpected standing do the persuading. The mundane framing makes the payoff that follows feel earned rather than sold.",
       "creatorCount": 2,
       "examples": [
         {
-          "creator": "Fernando Gonzalez",
-          "quote": "¿Cómo empezar a invertir en bienes raíces?",
-          "views": "4212"
+          "creator": "Wealth | Wisdom | Daily",
+          "quote": "I'm a nurse. I work 12 hour shifts. I have no extra time, but I own five houses that pay me while I sleep.",
+          "views": "2120"
         },
         {
-          "creator": "Scott Betley",
-          "quote": "Have you ever wondered how much money you actually need to make to buy a $259 ,000 home in Harford County, Maryland?",
-          "views": "4771"
+          "creator": "Jeremy Werden",
+          "quote": "I live in Chicago and I invest in markets all over the Midwest.",
+          "views": "83245"
         }
       ]
     },
     {
-      "slug": "alarming-market-claim",
-      "label": "opens with bad news about the market",
-      "description": "Leads with a sweeping claim about conditions getting worse, often framed as unprecedented or still in motion, so the viewer stays to learn how exposed they are.",
+      "slug": "opens-mid-outrage",
+      "label": "starts already angry at the system",
+      "description": "Begins at the emotional peak of a rant about institutions or the market, with no ramp-up. The indignation borrows the viewer's own frustration and makes the explanation feel owed to them.",
       "creatorCount": 2,
       "examples": [
         {
           "creator": "Scott Kuru",
-          "quote": "For the first time, a government is actively trying to sink the housing market, which is the biggest investment most Aussies will ever make in their lives.",
-          "views": "5057"
+          "quote": "Just when you think this government cannot make housing any worse, they go out of their way to prove you are wrong.",
+          "views": "7372"
         },
         {
           "creator": "Ravi Sharma",
-          "quote": "Interest rates have gone up and they're about to go up again.",
-          "views": "6563"
+          "quote": "I'm convinced at this point the market has lost its plot.",
+          "views": "16488"
         }
       ]
     },
     {
-      "slug": "timestamped-stranger",
-      "label": "introduces a stranger and a date",
-      "description": "Opens on a specific third party at a specific past moment — an analyst, a client at lunch — which sets up a story with an outcome the viewer has to wait for.",
+      "slug": "caught-mid-sentence",
+      "label": "begins in the middle of talking",
+      "description": "Starts with a connective word or an unexplained pronoun, as if the recording began late. The missing front half implies a longer lesson already underway and that the viewer is getting the unedited part.",
       "creatorCount": 2,
       "examples": [
         {
-          "creator": "Avery Carl",
-          "quote": "Seven months ago, this housing analyst predicted a crash worse than 2008, with home prices eventually falling as much as 50%.",
-          "views": "20058"
+          "creator": "Jerry Norton",
+          "quote": "Okay, so the next thing I need to talk about some earnest money, man,",
+          "views": "6628"
         },
         {
-          "creator": "Jack Henderson",
-          "quote": "I had a lunch with a private wealth client the other day who's almost 70.",
-          "views": "27383"
+          "creator": "Ravi Sharma",
+          "quote": "They start with personal and then they sort of go, why trust or why a company?",
+          "views": "2064"
         }
       ]
     },
     {
-      "slug": "points-at-this-one",
-      "label": "points at the deal on screen",
-      "description": "Anchors the hook to a single concrete thing in frame — this property, this contract — so the promised breakdown feels verifiable rather than theoretical.",
-      "creatorCount": 2,
-      "examples": [
-        {
-          "creator": "Jack Henderson",
-          "quote": "When it comes to a property that can take advantage of all of the new tax concessions, like the capital gains tax discount, like negative gearing, and get massive depreciation benefits, they don't get much better than this property right here.",
-          "views": "9543"
-        },
-        {
-          "creator": "𝘾𝘼𝙈𝙀𝙍𝙊𝙉 𝙊𝙇𝙄𝙑𝙀𝙍𝘼  📍ℂ𝕙𝕚𝕔𝕒𝕘𝕠",
-          "quote": "To get this one contract signed, let's break down the numbers.",
-          "views": "8225"
-        }
-      ]
-    },
-    {
-      "slug": "warning-to-one-group",
-      "label": "warns one specific group of buyers",
-      "description": "Flags a caveat aimed at people already committed to a particular plan or product, which filters the audience and makes those inside it unable to scroll past.",
+      "slug": "plain-question-to-the-viewer",
+      "label": "asks you a direct simple question",
+      "description": "Opens with an unadorned question aimed straight at the viewer, prompting an internal answer before the video says anything. The reflex to answer is what buys the next line.",
       "creatorCount": 2,
       "examples": [
         {
           "creator": "Scott Betley",
-          "quote": "Just a quick PSA, if you're planning to use an FHA loan to buy a home,",
-          "views": "2887"
+          "quote": "How much are y 'all paying for rent right now?",
+          "views": "6555"
         },
         {
-          "creator": "Avery Carl",
-          "quote": "Sometimes vacation rentals are very highly regulated",
-          "views": "692"
+          "creator": "Fernando Gonzalez",
+          "quote": "¿Cómo empezar a invertir en bienes raíces?",
+          "views": "4212"
         }
       ]
     },
     {
-      "slug": "live-call-roleplay",
-      "label": "begins inside a real phone call",
-      "description": "Single example. The hook is the first line of an actual script being performed on a live call, so the viewer is watching the thing happen rather than hearing it described.",
+      "slug": "inside-a-live-call",
+      "label": "drops you into a real call",
+      "description": "Single example. Opens mid-performance of the actual skill being taught, with a real name and address, so the viewer is watching the thing happen rather than hearing it described.",
       "creatorCount": 1,
       "examples": [
         {
           "creator": "Jerry Norton",
           "quote": "Hi Peter, my name is Jerry Norton calling you about your property on Liberty Road.",
           "views": "6128"
-        }
-      ]
-    },
-    {
-      "slug": "excuse-in-their-own-voice",
-      "label": "acts out the excuse people make",
-      "description": "Single example. The creator performs the viewer's objection as dialogue, complete with the sigh, so the rest of the video becomes a rebuttal the viewer already feels implicated in.",
-      "creatorCount": 1,
-      "examples": [
-        {
-          "creator": "Fernando Gonzalez",
-          "quote": "Ay, es que necesito ser rico para comenzar a invertir en bienes raíces.",
-          "views": "2710"
         }
       ]
     }
